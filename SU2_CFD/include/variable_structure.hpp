@@ -56,6 +56,8 @@ protected:
 
 	su2double *Solution,		/*!< \brief Solution of the problem. */
 	*Solution_Old;			/*!< \brief Old solution of the problem R-K. */
+  su2double CFL_CV;          /*!< \brief Value of the CFL number local to the control volume. */
+  su2double Res_Old;          /*!< \brief Value of the old residual for the first conservative variable */
   bool Non_Physical;			/*!< \brief Non-physical points in the solution (force first order). */
 	su2double *Solution_time_n,	/*!< \brief Solution of the problem at time n for dual-time stepping technique. */
 	*Solution_time_n1;			/*!< \brief Solution of the problem at time n-1 for dual-time stepping technique. */
@@ -133,6 +135,30 @@ public:
 	 */
 	void Add_DeltaSolution(unsigned short val_var, su2double val_solution);
 
+  /*!
+   * \brief Set the value of the CFL for the current control volume (CV).
+   * \param[in] val_cfl - the input value of the CFL for this CV.
+   */
+  void SetCFL_CV(su2double val_cfl);
+  
+  /*!
+   * \brief Get the value of the CFL number for the current control volume (CV).
+   * \return Value of the CFL number for this CV.
+   */
+  su2double GetCFL_CV(void);
+  
+  /*!
+   * \brief Set the value of the old residual for the first conservative variable.
+   * \param[in] val_res_old - the input value of the old residual for the first conservative variable.
+   */
+  void SetRes_Old(su2double val_res_old);
+  
+  /*!
+   * \brief Get the value of the old residual for the first conservative variable.
+   * \return Value of the old residual for the first conservative variable.
+   */
+  su2double GetRes_Old(void);
+  
   /*!
    * \brief Set the value of the non-physical point.
    * \param[in] val_value - identification of the non-physical point.

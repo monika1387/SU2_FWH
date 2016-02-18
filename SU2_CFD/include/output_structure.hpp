@@ -92,7 +92,7 @@ class COutput {
 	unsigned short nVar_Consv, nVar_Total, nVar_Extra, nZones;
 	bool wrote_surf_file, wrote_CGNS_base, wrote_Tecplot_base, wrote_Paraview_base;
   unsigned short wrote_base_file;
-  su2double RhoRes_New, RhoRes_Old;
+  su2double Res_New;
   int cgns_base, cgns_zone, cgns_base_results, cgns_zone_results;
   
 protected:
@@ -491,16 +491,12 @@ public:
                            CIntegration ***integration, unsigned short val_iZone);
   
   /*!
-   * \brief Write the history file and the convergence on the screen for serial computations.
-   * \param[in] ConvHist_file - Pointer to the convergence history file (which is defined in the main subroutine).
+   * \brief Adjust the CFL based on a ramping strategy.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] solver_container - Container vector with all the solutions.
    * \param[in] config - Definition of the particular problem.
-   * \param[in] integration - Generic subroutines for space integration, time integration, and monitoring.
-   * \param[in] iExtIter - Current external (time) iteration.
-   * \param[in] timeused - Current number of clock tick in the computation (related with total time).
    * \param[in] val_nZone - iZone index.
    */
-  void SetCFL_Number(CSolver ****solver_container, CConfig **config, unsigned short val_iZone);
+  void SetCFL_Number(CGeometry ***geometry, CSolver ****solver_container, CConfig **config, unsigned short val_iZone);
   
 };

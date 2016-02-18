@@ -326,6 +326,12 @@ int main(int argc, char *argv[]) {
     historyFile_FSI << "Time,Iteration,Aitken,URes,logResidual,orderMagnResidual" << endl;
     historyFile_FSI.close();
   }
+  
+  /*--- Evaluate the new CFL number (adaptive). ---*/
+  
+  //if (config_container[ZONE_0]->GetCFL_Adapt() == YES) {
+    output->SetCFL_Number(geometry_container, solver_container, config_container, ZONE_0);
+  //}
 
   while (ExtIter < config_container[ZONE_0]->GetnExtIter()) {
     
@@ -392,7 +398,7 @@ int main(int argc, char *argv[]) {
     /*--- Evaluate the new CFL number (adaptive). ---*/
     
     if (config_container[ZONE_0]->GetCFL_Adapt() == YES) {
-      output->SetCFL_Number(solver_container, config_container, ZONE_0);
+      output->SetCFL_Number(geometry_container, solver_container, config_container, ZONE_0);
     }
     
     /*--- Check whether the current simulation has reached the specified

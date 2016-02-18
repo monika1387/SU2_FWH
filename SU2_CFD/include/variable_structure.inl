@@ -107,6 +107,14 @@ inline su2double CVariable::GetDistance(void) { return 0; }
 
 inline su2double CVariable::GetMassFraction(unsigned short val_Species) { return 0; }
 
+inline void CVariable::SetCFL_CV(su2double val_cfl) { CFL_CV = val_cfl; }
+
+inline su2double CVariable::GetCFL_CV(void) { return CFL_CV; }
+
+inline void CVariable::SetRes_Old(su2double val_res_old) { Res_Old = val_res_old; }
+
+inline su2double CVariable::GetRes_Old(void) { return Res_Old; }
+
 inline void CVariable::SetNon_Physical(bool val_value) { Non_Physical = !val_value; }
 
 inline su2double CVariable::GetNon_Physical(void) { return su2double(Non_Physical); }

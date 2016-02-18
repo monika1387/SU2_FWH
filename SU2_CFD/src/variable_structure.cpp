@@ -49,7 +49,7 @@ CVariable::CVariable(void) {
 	Res_TruncError = NULL;
   Residual_Old = NULL;
 	Residual_Sum = NULL;
-  
+  Res_Old = EPS;
 }
 
 CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
@@ -68,7 +68,8 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
 	Res_TruncError = NULL;
   Residual_Old = NULL;
 	Residual_Sum = NULL;
-  
+  Res_Old = EPS;
+
   /*--- Initialize the number of solution variables. This version
    of the constructor will be used primarily for converting the
    restart files into solution files (SU2_SOL). ---*/
@@ -101,7 +102,8 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
 	Res_TruncError = NULL;
   Residual_Old = NULL;
 	Residual_Sum = NULL;
-  
+  Res_Old = EPS;
+
 	/*--- Initializate the number of dimension and number of variables ---*/
 	nDim = val_nDim;
 	nVar = val_nvar;

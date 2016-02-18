@@ -3408,7 +3408,9 @@ void CEulerSolver::SetTime_Step(CGeometry *geometry, CSolver **solver_container,
     Vol = geometry->node[iPoint]->GetVolume();
     
     if (Vol != 0.0) {
-      Local_Delta_Time = config->GetCFL(iMesh)*Vol / node[iPoint]->GetMax_Lambda_Inv();
+      //Local_Delta_Time = config->GetCFL(iMesh)*Vol / node[iPoint]->GetMax_Lambda_Inv();
+      Local_Delta_Time = node[iPoint]->GetCFL_CV()*Vol / node[iPoint]->GetMax_Lambda_Inv();
+
       Global_Delta_Time = min(Global_Delta_Time, Local_Delta_Time);
       Min_Delta_Time = min(Min_Delta_Time, Local_Delta_Time);
       Max_Delta_Time = max(Max_Delta_Time, Local_Delta_Time);

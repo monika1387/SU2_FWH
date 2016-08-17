@@ -51,13 +51,15 @@ def main():
                       help="Method for computing the GRADIENT (CONTINUOUS_ADJOINT, FINDIFF, NONE)", metavar="GRADIENT")
     parser.add_option("-q", "--quiet", dest="quiet", default="True",
                       help="True/False Quiet all SU2 output (optimizer output only)", metavar="QUIET")
-    
+    parser.add_option("-o", "--optimizer", dest="optimizer", default="SLSQP",
+                      help="The method for solving the optimization problem (SLSQP, MMA, AUGLAG_MMA)", metavar="OPTIMIZER")
     (options, args)=parser.parse_args()
     
     # process inputs
     options.partitions  = int( options.partitions )
     options.quiet       = options.quiet.upper() == 'TRUE'
     options.gradient    = options.gradient.upper()
+    options.optimizer   = options.optimizer.upper()
     
     sys.stdout.write('\n-------------------------------------------------------------------------\n')
     sys.stdout.write('|    ___ _   _ ___                                                      |\n')
@@ -96,7 +98,8 @@ def main():
                         options.projectname ,
                         options.partitions  ,
                         options.gradient    ,
-                        options.quiet        )
+                        options.quiet       ,
+                        options.optimizer)
     
 #: main()
 
@@ -104,7 +107,8 @@ def shape_optimization( filename                ,
                         projectname = ''        ,
                         partitions  = 0         , 
                         gradient    = 'CONTINUOUS_ADJOINT' ,
-                        quiet       = False      ):
+                        quiet       = False     ,
+                        optimizer   = 'SLSQP'):
   
     # Config
     config = SU2.io.Config(filename)
@@ -135,7 +139,7 @@ def shape_optimization( filename                ,
         project = SU2.opt.Project(config,state)
     
     # Optimize
-    SU2.opt.SLSQP(project,x0,xb,its,accu)
+    SU2.opt.NLOPT(project,optimizer, x0,xb_low,xb_up,its,accu)
     
     # rename project file
     if projectname:

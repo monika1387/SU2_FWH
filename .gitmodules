@@ -6,3 +6,6 @@
 	path = externals/codi
 	url = https://github.com/scicompkl/CoDiPack.git
 	ignore = dirty
+[submodule "externals/nlopt"]
+	path = externals/nlopt
+	url = https://github.com/stevengj/nlopt

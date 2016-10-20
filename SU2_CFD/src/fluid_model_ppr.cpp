@@ -160,7 +160,7 @@ void CPengRobinson::SetTDState_PT (su2double P, su2double T ) {
 	A= a*alpha2(T)*P/(T*Gas_Constant)/(T*Gas_Constant);
 	B= b*P/(T*Gas_Constant);
 
-  if (Zed > 0.1) Z = min(Zed, 0.99);
+  if (Zed > 0.1) Z = min(Zed, (su2double)0.99);
 		else Z=0.99;
   
 	do {

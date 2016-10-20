@@ -767,7 +767,7 @@ void CGeometry::ComputeAirfoil_Section(su2double *Plane_P0, su2double *Plane_Nor
         Segment[0] = Xcoord[jVertex] - Xcoord[iVertex];
         Segment[1] = Ycoord[jVertex] - Ycoord[iVertex];
         Segment[2] = Zcoord[jVertex] - Zcoord[iVertex];
-        Dist_Value = sqrt(pow(Segment[0], 2.0) + pow(Segment[1], 2.0) + pow(Segment[2], 2.0));
+        Dist_Value = sqrt(pow(Segment[0], (su2double)2.0) + pow(Segment[1], (su2double)2.0) + pow(Segment[2], (su2double)2.0));
         if (Dist_Value < 1E-6) {
           Duplicate.push_back (jVertex);
         }
@@ -808,7 +808,7 @@ void CGeometry::ComputeAirfoil_Section(su2double *Plane_P0, su2double *Plane_Nor
         Segment[0] = Xcoord[iVertex] - Xcoord_Airfoil[0];
         Segment[1] = Ycoord[iVertex] - Ycoord_Airfoil[0];
         Segment[2] = Zcoord[iVertex] - Zcoord_Airfoil[0];
-        Dist_Value = sqrt(pow(Segment[0], 2.0) + pow(Segment[1], 2.0) + pow(Segment[2], 2.0));
+        Dist_Value = sqrt(pow(Segment[0], (su2double)2.0) + pow(Segment[1], (su2double)2.0) + pow(Segment[2], (su2double)2.0));
         Segment[0] /= Dist_Value; Segment[1] /= Dist_Value; Segment[2] /= Dist_Value;
         
         if ((Dist_Value < MinDist_Value) && (Segment[2] > 0.0)) { MinDist_Point = iVertex; MinDist_Value = Dist_Value; }
@@ -827,7 +827,7 @@ void CGeometry::ComputeAirfoil_Section(su2double *Plane_P0, su2double *Plane_Nor
         Airfoil_Tangent[0] = Xcoord_Airfoil[Airfoil_Point] - Xcoord_Airfoil[Airfoil_Point-1];
         Airfoil_Tangent[1] = Ycoord_Airfoil[Airfoil_Point] - Ycoord_Airfoil[Airfoil_Point-1];
         Airfoil_Tangent[2] = Zcoord_Airfoil[Airfoil_Point] - Zcoord_Airfoil[Airfoil_Point-1];
-        Length = sqrt(pow(Airfoil_Tangent[0], 2.0) + pow(Airfoil_Tangent[1], 2.0) + pow(Airfoil_Tangent[2], 2.0));
+        Length = sqrt(pow(Airfoil_Tangent[0], (su2double)2.0) + pow(Airfoil_Tangent[1], (su2double)2.0) + pow(Airfoil_Tangent[2], (su2double)2.0));
         Airfoil_Tangent[0] /= Length; Airfoil_Tangent[1] /= Length; Airfoil_Tangent[2] /= Length;
         
         /*--- Find the closest point with the right slope ---*/
@@ -840,7 +840,7 @@ void CGeometry::ComputeAirfoil_Section(su2double *Plane_P0, su2double *Plane_Nor
           Segment[2] = Zcoord[iVertex] - Zcoord_Airfoil[Airfoil_Point];
           
           /*--- Compute the distance to each point ---*/
-          Dist_Value = sqrt(pow(Segment[0], 2.0) + pow(Segment[1], 2.0) + pow(Segment[2], 2.0));
+          Dist_Value = sqrt(pow(Segment[0], (su2double)2.0) + pow(Segment[1], (su2double)2.0) + pow(Segment[2], (su2double)2.0));
           
           /*--- Compute the angle of the point ---*/
           Segment[0] /= Dist_Value; Segment[1] /= Dist_Value; Segment[2] /= Dist_Value;
@@ -1117,7 +1117,7 @@ void CGeometry::ComputeSurf_Curvature(CConfig *config) {
               MeanK += NormalMeanK[iPoint][iDim]*NormalMeanK[iPoint][iDim];
             MeanK = sqrt(MeanK);
             
-            delta = max((MeanK*MeanK - GaussK), 0.0);
+            delta = max((MeanK*MeanK - GaussK), (su2double)0.0);
             
             MaxPrinK = MeanK + sqrt(delta);
             
@@ -8595,8 +8595,8 @@ void CPhysicalGeometry::MatchInterface(CConfig *config) {
               for (jVertex = 0; jVertex < nVertex[jMarker]; jVertex++) {
                 jPoint = vertex[jMarker][jVertex]->GetNode();
                 Coord_j = node[jPoint]->GetCoord();
-                if (nDim == 2) dist = sqrt(pow(Coord_j[0]-Coord_i[0],2.0) + pow(Coord_j[1]-Coord_i[1],2.0));
-                if (nDim == 3) dist = sqrt(pow(Coord_j[0]-Coord_i[0],2.0) + pow(Coord_j[1]-Coord_i[1],2.0) + pow(Coord_j[2]-Coord_i[2],2.0));
+                if (nDim == 2) dist = sqrt(pow(Coord_j[0]-Coord_i[0],(su2double)2.0) + pow(Coord_j[1]-Coord_i[1],(su2double)2.0));
+                if (nDim == 3) dist = sqrt(pow(Coord_j[0]-Coord_i[0],(su2double)2.0) + pow(Coord_j[1]-Coord_i[1],(su2double)2.0) + pow(Coord_j[2]-Coord_i[2],(su2double)2.0));
                 if (dist < mindist) {mindist = dist; pPoint = jPoint;}
               }
           maxdist = max(maxdist, mindist);
@@ -8608,7 +8608,7 @@ void CPhysicalGeometry::MatchInterface(CConfig *config) {
             cout << "   Bad match for point " << iPoint << ".\tNearest";
             cout << " donor distance: " << scientific << mindist << ".";
             vertex[iMarker][iVertex]->SetDonorPoint(iPoint, MASTER_NODE);
-            maxdist = min(maxdist, 0.0);
+            maxdist = min(maxdist, (su2double)0.0);
           }
           
         }
@@ -8781,8 +8781,8 @@ void CPhysicalGeometry::MatchNearField(CConfig *config) {
               for (jVertex = 0; jVertex < nVertex[jMarker]; jVertex++) {
                 jPoint = vertex[jMarker][jVertex]->GetNode();
                 Coord_j = node[jPoint]->GetCoord();
-                if (nDim == 2) dist = sqrt(pow(Coord_j[0]-Coord_i[0],2.0) + pow(Coord_j[1]-Coord_i[1],2.0));
-                if (nDim == 3) dist = sqrt(pow(Coord_j[0]-Coord_i[0],2.0) + pow(Coord_j[1]-Coord_i[1],2.0) + pow(Coord_j[2]-Coord_i[2],2.0));
+                if (nDim == 2) dist = sqrt(pow(Coord_j[0]-Coord_i[0],(su2double)2.0) + pow(Coord_j[1]-Coord_i[1],(su2double)2.0));
+                if (nDim == 3) dist = sqrt(pow(Coord_j[0]-Coord_i[0],(su2double)2.0) + pow(Coord_j[1]-Coord_i[1],(su2double)2.0) + pow(Coord_j[2]-Coord_i[2],(su2double)2.0));
                 if (dist < mindist) { mindist = dist; pPoint = jPoint; }
               }
           maxdist = max(maxdist, mindist);
@@ -8794,7 +8794,7 @@ void CPhysicalGeometry::MatchNearField(CConfig *config) {
             cout << "   Bad match for point " << iPoint << ".\tNearest";
             cout << " donor distance: " << scientific << mindist << ".";
             vertex[iMarker][iVertex]->SetDonorPoint(iPoint, MASTER_NODE);
-            maxdist = min(maxdist, 0.0);
+            maxdist = min(maxdist, (su2double)0.0);
           }
         }
         cout <<"The max distance between points is: " << maxdist <<"."<< endl;
@@ -9070,7 +9070,7 @@ void CPhysicalGeometry::MatchActuator_Disk(CConfig *config) {
                   dist = 0.0;
                   for (iDim = 0; iDim < nDim; iDim++) {
                     Coord_j[iDim] = Buffer_Receive_Coord[(iProcessor*MaxLocalVertex_ActDisk+jVertex)*nDim+iDim];
-                    dist += pow(Coord_j[iDim]-Coord_i[iDim], 2.0);
+                    dist += pow(Coord_j[iDim]-Coord_i[iDim], (su2double)2.0);
                   }
                   dist = sqrt(dist);
                   
@@ -9093,7 +9093,7 @@ void CPhysicalGeometry::MatchActuator_Disk(CConfig *config) {
                 cout << "   Bad match for point " << iPoint << ".\tNearest";
                 cout << " donor distance: " << scientific << mindist << ".";
                 vertex[iMarker][iVertex]->SetDonorPoint(iPoint, pProcessor);
-                maxdist_local = min(maxdist_local, 0.0);
+                maxdist_local = min(maxdist_local, (su2double)0.0);
               }
               
             }
@@ -9146,8 +9146,8 @@ void CPhysicalGeometry::MatchZone(CConfig *config, CGeometry *geometry_donor, CC
         for (jVertex = 0; jVertex < geometry_donor->GetnVertex(jMarker); jVertex++) {
           jPoint = geometry_donor->vertex[jMarker][jVertex]->GetNode();
           Coord_j = geometry_donor->node[jPoint]->GetCoord();
-          if (nDim == 2) dist = sqrt(pow(Coord_j[0]-Coord_i[0],2.0) + pow(Coord_j[1]-Coord_i[1],2.0));
-          if (nDim == 3) dist = sqrt(pow(Coord_j[0]-Coord_i[0],2.0) + pow(Coord_j[1]-Coord_i[1],2.0) + pow(Coord_j[2]-Coord_i[2],2.0));
+          if (nDim == 2) dist = sqrt(pow(Coord_j[0]-Coord_i[0],(su2double)2.0) + pow(Coord_j[1]-Coord_i[1],(su2double)2.0));
+          if (nDim == 3) dist = sqrt(pow(Coord_j[0]-Coord_i[0],(su2double)2.0) + pow(Coord_j[1]-Coord_i[1],(su2double)2.0) + pow(Coord_j[2]-Coord_i[2],(su2double)2.0));
 //          if (dist < mindist) { mindist = dist; pPoint = jPoint; pGlobalPoint = node[jPoint]->GetGlobalIndex();}
           if (dist < mindist) { mindist = dist; pPoint = jPoint; pGlobalPoint = geometry_donor->node[jPoint]->GetGlobalIndex();}
         }
@@ -11865,9 +11865,9 @@ su2double CPhysicalGeometry::Compute_MaxThickness(su2double *Plane_P0, su2double
   
   MaxDistance = 0.0; Trailing_Point = 0; Leading_Point = 0;
   for (iVertex = 1; iVertex < Xcoord_Airfoil.size(); iVertex++) {
-    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], 2.0));
+    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], (su2double)2.0));
     
     if (MaxDistance < Distance) { MaxDistance = Distance; Leading_Point = iVertex; }
   }
@@ -11906,13 +11906,13 @@ su2double CPhysicalGeometry::Compute_MaxThickness(su2double *Plane_P0, su2double
     Tangent[0] = Xcoord_Airfoil_[iVertex] - Xcoord_Airfoil_[iVertex-1];
     Tangent[1] = Ycoord_Airfoil_[iVertex] - Ycoord_Airfoil_[iVertex-1];
     Tangent[2] = Zcoord_Airfoil_[iVertex] - Zcoord_Airfoil_[iVertex-1];
-    Length = sqrt(pow(Tangent[0], 2.0) + pow(Tangent[1], 2.0) + pow(Tangent[2], 2.0));
+    Length = sqrt(pow(Tangent[0], (su2double)2.0) + pow(Tangent[1], (su2double)2.0) + pow(Tangent[2], (su2double)2.0));
     Tangent[0] /= Length; Tangent[1] /= Length; Tangent[2] /= Length;
     
     BiNormal[0] = Plane_Normal[0];
     BiNormal[1] = Plane_Normal[1];
     BiNormal[2] = Plane_Normal[2];
-    Length = sqrt(pow(BiNormal[0], 2.0) + pow(BiNormal[1], 2.0) + pow(BiNormal[2], 2.0));
+    Length = sqrt(pow(BiNormal[0], (su2double)2.0) + pow(BiNormal[1], (su2double)2.0) + pow(BiNormal[2], (su2double)2.0));
     BiNormal[0] /= Length; BiNormal[1] /= Length; BiNormal[2] /= Length;
     
     Normal[0] = Tangent[1]*BiNormal[2] - Tangent[2]*BiNormal[1];
@@ -11972,9 +11972,9 @@ su2double CPhysicalGeometry::Compute_AoA(su2double *Plane_P0, su2double *Plane_N
   /*--- Find the leading and trailing edges and compute the angle of attack ---*/
   MaxDistance = 0.0; Trailing_Point = 0; Leading_Point = 0;
   for (iVertex = 1; iVertex < Xcoord_Airfoil.size(); iVertex++) {
-    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], 2.0));
+    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], (su2double)2.0));
     
     if (MaxDistance < Distance) { MaxDistance = Distance; Leading_Point = iVertex; }
   }
@@ -11993,9 +11993,9 @@ su2double CPhysicalGeometry::Compute_Chord(su2double *Plane_P0, su2double *Plane
   MaxDistance = 0.0; Trailing_Point = 0;
   for (iVertex = 1; iVertex < Xcoord_Airfoil.size(); iVertex++) {
     
-    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], 2.0));
+    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], (su2double)2.0));
     
     if (MaxDistance < Distance) { MaxDistance = Distance; }
   }
@@ -12015,9 +12015,9 @@ su2double CPhysicalGeometry::Compute_Thickness(su2double *Plane_P0, su2double *P
   
   MaxDistance = 0.0; Trailing_Point = 0; Leading_Point = 0;
   for (iVertex = 1; iVertex < Xcoord_Airfoil.size(); iVertex++) {
-    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], 2.0));
+    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], (su2double)2.0));
     
     if (MaxDistance < Distance) { MaxDistance = Distance; Leading_Point = iVertex; }
   }
@@ -12056,13 +12056,13 @@ su2double CPhysicalGeometry::Compute_Thickness(su2double *Plane_P0, su2double *P
     Tangent[0] = Xcoord_Airfoil_[iVertex] - Xcoord_Airfoil_[iVertex-1];
     Tangent[1] = Ycoord_Airfoil_[iVertex] - Ycoord_Airfoil_[iVertex-1];
     Tangent[2] = Zcoord_Airfoil_[iVertex] - Zcoord_Airfoil_[iVertex-1];
-    Length = sqrt(pow(Tangent[0], 2.0) + pow(Tangent[1], 2.0) + pow(Tangent[2], 2.0));
+    Length = sqrt(pow(Tangent[0], (su2double)2.0) + pow(Tangent[1], (su2double)2.0) + pow(Tangent[2], (su2double)2.0));
     Tangent[0] /= Length; Tangent[1] /= Length; Tangent[2] /= Length;
     
     BiNormal[0] = Plane_Normal[0];
     BiNormal[1] = Plane_Normal[1];
     BiNormal[2] = Plane_Normal[2];
-    Length = sqrt(pow(BiNormal[0], 2.0) + pow(BiNormal[1], 2.0) + pow(BiNormal[2], 2.0));
+    Length = sqrt(pow(BiNormal[0], (su2double)2.0) + pow(BiNormal[1], (su2double)2.0) + pow(BiNormal[2], (su2double)2.0));
     BiNormal[0] /= Length; BiNormal[1] /= Length; BiNormal[2] /= Length;
     
     Normal[0] = Tangent[1]*BiNormal[2] - Tangent[2]*BiNormal[1];
@@ -12145,9 +12145,9 @@ su2double CPhysicalGeometry::Compute_Area(su2double *Plane_P0, su2double *Plane_
   
   MaxDistance = 0.0; Trailing_Point = 0; Leading_Point = 0;
   for (iVertex = 1; iVertex < Xcoord_Airfoil.size(); iVertex++) {
-    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], 2.0) +
-                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], 2.0));
+    Distance = sqrt(pow(Xcoord_Airfoil[iVertex] - Xcoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Ycoord_Airfoil[iVertex] - Ycoord_Airfoil[Trailing_Point], (su2double)2.0) +
+                    pow(Zcoord_Airfoil[iVertex] - Zcoord_Airfoil[Trailing_Point], (su2double)2.0));
     
     if (MaxDistance < Distance) { MaxDistance = Distance; Leading_Point = iVertex; }
   }
@@ -12186,13 +12186,13 @@ su2double CPhysicalGeometry::Compute_Area(su2double *Plane_P0, su2double *Plane_
     Tangent[0] = Xcoord_Airfoil_[iVertex] - Xcoord_Airfoil_[iVertex-1];
     Tangent[1] = Ycoord_Airfoil_[iVertex] - Ycoord_Airfoil_[iVertex-1];
     Tangent[2] = Zcoord_Airfoil_[iVertex] - Zcoord_Airfoil_[iVertex-1];
-    Length = sqrt(pow(Tangent[0], 2.0) + pow(Tangent[1], 2.0) + pow(Tangent[2], 2.0));
+    Length = sqrt(pow(Tangent[0], (su2double)2.0) + pow(Tangent[1], (su2double)2.0) + pow(Tangent[2], (su2double)2.0));
     Tangent[0] /= Length; Tangent[1] /= Length; Tangent[2] /= Length;
     
     BiNormal[0] = Plane_Normal[0];
     BiNormal[1] = Plane_Normal[1];
     BiNormal[2] = Plane_Normal[2];
-    Length = sqrt(pow(BiNormal[0], 2.0) + pow(BiNormal[1], 2.0) + pow(BiNormal[2], 2.0));
+    Length = sqrt(pow(BiNormal[0], (su2double)2.0) + pow(BiNormal[1], (su2double)2.0) + pow(BiNormal[2], (su2double)2.0));
     BiNormal[0] /= Length; BiNormal[1] /= Length; BiNormal[2] /= Length;
     
     Normal[0] = Tangent[1]*BiNormal[2] - Tangent[2]*BiNormal[1];
@@ -12967,8 +12967,8 @@ CMultiGridGeometry::CMultiGridGeometry(CGeometry ***geometry, CConfig **config_c
   su2double Coeff = 1.0, CFL = 0.0, factor = 1.5;
   
   if (iMesh != MESH_0) {
-    if (nDim == 2) Coeff = pow(su2double(Global_nPointFine)/su2double(Global_nPointCoarse), 1./2.);
-    if (nDim == 3) Coeff = pow(su2double(Global_nPointFine)/su2double(Global_nPointCoarse), 1./3.);
+    if (nDim == 2) Coeff = pow(su2double(Global_nPointFine)/su2double(Global_nPointCoarse), (su2double)(1./2.));
+    if (nDim == 3) Coeff = pow(su2double(Global_nPointFine)/su2double(Global_nPointCoarse), (su2double)(1./3.));
     CFL = factor*config->GetCFL(iMesh-1)/Coeff;
     config->SetCFL(iMesh, CFL);
   }
@@ -13082,8 +13082,8 @@ bool CMultiGridGeometry::GeometricalCheck(unsigned long iPoint, CGeometry *fine_
   /*--- Evaluate the total size of the element ---*/
   
   bool Volume = true;
-  su2double ratio = pow(fine_grid->node[iPoint]->GetVolume(), 1.0/su2double(nDim))*max_dimension;
-  su2double limit = pow(config->GetDomainVolume(), 1.0/su2double(nDim));
+  su2double ratio = pow(fine_grid->node[iPoint]->GetVolume(), (su2double)1.0/su2double(nDim))*max_dimension;
+  su2double limit = pow(config->GetDomainVolume(), (su2double)1.0/su2double(nDim));
   if ( ratio > limit ) Volume = false;
   
   /*--- Evaluate the stretching of the element ---*/

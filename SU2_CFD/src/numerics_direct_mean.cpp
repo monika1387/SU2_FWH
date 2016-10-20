@@ -181,15 +181,15 @@ void CCentJST_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jac
   Local_Lambda_j = (fabs(ProjVelocity_j)+SoundSpeed_j*Area);
   MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
-  Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-  Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+  Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+  Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
   StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
   sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
   sc4 = sc2*sc2/4.0;
   
   Epsilon_2 = Param_Kappa_2*0.5*(Sensor_i+Sensor_j)*sc2;
-  Epsilon_4 = max(0.0, Param_Kappa_4-Epsilon_2)*sc4;
+  Epsilon_4 = max((su2double)0.0, Param_Kappa_4-Epsilon_2)*sc4;
   
   /*--- Compute viscous part of the residual ---*/
   
@@ -371,8 +371,8 @@ void CCentJST_KE_Flow::ComputeResidual(su2double *val_residual, su2double **val_
   Local_Lambda_j = (fabs(ProjVelocity_j)+SoundSpeed_j*Area);
   MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
 
-  Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-  Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+  Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+  Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
   StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
 
   sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
@@ -549,8 +549,8 @@ void CCentLax_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jac
   Local_Lambda_j = (fabs(ProjVelocity_j)+SoundSpeed_j*Area);
   MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
-  Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-  Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+  Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+  Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
   StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
   sc0 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
@@ -721,8 +721,8 @@ void CUpwCUSP_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jac
   LamdaNeg = ProjVelocity - MeanSoundSpeed;
   LamdaPos = ProjVelocity + MeanSoundSpeed;
   
-  if ((0.0 <= Mach) && (Mach < 1.0)) Beta = + max(0.0, (ProjVelocity + LamdaNeg)/(ProjVelocity - LamdaNeg));
-  if ((-1.0 <= Mach) && (Mach < 0.0)) Beta = - max(0.0, (ProjVelocity + LamdaPos)/(ProjVelocity - LamdaPos));
+  if ((0.0 <= Mach) && (Mach < 1.0)) Beta = + max((su2double)0.0, (ProjVelocity + LamdaNeg)/(ProjVelocity - LamdaNeg));
+  if ((-1.0 <= Mach) && (Mach < 0.0)) Beta = - max((su2double)0.0, (ProjVelocity + LamdaPos)/(ProjVelocity - LamdaPos));
   if (fabs(Mach) >= 1.0) Beta = Mach/fabs(Mach);
   
   if (Beta == 0.0) Nu_c = fabs(ProjVelocity);
@@ -3033,7 +3033,7 @@ void CUpwMSW_Flow::ComputeResidual(su2double *val_residual,
   /*--- Calculate the state weighting function ---*/
   
   dp = fabs(P_j-P_i) / min(P_j, P_i);
-  w = 0.5 * (1.0/(pow(alpha*dp,2.0) +1.0));
+  w = 0.5 * (1.0/(pow(alpha*dp,(su2double)2.0) +1.0));
   onemw = 1.0 - w;
   
   /*--- Calculate weighted state vector (*) for i & j ---*/
@@ -3778,15 +3778,15 @@ void CCentJSTArtComp_Flow::ComputeResidual(su2double *val_residual,
   Local_Lambda_j = fabs(ProjVelocity_j)+SoundSpeed_j;
   MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
-  Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-  Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+  Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+  Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
   StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
   sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
   sc4 = sc2*sc2/4.0;
   
   Epsilon_2 = Param_Kappa_2*0.5*(Sensor_i+Sensor_j)*sc2;
-  Epsilon_4 = max(0.0, Param_Kappa_4-Epsilon_2)*sc4;
+  Epsilon_4 = max((su2double)0.0, Param_Kappa_4-Epsilon_2)*sc4;
   
   /*--- Compute viscous part of the residual ---*/
   
@@ -3911,8 +3911,8 @@ void CCentLaxArtComp_Flow::ComputeResidual(su2double *val_residual, su2double **
   Local_Lambda_j = fabs(ProjVelocity_j)+SoundSpeed_j;
   MeanLambda = 0.5*(Local_Lambda_i + Local_Lambda_j);
   
-  Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-  Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+  Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+  Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
   StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
   sc0 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));

@@ -389,7 +389,7 @@ void CNearestNeighbor::Set_TransferCoeff(CConfig **config) {
 					  /*--- Compute the dist ---*/
 					  dist = 0.0; for (iDim = 0; iDim < nDim; iDim++) {
 						  Coord_j[iDim] = Buffer_Receive_Coord[(iProcessor*MaxLocalVertex_Donor+jVertex)*nDim+iDim];
-						  dist += pow(Coord_j[iDim]-Coord_i[iDim],2.0);
+						  dist += pow(Coord_j[iDim]-Coord_i[iDim],(su2double)2.0);
 					  }
 
 					  if (dist < mindist) {
@@ -737,7 +737,7 @@ void CIsoparametric::Set_TransferCoeff(CConfig **config) {
               for(iDonor=0; iDonor< nNodes; iDonor++) {
                 Coord[iDim]-=myCoeff[iDonor]*X[iDim*nNodes+iDonor];
               }
-              dist+=pow(Coord[iDim],2.0);
+              dist+=pow(Coord[iDim],(su2double)2.0);
             }
 
             /*--- If the dist is shorter than last closest (and nonzero nodes are on the boundary), update ---*/
@@ -849,8 +849,8 @@ void CIsoparametric::Isoparameters(unsigned short nDim, unsigned short nDonor,
           tmp+= A[iDim*nDonor+iDonor]*A[iDim*nDonor+iDonor];
           tmp2+=A[k*nDonor+iDonor]*A[k*nDonor+iDonor];
         }
-        tmp  = pow(tmp,0.5);
-        tmp2 = pow(tmp2,0.5);
+        tmp  = pow(tmp,(su2double)0.5);
+        tmp2 = pow(tmp2,(su2double)0.5);
         testi[k]=false;
         for (iDonor=0; iDonor<nDonor; iDonor++) {
           // If at least one ratio is non-matching row iDim is not degenerate w/ row k
@@ -888,7 +888,7 @@ void CIsoparametric::Isoparameters(unsigned short nDim, unsigned short nDonor,
       for (iDim=0; iDim<n; iDim++)
         tmp += (A2[iDim*nDonor+iDonor])*(A2[iDim*nDonor+iDonor]);
 
-      R[iDonor*nDonor+iDonor]= pow(tmp,0.5);
+      R[iDonor*nDonor+iDonor]= pow(tmp,(su2double)0.5);
       if (tmp>eps && iDonor<n) {
         for (iDim=0; iDim<n; iDim++)
           Q[iDim*nDonor+iDonor]=A2[iDim*nDonor+iDonor]/R[iDonor*nDonor+iDonor];
@@ -928,17 +928,17 @@ void CIsoparametric::Isoparameters(unsigned short nDim, unsigned short nDonor,
   }
   else {
     /*-- For 2-donors (lines) it is simpler: */
-    tmp =  pow(X[0*nDonor+0]- X[0*nDonor+1],2.0);
-    tmp += pow(X[1*nDonor+0]- X[1*nDonor+1],2.0);
+    tmp =  pow(X[0*nDonor+0]- X[0*nDonor+1],(su2double)2.0);
+    tmp += pow(X[1*nDonor+0]- X[1*nDonor+1],(su2double)2.0);
     tmp = sqrt(tmp);
 
-    tmp2 = pow(X[0*nDonor+0] - xj[0],2.0);
-    tmp2 += pow(X[1*nDonor+0] - xj[1],2.0);
+    tmp2 = pow(X[0*nDonor+0] - xj[0],(su2double)2.0);
+    tmp2 += pow(X[1*nDonor+0] - xj[1],(su2double)2.0);
     tmp2 = sqrt(tmp2);
     isoparams[1] = tmp2/tmp;
 
-    tmp2 = pow(X[0*nDonor+1] - xj[0],2.0);
-    tmp2 += pow(X[1*nDonor+1] - xj[1],2.0);
+    tmp2 = pow(X[0*nDonor+1] - xj[0],(su2double)2.0);
+    tmp2 += pow(X[1*nDonor+1] - xj[1],(su2double)2.0);
     tmp2 = sqrt(tmp2);
     isoparams[0] = tmp2/tmp;
   }

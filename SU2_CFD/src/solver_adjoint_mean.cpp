@@ -250,9 +250,9 @@ CAdjEulerSolver::CAdjEulerSolver(CGeometry *geometry, CConfig *config, unsigned 
     vel2=0;
     for (iDim=0; iDim<nDim; iDim++)
       vel2 +=vel_inf[iDim]*vel_inf[iDim];
-    vel = pow(vel2,0.5);
-    SoundSpeed= pow(Gamma*config->GetTemperature_FreeStreamND()*R, 0.5);
-    PsiE_Inf = Gamma_Minus_One*vel2/(vel2-pow(SoundSpeed,2.0))*0.5/vel;
+    vel = pow(vel2,(su2double)0.5);
+    SoundSpeed= pow(Gamma*config->GetTemperature_FreeStreamND()*R, (su2double)0.5);
+    PsiE_Inf = Gamma_Minus_One*vel2/(vel2-pow(SoundSpeed,(su2double)2.0))*0.5/vel;
     PsiRho_Inf += PsiE_Inf*(2*SoundSpeed*SoundSpeed+vel2*Gamma_Minus_One)/(2.0*Gamma_Minus_One);
     // Assumes +x flow direction
     // Assume v.n = |v|, n = -v/|v|
@@ -2958,7 +2958,7 @@ void CAdjEulerSolver::Smooth_Sensitivity(CGeometry *geometry, CSolver **solver_c
         Coord_begin = geometry->node[iPoint]->GetCoord();
         iPoint = geometry->vertex[iMarker][iVertex]->GetNode();
         Coord_end = geometry->node[iPoint]->GetCoord();
-        dist = sqrt (pow( Coord_end[0]-Coord_begin[0], 2.0) + pow( Coord_end[1]-Coord_begin[1], 2.0));
+        dist = sqrt (pow( Coord_end[0]-Coord_begin[0], (su2double)2.0) + pow( Coord_end[1]-Coord_begin[1], (su2double)2.0));
         ArchLength[iVertex] = ArchLength[iVertex-1] + dist;
       }
       
@@ -4701,7 +4701,7 @@ void CAdjEulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solver_container,
             velocity_gradient = 0.0;
             for (iDim=0; iDim<nDim; iDim++)
               velocity_gradient+=a2*Gamma_Minus_One*Density/(Gamma*Pressure)*Velocity[iDim]*UnitNormal[iDim];
-            pressure_gradient = a2*(-Gamma_Minus_One*Density*Velocity2/(2.0*Gamma*pow(Pressure,2.0)))+pow((1.0+Gamma_Minus_One*Density*Velocity2/(2.0*Gamma*Pressure)),(Gamma/Gamma_Minus_One));
+            pressure_gradient = a2*(-Gamma_Minus_One*Density*Velocity2/(2.0*Gamma*pow(Pressure,(su2double)2.0)))+pow(((su2double)1.0+Gamma_Minus_One*Density*Velocity2/((su2double)2.0*Gamma*Pressure)),(Gamma/Gamma_Minus_One));
             Psi_outlet[nDim+1]+=Weight_ObjFunc*a1*(density_gradient/Vn_rel+pressure_gradient*Vn_rel-velocity_gradient/Density);
             break;
           case AVG_OUTLET_PRESSURE:
@@ -4716,11 +4716,11 @@ void CAdjEulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solver_container,
           /*---Subsonic Case: Psi-rho E term from volume, objective-specific terms which are common
            * between subsonic and supersonic cases are added later  ---*/
           /*--- Compute Riemann constant ---*/
-          Entropy = Pressure*pow(1.0/Density, Gamma);
+          Entropy = Pressure*pow((su2double)1.0/Density, Gamma);
           Riemann = Vn + 2.0*SoundSpeed/Gamma_Minus_One;
 
           /*--- Compute the new fictious state at the outlet ---*/
-          Density    = pow(P_Exit/Entropy,1.0/Gamma);
+          Density    = pow(P_Exit/Entropy,(su2double)1.0/Gamma);
           SoundSpeed = sqrt(Gamma*P_Exit/Density);
           Vn_Exit    = Riemann - 2.0*SoundSpeed/Gamma_Minus_One;
           /*--- Update velocity terms ---*/
@@ -7074,10 +7074,10 @@ void CAdjNSSolver::BC_Isothermal_Wall(CGeometry *geometry, CSolver **solver_cont
         // Cp * Viscosity/Prandtl_Lam matches term used in solver_direct_mean
         /*--- constant term to multiply max heat flux objective ---*/
         Xi = solver_container[FLOW_SOL]->GetTotal_HeatFlux(); // versions for max heat flux
-        Xi = pow(Xi, 1.0/pnorm-1.0)/pnorm;
+        Xi = pow(Xi, (su2double)1.0/pnorm-(su2double)1.0)/pnorm;
 
         /*--- Boundary condition value ---*/
-        q = Xi * pnorm * pow(kGTdotn, pnorm-1.0)*Area*Weight_ObjFunc;
+        q = Xi * pnorm * pow(kGTdotn, pnorm-(su2double)1.0)*Area*Weight_ObjFunc;
       }
       
       /*--- Strong BC enforcement of the energy equation ---*/

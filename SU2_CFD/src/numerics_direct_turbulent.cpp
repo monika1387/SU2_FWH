@@ -556,7 +556,7 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
   
   /*--- Rotational correction term ---*/
   
-  if (rotating_frame) { Omega += 2.0*min(0.0, StrainMag_i-Omega); }
+  if (rotating_frame) { Omega += 2.0*min((su2double)0.0, StrainMag_i-Omega); }
   
   if (dist_i > 1e-10) {
     
@@ -574,7 +574,7 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
     inv_k2_d2 = 1.0/(k2*dist_i_2);
     
     Shat = S + TurbVar_i[0]*fv2*inv_k2_d2;
-    Shat = max(Shat, 1.0e-10);
+    Shat = max(Shat,(su2double) 1.0e-10);
     inv_Shat = 1.0/Shat;
     
     /*--- Production term ---*/;
@@ -586,10 +586,10 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
 
     /*--- Destruction term ---*/
     
-    r = min(TurbVar_i[0]*inv_Shat*inv_k2_d2,10.0);
-    g = r + cw2*(pow(r,6.0)-r);
-    g_6 =	pow(g,6.0);
-    glim = pow((1.0+cw3_6)/(g_6+cw3_6),1.0/6.0);
+    r = min(TurbVar_i[0]*inv_Shat*inv_k2_d2,(su2double)10.0);
+    g = r + cw2*(pow(r,(su2double)6.0)-r);
+    g_6 =	pow(g,(su2double)6.0);
+    glim = pow(((su2double)1.0+cw3_6)/(g_6+cw3_6),(su2double)(1.0/6.0));
     fw = g*glim;
     
 //    Original SA model
@@ -609,7 +609,7 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
     
     /*--- Implicit part, production term ---*/
     
-    dfv1 = 3.0*Ji_2*cv1_3/(nu*pow(Ji_3+cv1_3,2.));
+    dfv1 = 3.0*Ji_2*cv1_3/(nu*pow(Ji_3+cv1_3,(su2double)2.));
     dfv2 = -(1/nu-Ji_2*dfv1)/pow(1.+Ji*fv1,2.);
     if ( Shat <= 1.0e-10 ) dShat = 0.0;
     else dShat = (fv2+TurbVar_i[0]*dfv2)*inv_k2_d2;
@@ -619,7 +619,7 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
     
     dr = (Shat-TurbVar_i[0]*dShat)*inv_Shat*inv_Shat*inv_k2_d2;
     if (r == 10.0) dr = 0.0;
-    dg = dr*(1.+cw2*(6.0*pow(r,5.0)-1.0));
+    dg = dr*(1.+cw2*(6.0*pow(r,(su2double)5.0)-(su2double)1.0));
     dfw = dg*glim*(1.-g_6/(g_6+cw3_6));
     val_Jacobian_i[0][0] -= cw1*(dfw*TurbVar_i[0] +	2.0*fw)*TurbVar_i[0]/dist_i_2*Volume;
     
@@ -687,7 +687,7 @@ void CSourcePieceWise_TurbSA_Neg::ComputeResidual(su2double *val_residual, su2do
 
   /*--- Rotational correction term ---*/
   
-  if (rotating_frame) { Omega += 2.0*min(0.0, StrainMag_i-Omega); }
+  if (rotating_frame) { Omega += 2.0*min((su2double)0.0, StrainMag_i-Omega); }
   
   if (dist_i > 1e-10) {
     
@@ -707,7 +707,7 @@ void CSourcePieceWise_TurbSA_Neg::ComputeResidual(su2double *val_residual, su2do
       inv_k2_d2 = 1.0/(k2*dist_i_2);
       
       Shat = S + TurbVar_i[0]*fv2*inv_k2_d2;
-      Shat = max(Shat, 1.0e-10);
+      Shat = max(Shat, (su2double)1.0e-10);
       inv_Shat = 1.0/Shat;
       
       /*--- Production term ---*/;
@@ -719,10 +719,10 @@ void CSourcePieceWise_TurbSA_Neg::ComputeResidual(su2double *val_residual, su2do
       
       /*--- Destruction term ---*/
       
-      r = min(TurbVar_i[0]*inv_Shat*inv_k2_d2,10.0);
-      g = r + cw2*(pow(r,6.0)-r);
-      g_6 =	pow(g,6.0);
-      glim = pow((1.0+cw3_6)/(g_6+cw3_6),1.0/6.0);
+      r = min(TurbVar_i[0]*inv_Shat*inv_k2_d2,(su2double)10.0);
+      g = r + cw2*(pow(r,(su2double)6.0)-r);
+      g_6 =	pow(g,(su2double)6.0);
+      glim = pow(((su2double)1.0+cw3_6)/(g_6+cw3_6),(su2double)(1.0/6.0));
       fw = g*glim;
       
       //    Original SA model
@@ -742,7 +742,7 @@ void CSourcePieceWise_TurbSA_Neg::ComputeResidual(su2double *val_residual, su2do
       
       /*--- Implicit part, production term ---*/
       
-      dfv1 = 3.0*Ji_2*cv1_3/(nu*pow(Ji_3+cv1_3,2.));
+      dfv1 = 3.0*Ji_2*cv1_3/(nu*pow(Ji_3+cv1_3,(su2double)2.));
       dfv2 = -(1/nu-Ji_2*dfv1)/pow(1.+Ji*fv1,2.);
       if ( Shat <= 1.0e-10 ) dShat = 0.0;
       else dShat = (fv2+TurbVar_i[0]*dfv2)*inv_k2_d2;
@@ -752,7 +752,7 @@ void CSourcePieceWise_TurbSA_Neg::ComputeResidual(su2double *val_residual, su2do
       
       dr = (Shat-TurbVar_i[0]*dShat)*inv_Shat*inv_Shat*inv_k2_d2;
       if (r == 10.0) dr = 0.0;
-      dg = dr*(1.+cw2*(6.0*pow(r,5.0)-1.0));
+      dg = dr*(1.+cw2*((su2double)6.0*pow(r,(su2double)5.0)-(su2double)1.0));
       dfw = dg*glim*(1.-g_6/(g_6+cw3_6));
       val_Jacobian_i[0][0] -= cw1*(dfw*TurbVar_i[0] +	2.0*fw)*TurbVar_i[0]/dist_i_2*Volume;
       
@@ -1176,12 +1176,12 @@ void CSourcePieceWise_TurbSST::ComputeResidual(su2double *val_residual, su2doubl
       diverg += PrimVar_Grad_i[iDim+1][iDim];
     
     pk = Eddy_Viscosity_i*StrainMag_i*StrainMag_i - 2.0/3.0*Density_i*TurbVar_i[0]*diverg;
-    pk = min(pk,20.0*beta_star*Density_i*TurbVar_i[1]*TurbVar_i[0]);
-    pk = max(pk,0.0);
+    pk = min(pk,(su2double)20.0*beta_star*Density_i*TurbVar_i[1]*TurbVar_i[0]);
+    pk = max(pk,(su2double)0.0);
     
     zeta = max(TurbVar_i[1], StrainMag_i*F2_i/a1);
     pw = StrainMag_i*StrainMag_i - 2.0/3.0*zeta*diverg;
-    pw = max(pw,0.0);
+    pw = max(pw,(su2double)0.0);
     
     val_residual[0] += pk*Volume;
     val_residual[1] += alfa_blended*Density_i*pw*Volume;

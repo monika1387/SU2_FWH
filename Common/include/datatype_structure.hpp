@@ -88,8 +88,8 @@ namespace SU2_TYPE{
    * \param[in] data - The non-primitive datatype.
    * \return The primitive value.
    */
-  double GetValue(const su2double &data);
-
+  float GetValue(const su2double &data);
+  
   /*!
    * \brief Get the secondary value of the datatype (needs to be implemented for each new type).
    * \param[in] data - The non-primitive datatype.
@@ -102,14 +102,14 @@ namespace SU2_TYPE{
    * \param[in] data - The non-primitive datatype.
    * \return The derivative value.
    */
-  double GetDerivative(const su2double &data);
+  float GetDerivative(const su2double &data);
 
   /*!
    * \brief Set the derivative value of the datatype (needs to be implemented for each new type).
    * \param[in] data - The non-primitive datatype.
    * \param[in] val - The value of the derivative.
    */
-  void SetDerivative(su2double &data, const double &val);
+  void SetDerivative(su2double &data, const float &val);
 
   /*!
    * \brief Casts the primitive value to int (uses GetValue, already implemented for each type).

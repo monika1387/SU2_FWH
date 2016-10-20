@@ -2822,8 +2822,8 @@ void CTurbSSTSolver::Postprocessing(CGeometry *geometry, CSolver **solver_contai
     
     kine  = node[iPoint]->GetSolution(0);
     omega = node[iPoint]->GetSolution(1);
-    zeta = min(1.0/omega, a1/(strMag*F2));
-    muT = min(max(rho*kine*zeta,0.0),1.0);
+    zeta = min((su2double)1.0/omega, a1/(strMag*F2));
+    muT = min(max(rho*kine*zeta,(su2double)0.0),(su2double)1.0);
     node[iPoint]->SetmuT(muT);
     
   }

@@ -184,19 +184,19 @@ void CTurbSSTVariable::SetBlendingFunc(su2double val_viscosity, su2double val_di
 	for (iDim = 0; iDim < nDim; iDim++)
 		CDkw += Gradient[0][iDim]*Gradient[1][iDim];
 	CDkw *= 2.0*val_density*sigma_om2/Solution[1];
-	CDkw = max(CDkw, pow(10.0, -20.0));
+	CDkw = max(CDkw, pow((su2double)10.0, (su2double)-20.0));
   
 	/*--- F1 ---*/
   
   arg2A = sqrt(Solution[0])/(beta_star*Solution[1]*val_dist+EPS*EPS);
   arg2B = 500.0*val_viscosity / (val_density*val_dist*val_dist*Solution[1]+EPS*EPS);
 	arg2 = max(arg2A, arg2B);
-  arg1 = min(arg2, 4.0*val_density*sigma_om2*Solution[0] / (CDkw*val_dist*val_dist+EPS*EPS));
-	F1 = tanh(pow(arg1, 4.0));
+  arg1 = min(arg2, (su2double)4.0*val_density*sigma_om2*Solution[0] / (CDkw*val_dist*val_dist+EPS*EPS));
+	F1 = tanh(pow(arg1, (su2double)4.0));
   
 	/*--- F2 ---*/
   
-	arg2 = max(2.0*arg2A, arg2B);
-	F2 = tanh(pow(arg2, 2.0));
+	arg2 = max((su2double)2.0*arg2A, arg2B);
+	F2 = tanh(pow(arg2, (su2double)2.0));
   
 }

@@ -1643,9 +1643,9 @@ void CFEM_ElasticitySolver::Compute_NodalStress(CGeometry *geometry, CSolver **s
       Sxz = Stress[4];
       Syz = Stress[5];
       
-      VonMises_Stress = sqrt(0.5*(   pow(Sxx - Syy, 2.0)
-                                  + pow(Syy - Szz, 2.0)
-                                  + pow(Szz - Sxx, 2.0)
+      VonMises_Stress = sqrt(0.5*(   pow(Sxx - Syy, (su2double)2.0)
+                                  + pow(Syy - Szz, (su2double)2.0)
+                                  + pow(Szz - Sxx, (su2double)2.0)
                                   + 6.0*(Sxy*Sxy+Sxz*Sxz+Syz*Syz)
                                   ));
       
@@ -1880,7 +1880,7 @@ void CFEM_ElasticitySolver::Compute_IntegrationConstants(CConfig *config) {
       
       /*--- Integration constants for Newmark scheme ---*/
       
-      a_dt[0]= 1 / (alpha*pow(Delta_t,2.0));
+      a_dt[0]= 1 / (alpha*pow(Delta_t,(su2double)2.0));
       a_dt[1]= delta / (alpha*Delta_t);
       a_dt[2]= 1 / (alpha*Delta_t);
       a_dt[3]= 1 /(2*alpha) - 1;
@@ -2152,8 +2152,8 @@ void CFEM_ElasticitySolver::BC_Normal_Load(CGeometry *geometry, CSolver **solver
   else if (Sigmoid_Load) {
     SigAux = CurrentTime/ Sigmoid_Time;
     ModAmpl = (1 / (1+exp(-1*Sigmoid_K*(SigAux - 0.5)) ) );
-    ModAmpl = max(ModAmpl,0.0);
-    ModAmpl = min(ModAmpl,1.0);
+    ModAmpl = max(ModAmpl,(su2double)0.0);
+    ModAmpl = min(ModAmpl,(su2double)1.0);
     TotalLoad=ModAmpl*NormalLoad;
   }
   else {
@@ -2475,8 +2475,8 @@ void CFEM_ElasticitySolver::BC_Dir_Load(CGeometry *geometry, CSolver **solver_co
   else if (Sigmoid_Load) {
     SigAux = CurrentTime/ Sigmoid_Time;
     ModAmpl = (1 / (1+exp(-1*Sigmoid_K*(SigAux - 0.5)) ) );
-    ModAmpl = max(ModAmpl,0.0);
-    ModAmpl = min(ModAmpl,1.0);
+    ModAmpl = max(ModAmpl,(su2double)0.0);
+    ModAmpl = min(ModAmpl,(su2double)1.0);
     TotalLoad=ModAmpl*LoadDirVal*LoadDirMult;
   }
   else {
@@ -3292,8 +3292,8 @@ void CFEM_ElasticitySolver::SetFEA_Load(CSolver ***flow_solution, CGeometry **fe
           (CurrentTime <= (Static_Time + Ramp_Time)) &&
           (Ramp_Load)) {
     ModAmpl = (CurrentTime-Static_Time) / Ramp_Time;
-    ModAmpl = max(ModAmpl,0.0);
-    ModAmpl = min(ModAmpl,1.0);
+    ModAmpl = max(ModAmpl,(su2double)0.0);
+    ModAmpl = min(ModAmpl,(su2double)1.0);
   }
   else { ModAmpl = 1.0; }
   
@@ -4018,8 +4018,8 @@ void CFEM_ElasticitySolver::ComputeAitken_Coefficient(CGeometry **fea_geometry, 
           WAitkDyn = - 1.0 * WAitkDyn * rbuf_numAitk / rbuf_denAitk ;
         }
         
-        WAitkDyn = max(WAitkDyn, 0.1);
-        WAitkDyn = min(WAitkDyn, 1.0);
+        WAitkDyn = max(WAitkDyn, (su2double)0.1);
+        WAitkDyn = min(WAitkDyn, (su2double)1.0);
         
         SetWAitken_Dyn(WAitkDyn);
         

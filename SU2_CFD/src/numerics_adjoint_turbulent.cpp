@@ -443,17 +443,17 @@ void CSourcePieceWise_AdjTurb::ComputeResidual(su2double *val_residual, su2doubl
 		Shat = max(Vorticity + TurbVar_i[0]*fv2/(k2*dist_0_2), TURB_EPS);
     
 		//		r = TurbVar_i[0]/(Shat*k2*dist_0_2);
-		r = min(TurbVar_i[0]/(Shat*k2*dist_0_2),10.);
-		g = r + cw2*(pow(r,6.)-r);
-		g_6 = pow(g,6.);
-		glim = pow((1+cw3_6)/(g_6+cw3_6),1./6.);
+		r = min(TurbVar_i[0]/(Shat*k2*dist_0_2),(su2double)10.);
+		g = r + cw2*(pow(r,(su2double)6.)-r);
+		g_6 = pow(g,(su2double)6.);
+		glim = pow((1+cw3_6)/(g_6+cw3_6),(su2double)(1./6.));
 		fw = g*glim;
     
 		dTs_nuhat = cb1*Shat-2.0*cw1*fw*TurbVar_i[0]/dist_0_2;
 		dTs_Shat = cb1*TurbVar_i[0];
 		dTs_fw = -cw1*TurbVar_i[0]*TurbVar_i[0]/dist_0_2;
 		dfw_g  = glim*cw3_6/(g_6+cw3_6);
-		dg_r = 1.0 + cw2*(6.0*pow(r,5.0)-1.0);
+		dg_r = 1.0 + cw2*(6.0*pow(r,(su2double)5.0)-(su2double)1.0);
 		dr_nuhat = 1.0/(Shat*k2*dist_0_2);
 		dr_Shat = -dr_nuhat*TurbVar_i[0]/Shat;
     

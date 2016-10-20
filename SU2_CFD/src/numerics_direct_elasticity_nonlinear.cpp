@@ -705,7 +705,7 @@ void CFEM_NeoHookean_Comp::Compute_Plane_Stress_Term(CElement *element, CConfig 
 	// f'(f33) = 2*mu*f33 + lambda/f33
 
 	for (iNR = 0; iNR < nNR; iNR++) {
-		fx  = Mu*pow(xk,2.0) + Lambda*log(xk) + cte;
+		fx  = Mu*pow(xk,(su2double)2.0) + Lambda*log(xk) + cte;
 		fpx = 2*Mu*xk + (Lambda / xk);
 		xkm1 = xk - fx / fpx;
 		if (((xkm1 - xk) / xk) < NRTOL) break;
@@ -814,7 +814,7 @@ void CFEM_NeoHookean_Incomp::Compute_Constitutive_Matrix(CElement *element, CCon
 	el_P = element->GetElement_Pressure();
 
 	/*--- J^(-5/3) ---*/
-	Jft = pow(J_F, -1.666666666666667);
+	Jft = pow(J_F,(su2double) -1.666666666666667);
 
 	if (nDim == 2) {
 
@@ -911,7 +911,7 @@ void CFEM_NeoHookean_Incomp::Compute_Stress_Tensor(CElement *element, CConfig *c
 	el_P = element->GetElement_Pressure();
 
 	/*--- J^(-5/3) ---*/
-	Jft = pow(J_F, -1.666666666666667);
+	Jft = pow(J_F, (su2double)-1.666666666666667);
 
 	for (iDim = 0; iDim < 3; iDim++) {
 		for (jDim = 0; jDim < 3; jDim++) {

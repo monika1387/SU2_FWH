@@ -96,8 +96,8 @@ void CTransfer_FlowTraction::GetPhysical_Constants(CSolver *flow_solution, CSolv
 			(CurrentTime <= (Static_Time + Ramp_Time)) &&
 			(Ramp_Load)) {
 		ModAmpl = (CurrentTime-Static_Time) / Ramp_Time;
-		ModAmpl = max(ModAmpl,0.0);
-		ModAmpl = min(ModAmpl,1.0);
+		ModAmpl = max(ModAmpl,(su2double)0.0);
+		ModAmpl = min(ModAmpl,(su2double)1.0);
 		Physical_Constants[1] = ModAmpl;
 	}
 	else if((CurrentTime > Static_Time) &&
@@ -105,8 +105,8 @@ void CTransfer_FlowTraction::GetPhysical_Constants(CSolver *flow_solution, CSolv
 			(Sigmoid_Load)) {
 		SigAux = (CurrentTime-Static_Time) / Sigmoid_Time;
 		ModAmpl = (1 / (1+exp(-1*Sigmoid_K*(SigAux - 0.5)) ) );
-		ModAmpl = max(ModAmpl,0.0);
-		ModAmpl = min(ModAmpl,1.0);
+		ModAmpl = max(ModAmpl,(su2double)0.0);
+		ModAmpl = min(ModAmpl,(su2double)1.0);
 		Physical_Constants[1] = ModAmpl;
 	}
 	else { Physical_Constants[1] = 1.0; }

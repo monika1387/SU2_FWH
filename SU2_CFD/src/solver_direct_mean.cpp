@@ -3252,7 +3252,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
           if (config->GetViscous()) {
             if (config->GetSystemMeasurements() == SI) { T_ref = 273.15; S = 110.4; Mu_ref = 1.716E-5; }
             if (config->GetSystemMeasurements() == US) { T_ref = 518.7; S = 198.72; Mu_ref = 3.62E-7; }
-            Viscosity_Box = Mu_ref*(pow(Temperature_Box/T_ref, 1.5) * (T_ref+S)/(Temperature_Box+S));
+            Viscosity_Box = Mu_ref*(pow(Temperature_Box/T_ref, (su2double)1.5) * (T_ref+S)/(Temperature_Box+S));
             Density_Box   = config->GetReynolds()*Viscosity_Box/(ModVel_Box*config->GetLength_Reynolds());
             Pressure_Box  = Density_Box*Gas_Constant*Temperature_Box;
           }
@@ -3776,7 +3776,7 @@ void CEulerSolver::SetTime_Step(CGeometry *geometry, CSolver **solver_container,
   if (dual_time)
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
       if (!implicit) {
-        Local_Delta_Time = min((2.0/3.0)*config->GetDelta_UnstTimeND(), node[iPoint]->GetDelta_Time());
+        Local_Delta_Time = min((su2double)(2.0/3.0)*config->GetDelta_UnstTimeND(), node[iPoint]->GetDelta_Time());
         node[iPoint]->SetDelta_Time(Local_Delta_Time);
       }
     }
@@ -3959,7 +3959,7 @@ void CEulerSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_contain
         mach_i = sqrt(velocity2_i)/Primitive_i[nDim+4];
         mach_j = sqrt(velocity2_j)/Primitive_j[nDim+4];
 
-        z = min(max(mach_i,mach_j),1.0);
+        z = min(max(mach_i,mach_j),(su2double)1.0);
         velocity2_i = 0.0;
         velocity2_j = 0.0;
         for (iDim = 0; iDim < nDim; iDim++) {
@@ -4242,7 +4242,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
       
       DampingFactor = 0.0;
       if (x >= x_od)
-        DampingFactor = config->GetFreeSurface_Damping_Coeff()*pow((x-x_od)/(x_o-x_od), 2.0);
+        DampingFactor = config->GetFreeSurface_Damping_Coeff()*pow((x-x_od)/(x_o-x_od), (su2double)2.0);
       
       for (iVar = 0; iVar < nVar; iVar++) {
         Residual[iVar] = 0.0;
@@ -7792,7 +7792,7 @@ void CEulerSolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_container,
         
         /*--- Recompute the primitive variables. ---*/
         
-        Density = pow(Entropy*SoundSpeed*SoundSpeed/Gamma,1.0/Gamma_Minus_One);
+        Density = pow(Entropy*SoundSpeed*SoundSpeed/Gamma,(su2double)1.0/Gamma_Minus_One);
         Velocity2 = 0.0;
         for (iDim = 0; iDim < nDim; iDim++) {
           Velocity2 += Velocity[iDim]*Velocity[iDim];
@@ -9407,9 +9407,9 @@ void CEulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solver_container,
              be positive, so the choice of root is clear. ---*/
             
             dd = bb*bb - 4.0*aa*cc;
-            dd = sqrt(max(0.0, dd));
+            dd = sqrt(max((su2double)0.0, dd));
             Vel_Mag   = (-bb + dd)/(2.0*aa);
-            Vel_Mag   = max(0.0, Vel_Mag);
+            Vel_Mag   = max((su2double)0.0, Vel_Mag);
             Velocity2 = Vel_Mag*Vel_Mag;
             
             /*--- Compute speed of sound from total speed of sound eqn. ---*/
@@ -9419,7 +9419,7 @@ void CEulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solver_container,
             /*--- Mach squared (cut between 0-1), use to adapt velocity ---*/
             
             Mach2 = Velocity2/SoundSpeed2;
-            Mach2 = min(1.0, Mach2);
+            Mach2 = min((su2double)1.0, Mach2);
             Velocity2   = Mach2*SoundSpeed2;
             Vel_Mag     = sqrt(Velocity2);
             SoundSpeed2 = SoundSpeed_Total2 - 0.5*Gamma_Minus_One*Velocity2;
@@ -9740,11 +9740,11 @@ void CEulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solver_container,
            (SUmb) solver in the routine bcSubsonicOutflow.f90 by Edwin van
            der Weide, last modified 09-10-2007. ---*/
           
-          Entropy = Pressure*pow(1.0/Density, Gamma);
+          Entropy = Pressure*pow((su2double)1.0/Density, Gamma);
           Riemann = Vn + 2.0*SoundSpeed/Gamma_Minus_One;
           
           /*--- Compute the new fictious state at the outlet ---*/
-          Density    = pow(P_Exit/Entropy,1.0/Gamma);
+          Density    = pow(P_Exit/Entropy,(su2double)1.0/Gamma);
           Pressure   = P_Exit;
           SoundSpeed = sqrt(Gamma*P_Exit/Density);
           Vn_Exit    = Riemann - 2.0*SoundSpeed/Gamma_Minus_One;
@@ -10235,12 +10235,12 @@ void CEulerSolver::BC_Engine_Inflow(CGeometry *geometry, CSolver **solver_contai
       }
       Pressure   = V_domain[nDim+1];
       SoundSpeed = sqrt(Gamma*Pressure/Density);
-      Entropy = Pressure*pow(1.0/Density, Gamma);
+      Entropy = Pressure*pow((su2double)1.0/Density, Gamma);
       Riemann = Vn + 2.0*SoundSpeed/Gamma_Minus_One;
       
       /*--- Compute the new fictious state at the outlet ---*/
       
-      Density    = pow(Inflow_Pressure/Entropy,1.0/Gamma);
+      Density    = pow(Inflow_Pressure/Entropy,(su2double)1.0/Gamma);
       Pressure   = Inflow_Pressure;
       SoundSpeed = sqrt(Gamma*Inflow_Pressure/Density);
       Vn_Exit    = Riemann - 2.0*SoundSpeed/Gamma_Minus_One;
@@ -10450,7 +10450,7 @@ void CEulerSolver::BC_Engine_Exhaust(CGeometry *geometry, CSolver **solver_conta
        be positive, so the choice of root is clear. ---*/
       
       dd      = bb*bb - 4.0*aa*cc;
-      dd      = sqrt(max(0.0, dd));
+      dd      = sqrt(max((su2double)0.0, dd));
       Vel_Mag = (-bb + dd)/(2.0*aa);
       
       if (Vel_Mag >= 0.0) {
@@ -10694,7 +10694,7 @@ void CEulerSolver::BC_Engine_Bleed(CGeometry *geometry, CSolver **solver_contain
        be positive, so the choice of root is clear. ---*/
       
       dd = bb*bb - 4.0*aa*cc;
-      dd = sqrt(max(0.0, dd));
+      dd = sqrt(max((su2double)0.0, dd));
       Vel_Mag   = (-bb + dd)/(2.0*aa);
       
       if (Vel_Mag >= 0.0) {
@@ -10708,7 +10708,7 @@ void CEulerSolver::BC_Engine_Bleed(CGeometry *geometry, CSolver **solver_contain
         /*--- Mach squared (cut between 0-1), use to adapt velocity ---*/
         
         Mach2 = Velocity2/SoundSpeed2;
-        Mach2 = min(1.0, Mach2);
+        Mach2 = min((su2double)1.0, Mach2);
         Velocity2   = Mach2*SoundSpeed2;
         Vel_Mag     = sqrt(Velocity2);
         SoundSpeed2 = SoundSpeed_Bleed2 - 0.5*Gamma_Minus_One*Velocity2;
@@ -11530,7 +11530,7 @@ void CEulerSolver::BC_ActDisk_Boundary(CGeometry *geometry, CSolver **solver_con
               /*--- Compute the swirl velocity (check the formula) ---*/
               
               if (Omega != 0.0)
-                Vel_Swirl_out_ghost = Omega*radius*(1.0-(1.0-sqrt(2.0*ActDisk_Jump[nDim+1]/(Rho_in*pow(Omega*radius, 2.0)))));
+                Vel_Swirl_out_ghost = Omega*radius*(1.0-(1.0-sqrt(2.0*ActDisk_Jump[nDim+1]/(Rho_in*pow(Omega*radius, (su2double)2.0)))));
               else
                 Vel_Swirl_out_ghost = 0.0;
               
@@ -13927,7 +13927,7 @@ void CNSSolver::SetTime_Step(CGeometry *geometry, CSolver **solver_container, CC
   if (dual_time)
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
       if (!implicit) {
-        Local_Delta_Time = min((2.0/3.0)*config->GetDelta_UnstTimeND(), node[iPoint]->GetDelta_Time());
+        Local_Delta_Time = min((su2double)(2.0/3.0)*config->GetDelta_UnstTimeND(), node[iPoint]->GetDelta_Time());
         node[iPoint]->SetDelta_Time(Local_Delta_Time);
       }
     }
@@ -14209,7 +14209,7 @@ void CNSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
           CT_Visc[iMarker]          = -CFx_Visc[iMarker];
           CQ_Visc[iMarker]          = -CMz_Visc[iMarker];
           CMerit_Visc[iMarker]      = CT_Visc[iMarker] / (CQ_Visc[iMarker]+EPS);
-          MaxHF_Visc[iMarker] = pow(MaxHF_Visc[iMarker], 1.0/MaxNorm);
+          MaxHF_Visc[iMarker] = pow(MaxHF_Visc[iMarker], (su2double)1.0/MaxNorm);
         }
         if (nDim == 3) {
           CD_Visc[iMarker]       =  ForceViscous[0]*cos(Alpha)*cos(Beta) + ForceViscous[1]*sin(Beta) + ForceViscous[2]*sin(Alpha)*cos(Beta);
@@ -14225,7 +14225,7 @@ void CNSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
           CT_Visc[iMarker]          = -CFz_Visc[iMarker];
           CQ_Visc[iMarker]          = -CMz_Visc[iMarker];
           CMerit_Visc[iMarker]      = CT_Visc[iMarker] / (CQ_Visc[iMarker] + EPS);
-          MaxHF_Visc[iMarker] = pow(MaxHF_Visc[iMarker], 1.0/MaxNorm);
+          MaxHF_Visc[iMarker] = pow(MaxHF_Visc[iMarker], (su2double)1.0/MaxNorm);
         }
         
         AllBound_CD_Visc       += CD_Visc[iMarker];
@@ -14272,7 +14272,7 @@ void CNSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
   
   AllBound_CEff_Visc = AllBound_CL_Visc / (AllBound_CD_Visc + EPS);
   AllBound_CMerit_Visc = AllBound_CT_Visc / (AllBound_CQ_Visc + EPS);
-  AllBound_MaxHF_Visc = pow(AllBound_MaxHF_Visc, 1.0/MaxNorm);
+  AllBound_MaxHF_Visc = pow(AllBound_MaxHF_Visc, (su2double)1.0/MaxNorm);
   
   
 #ifdef HAVE_MPI

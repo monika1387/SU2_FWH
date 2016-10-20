@@ -5363,7 +5363,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
             cout.width(15); cout << Total_CQ;
             cout.unsetf(ios_base::floatfield);
           }
-          else if (equiv_area) { cout.width(15); cout << min(10000.0, max(-10000.0, Total_CL)); cout.width(15); cout << min(10000.0, max(-10000.0, Total_CD)); cout.width(15);
+          else if (equiv_area) { cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CL)); cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CD)); cout.width(15);
             cout.precision(4);
             cout.setf(ios::scientific, ios::floatfield);
             cout << Total_CNearFieldOF; }
@@ -5384,7 +5384,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
             }
             cout.unsetf(ios_base::floatfield);
           }
-          else { cout.width(15); cout << min(10000.0, max(-10000.0, Total_CL)); cout.width(15); cout << min(10000.0, max(-10000.0, Total_CD)); }
+          else { cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CL)); cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CD)); }
           if (aeroelastic) {
             cout.setf(ios::scientific, ios::floatfield);
             cout.width(15); cout << aeroelastic_plunge[0]; //Only output the first marker being monitored to the console.
@@ -5437,7 +5437,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
             cout << Total_CQ;
             cout.unsetf(ios_base::floatfield);
           }
-          else if (equiv_area) { cout.width(15); cout << min(10000.0, max(-10000.0, Total_CL)); cout.width(15); cout << min(10000.0, max(-10000.0, Total_CD)); cout.width(15);
+          else if (equiv_area) { cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CL)); cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CD)); cout.width(15);
             cout.precision(4);
             cout.setf(ios::scientific, ios::floatfield);
             cout << Total_CNearFieldOF; }
@@ -5457,7 +5457,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
             }
             cout.unsetf(ios_base::floatfield);
           }
-          else { cout.width(15); cout << min(10000.0, max(-10000.0, Total_CL)); cout.width(15); cout << min(10000.0, max(-10000.0, Total_CD)); }
+          else { cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CL)); cout.width(15); cout << min((su2double)10000.0, max((su2double)-10000.0, Total_CD)); }
           
           if (aeroelastic) {
             cout.setf(ios::scientific, ios::floatfield);
@@ -7702,7 +7702,7 @@ void COutput::OneDimensionalOutput(CSolver *solver_container, CGeometry *geometr
           if (incompressible)
           Tot_Pressure = Pressure + 0.5*solver_container->node[iPoint]->GetDensity()*Velocity2;
           else
-            Tot_Pressure = Pressure*pow((1.0+((Gamma-1.0)/2.0)*pow(Mach, 2.0)),( Gamma/(Gamma-1.0) ) );
+            Tot_Pressure = Pressure*pow((1.0+((Gamma-1.0)/2.0)*pow(Mach, (su2double)2.0)),( Gamma/(Gamma-1.0) ) );
           
           
           AveragePt += Tot_Pressure * Area;

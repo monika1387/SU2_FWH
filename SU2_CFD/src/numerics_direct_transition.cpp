@@ -427,14 +427,14 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(su2double *val_residual, 
     rey_tc = (4.45*pow(tu,3) - 5.7*pow(tu,2) + 1.37*tu + 0.585)*TransVar_i[1];
     flen   = 0.171*pow(tu,2) - 0.0083*tu + 0.0306;
     
-		re_v   = U_i[0]*pow(dist_i,2.)/Laminar_Viscosity_i*strain;  // Vorticity Reynolds number
+		re_v   = U_i[0]*pow(dist_i,(su2double)2.)/Laminar_Viscosity_i*strain;  // Vorticity Reynolds number
     
     /*-- f_onset controls transition onset location --*/
 		r_t      = Eddy_Viscosity_i/Laminar_Viscosity_i;
 		f_onset1 = re_v / (2.193*rey_tc);
-		f_onset2 = min(max(f_onset1, pow(f_onset1,4.)), 2.);
-		f_onset3 = max(1. - pow(0.4*r_t,3),0.);
-		f_onset  = max(f_onset2 - f_onset3, 0.);
+		f_onset2 = min(max(f_onset1, pow(f_onset1,(su2double)4.)), (su2double)2.);
+		f_onset3 = max((su2double)1. - pow((su2double)0.4*r_t,(su2double)3),(su2double)0.);
+		f_onset  = max(f_onset2 - f_onset3, (su2double)0.);
     
 		f_turb = exp(-pow(0.25*r_t,4));  // Medida eq. 10
     
@@ -489,7 +489,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(su2double *val_residual, 
 			theta  = re_theta * Laminar_Viscosity_i / (U_i[0]*Velocity_Mag);
       
 			lambda = U_i[0]*theta*theta*du_ds / Laminar_Viscosity_i;
-			lambda = min(max(-0.1, lambda),0.1);
+			lambda = min(max((su2double)-0.1, lambda),(su2double)0.1);
       
 			if (lambda<=0.0) {
 				f_lambda = 1. - (-12.986*lambda - 123.66*lambda*lambda -
@@ -513,7 +513,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(su2double *val_residual, 
 		var1 = 1. - pow(var1,2);
     
 		//f_theta = min(max(f_wake*exp(-pow(dist_i/delta,4)), var1),1.0);
-		f_theta = min(var1,1.0);
+		f_theta = min(var1,(su2double)1.0);
     
 		val_residual[1] = c_theta*U_i[0]/time_scale *  (1.-f_theta) * (re_theta-TransVar_i[1]);
     
@@ -543,7 +543,7 @@ void CSourcePieceWise_TransLM::ComputeResidual_TransLM(su2double *val_residual, 
 		/*-- Calculate term for separation correction --*/
 		f_reattach = exp(-pow(0.05*r_t,4));
 		gamma_sep = s1*max(0., re_v/(3.235*rey_tc)-1.)*f_reattach;
-		gamma_sep = min(gamma_sep,2.0)*f_theta;
+		gamma_sep = min(gamma_sep,(su2double)2.0)*f_theta;
     
 		/*--- Implicit part ---*/
     TransVar_id[0] = 1.0; TransVar_id[1] = 0.0;
@@ -612,14 +612,14 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
     rey_tc = (4.45*result1-5.7*result2+1.37*tu+0.585)*TransVar_i[1];
     result1 = pow(tu, 2);
     flen = 0.171*result1 - 0.0083*tu + 0.0306;
-    result1 = pow(dist_i, 2.);
+    result1 = pow(dist_i, (su2double)2.);
     re_v = U_i[0]*result1/Laminar_Viscosity_i*strain;
     /*-- f_onset controls transition onset location --*/
     // Vorticity Reynolds number
     r_t = Eddy_Viscosity_i/Laminar_Viscosity_i;
     f_onset1d = -(re_v*2.193*rey_tcd/(2.193*rey_tc*(2.193*rey_tc)));
     f_onset1 = re_v/(2.193*rey_tc);
-    y1 = pow(f_onset1, 4.);
+    y1 = pow(f_onset1, (su2double)4.);
     y1d = 4.*f_onset1d*pow(f_onset1, 3);
     if (f_onset1 < y1) {
       x1d = y1d;
@@ -737,8 +737,8 @@ void CSourcePieceWise_TransLM::CSourcePieceWise_TransLM__ComputeResidual_TransLM
     //f_wake = 1.;
     var1d = TransVar_id[0]/(1.0-1./c_e2);
     var1 = (TransVar_i[0]-1./c_e2)/(1.0-1./c_e2);    
-    result1 = pow(var1, 2.0);
-    result1d = 2.0*var1d*pow(var1, 1.0);
+    result1 = pow(var1, (su2double)2.0);
+    result1d = 2.0*var1d*pow(var1, (su2double)1.0);
     var1d = -result1d;
     var1 = 1. - result1;
     if (var1 > 1.0) {

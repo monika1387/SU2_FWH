@@ -4466,7 +4466,7 @@ void CSurfaceMovement::SetHicksHenne(CGeometry *boundary, CConfig *config, unsig
     if (config->GetMarker_All_DV(iMarker) == YES) {
       for (iVertex = 0; iVertex < boundary->nVertex[iMarker]; iVertex++) {
         Coord_ = boundary->vertex[iMarker][iVertex]->GetCoord();
-        Distance = sqrt(pow(Coord_[0] - TPCoord[0], 2.0) + pow(Coord_[1] - TPCoord[1], 2.0));
+        Distance = sqrt(pow(Coord_[0] - TPCoord[0], (su2double)2.0) + pow(Coord_[1] - TPCoord[1], (su2double)2.0));
         if (Chord < Distance) { Chord = Distance; LPCoord[0] = Coord_[0]; LPCoord[1] = Coord_[1]; }
       }
     }
@@ -4526,7 +4526,7 @@ void CSurfaceMovement::SetHicksHenne(CGeometry *boundary, CConfig *config, unsig
         ValSin = sin(AoA*PI_NUMBER/180.0);
         
         Coord[0] = Coord_[0]*ValCos - Coord_[1]*ValSin;
-        Coord[0] = max(0.0, Coord[0]); // Coord x should be always positive
+        Coord[0] = max((su2double)0.0, Coord[0]); // Coord x should be always positive
         Coord[1] = Coord_[1]*ValCos + Coord_[0]*ValSin;
         
         Normal[0] = Normal_[0]*ValCos - Normal_[1]*ValSin;
@@ -4642,7 +4642,7 @@ void CSurfaceMovement::SetCST(CGeometry *boundary, CConfig *config, unsigned sho
     if (config->GetMarker_All_DV(iMarker) == YES) {
       for (iVertex = 0; iVertex < boundary->nVertex[iMarker]; iVertex++) {
         Coord_ = boundary->vertex[iMarker][iVertex]->GetCoord();
-        Distance = sqrt(pow(Coord_[0] - TPCoord[0], 2.0) + pow(Coord_[1] - TPCoord[1], 2.0));
+        Distance = sqrt(pow(Coord_[0] - TPCoord[0], (su2double)2.0) + pow(Coord_[1] - TPCoord[1], (su2double)2.0));
         if (Chord < Distance) { Chord = Distance; LPCoord[0] = Coord_[0]; LPCoord[1] = Coord_[1]; }
       }
     }
@@ -4708,7 +4708,7 @@ void CSurfaceMovement::SetCST(CGeometry *boundary, CConfig *config, unsigned sho
         ValSin = sin(AoA*PI_NUMBER/180.0);
         
         Coord[0] = Coord_[0]*ValCos - Coord_[1]*ValSin;
-        Coord[0] = max(0.0, Coord[0]); // Coord x should be always positive
+        Coord[0] = max((su2double)0.0, Coord[0]); // Coord x should be always positive
         Coord[1] = Coord_[1]*ValCos + Coord_[0]*ValSin;
         
         Normal[0] = Normal_[0]*ValCos - Normal_[1]*ValSin;
@@ -6004,11 +6004,11 @@ void CSurfaceMovement::SetNACA_4Digits(CGeometry *boundary, CConfig *config) {
 				Coord = boundary->vertex[iMarker][iVertex]->GetCoord();
 				Normal = boundary->vertex[iMarker][iVertex]->GetNormal();
 				
-				if (Coord[0] < Xa) Ycurv = (2.0*Xa*Coord[0]-pow(Coord[0],2.0))*(Ya/pow(Xa,2.0));
-				else Ycurv = ((1.0-2.0*Xa)+2.0*Xa*Coord[0]-pow(Coord[0],2.0))*(Ya/pow((1.0-Xa), 2.0));
+				if (Coord[0] < Xa) Ycurv = (2.0*Xa*Coord[0]-pow(Coord[0],(su2double)2.0))*(Ya/pow(Xa,(su2double)2.0));
+				else Ycurv = ((1.0-2.0*Xa)+2.0*Xa*Coord[0]-pow(Coord[0],(su2double)2.0))*(Ya/pow(((su2double)1.0-Xa), (su2double)2.0));
 				
-				Yesp = t*(1.4845*sqrt(Coord[0])-0.6300*Coord[0]-1.7580*pow(Coord[0],2.0)+
-						  1.4215*pow(Coord[0],3.0)-0.518*pow(Coord[0],4.0));
+				Yesp = t*(1.4845*sqrt(Coord[0])-0.6300*Coord[0]-1.7580*pow(Coord[0],(su2double)2.0)+
+						  1.4215*pow(Coord[0],(su2double)3.0)-0.518*pow(Coord[0],(su2double)4.0));
 				
 				if (Normal[1] > 0) VarCoord[1] =  (Ycurv + Yesp) - Coord[1];
 				if (Normal[1] < 0) VarCoord[1] =  (Ycurv - Yesp) - Coord[1];

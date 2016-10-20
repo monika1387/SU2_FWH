@@ -692,14 +692,14 @@ void CCentJST_AdjFlow::ComputeResidual (su2double *val_resconv_i, su2double *val
 	Local_Lambda_j = (fabs(ProjVelocity_j)+SoundSpeed_j*Area);
 	MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
-	Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-	Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+	Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+	Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
 	StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
 	su2double sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
 	sc4 = sc2*sc2/4.0;
 	Epsilon_2 = Param_Kappa_2*0.5*(Sensor_i+Sensor_j)*sc2;
-	Epsilon_4 = max(0.0, Param_Kappa_4-Epsilon_2)*sc4;
+	Epsilon_4 = max((su2double)0.0, Param_Kappa_4-Epsilon_2)*sc4;
     
 	/*--- Compute viscous residual 1st- & 3rd-order dissipation ---*/
   
@@ -809,15 +809,15 @@ void CCentJSTArtComp_AdjFlow::ComputeResidual (su2double *val_resconv_i, su2doub
 	MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
 	/*--- Compute streching factor ---*/
-	Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-	Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+	Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+	Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
 	StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
 	sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
 	sc4 = sc2*sc2/4.0;
   
 	Epsilon_2 = Param_Kappa_2*0.5*(Sensor_i+Sensor_j)*sc2;
-	Epsilon_4 = max(0.0, Param_Kappa_4-Epsilon_2)*sc4;
+	Epsilon_4 = max((su2double)0.0, Param_Kappa_4-Epsilon_2)*sc4;
   
 	/*--- Compute viscous residual 1st- & 3rd-order dissipation ---*/
 	for (iVar = 0; iVar < nVar; iVar++) {
@@ -1016,8 +1016,8 @@ void CCentLax_AdjFlow::ComputeResidual (su2double *val_resconv_i, su2double *val
 	MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
 	/*--- Compute streching factor ---*/
-	Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-	Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+	Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+	Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
 	StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
 	sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
@@ -1129,8 +1129,8 @@ void CCentLaxArtComp_AdjFlow::ComputeResidual (su2double *val_resconv_i, su2doub
 	MeanLambda = 0.5*(Local_Lambda_i+Local_Lambda_j);
   
 	/*--- Compute streching factor ---*/
-	Phi_i = pow(Lambda_i/(4.0*MeanLambda), Param_p);
-	Phi_j = pow(Lambda_j/(4.0*MeanLambda), Param_p);
+	Phi_i = pow(Lambda_i/((su2double)4.0*MeanLambda), Param_p);
+	Phi_j = pow(Lambda_j/((su2double)4.0*MeanLambda), Param_p);
 	StretchingFactor = 4.0*Phi_i*Phi_j/(Phi_i+Phi_j);
   
 	sc2 = 3.0*(su2double(Neighbor_i)+su2double(Neighbor_j))/(su2double(Neighbor_i)*su2double(Neighbor_j));
@@ -2008,13 +2008,13 @@ void CSourceConservative_AdjFlow::ComputeResidual (su2double *val_residual, CCon
 		fv2 = 1.0 - Ji*one_o_oneplusJifv1;
 		Shat = max(Omega + TurbVar_i[0]*fv2/(k2*dist_sq), TURB_EPS);
     
-		r = min(TurbVar_i[0]/(Shat*k2*dist_sq),10.);
-		g = r + cw2*(pow(r,6.)-r);
-		g_6 = pow(g,6.);
-		glim = pow((1+cw3_6)/(g_6+cw3_6),1./6.);
+		r = min(TurbVar_i[0]/(Shat*k2*dist_sq),(su2double)10.);
+		g = r + cw2*(pow(r,(su2double)6.)-r);
+		g_6 = pow(g,(su2double)6.);
+		glim = pow((1+cw3_6)/(g_6+cw3_6),(su2double)(1./6.));
     
 		dfw_g  = glim*cw3_6/(g_6+cw3_6);
-		dg_r = 1.0 + cw2*(6.0*pow(r,5.0)-1.0);
+		dg_r = 1.0 + cw2*(6.0*pow(r,(su2double)5.0)-(su2double)1.0);
 		dr_nuhat = 1.0/(Shat*k2*dist_sq);
 		dr_Shat = -dr_nuhat*TurbVar_i[0]/Shat;
     
@@ -2063,13 +2063,13 @@ void CSourceConservative_AdjFlow::ComputeResidual (su2double *val_residual, CCon
 		fv2 = 1.0 - Ji*one_o_oneplusJifv1;
 		Shat = max(Omega + TurbVar_j[0]*fv2/(k2*dist_sq), TURB_EPS);
     
-		r = min(TurbVar_j[0]/(Shat*k2*dist_sq),10.);
-		g = r + cw2*(pow(r,6.)-r);
-		g_6 = pow(g,6.);
-		glim = pow((1+cw3_6)/(g_6+cw3_6),1./6.);
+		r = min(TurbVar_j[0]/(Shat*k2*dist_sq),(su2double)10.);
+		g = r + cw2*(pow(r,(su2double)6.)-r);
+		g_6 = pow(g,(su2double)6.);
+		glim = pow((1+cw3_6)/(g_6+cw3_6),(su2double)(1./6.));
     
 		dfw_g  = glim*cw3_6/(g_6+cw3_6);
-		dg_r = 1.0 + cw2*(6.0*pow(r,5.0)-1.0);
+		dg_r = 1.0 + cw2*(6.0*pow(r,(su2double)5.0)-(su2double)1.0);
 		dr_nuhat = 1.0/(Shat*k2*dist_sq);
 		dr_Shat = -dr_nuhat*TurbVar_j[0]/Shat;
     

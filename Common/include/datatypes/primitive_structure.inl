@@ -34,13 +34,13 @@
 namespace SU2_TYPE{
   inline void SetValue(double& data, const double &val) {data = val;}
 
-  inline double GetValue(const double& data) { return data;}
+  inline float GetValue(const float& data) { return data;}
 
   inline void SetSecondary(double& data, const double &val) {}
 
-  inline double GetDerivative(const double& data) {return 0.0;}
+  inline float GetDerivative(const float& data) {return 0.0;}
 
   inline double GetSecondary(const double& data) {return 0.0;}
 
-  inline void SetDerivative(double &data, const double &val) {}
+  inline void SetDerivative(float &data, const float &val) {}
 }

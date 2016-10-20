@@ -32,4 +32,4 @@
  */
 #pragma once
 
-typedef double su2double;
+typedef float su2double;

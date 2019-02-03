@@ -111,6 +111,7 @@ def main():
     # Set the default installation path (if not set with --prefix)
     argument_dict['--prefix'] = argument_dict.get('--prefix', os.getcwd().rstrip())
 
+    init_eigen(True)
 
     if not options.check:
         if any([modes["SU2_AD"] == 'CODI',  modes["SU2_DIRECTDIFF"] == 'CODI']):
@@ -326,6 +327,39 @@ def init_codi(argument_dict, modes, mpi_support = False, update = False):
         submodule_check(medi_name, alt_name_medi, github_repo_medi, sha_version_medi, log, err, update)
 
     return pkg_environ, True
+
+def init_eigen(update = False):
+
+    modules_failed = True
+    
+    # This information of the modules is used if projects was not cloned using git
+    # The sha tag must be maintained manually to point to the correct commit
+    sha_version = 'cf794d3b741a6278df169e58461f8529f43bce5d'
+    github_repo = 'https://github.com/eigenteam/eigen-git-mirror.git'
+
+    name = 'Eigen'
+    alt_name = 'externals/Eigen'
+
+    # Some log and error files
+    log = open( 'preconf.log', 'w' )
+    err = open( 'preconf.err', 'w' )
+    pkg_environ = os.environ
+
+    status = False
+
+    print("Cloning Eigen")
+    print('=====================================================================')
+    # Remove modules if update is requested
+    if update:
+        if os.path.exists(alt_name):
+            print('Removing ' + alt_name)
+            shutil.rmtree(alt_name)
+
+    subprocess.check_call('git clone '+github_repo+' '+alt_name+' && cd '+alt_name+\
+                          ' && git checkout '+sha_version+' && cd ../../', stdout = log, stderr = err, shell = True )
+
+    return pkg_environ, True
+
 
 def submodule_check(name, alt_name, github_rep, sha_tag, log, err, update = False):
 

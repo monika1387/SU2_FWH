@@ -41,8 +41,6 @@
 #include "libxsmm.h"
 #endif
 
-#include <Eigen/Core>
-
 /*!
  * \class CBlasStructure
  * \brief Class, which serves as an interface to the BLAS functionalities needed. 

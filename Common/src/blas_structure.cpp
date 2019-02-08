@@ -31,28 +31,12 @@
  */
 
 #include "../include/blas_structure.hpp"
-#include <cstring>
+#include <Eigen/Core>
 
-/* MKL or BLAS, if supported. */
-#if (defined (HAVE_MKL) || defined(HAVE_BLAS)) && !(defined(CODI_REVERSE_TYPE) || defined(CODI_FORWARD_TYPE))
+using namespace Eigen;
 
-/* Function prototypes for the BLAS routines used. */
-extern "C" void dgemm_(char*, char*, const int*, const int*, const int*,
-                       const passivedouble*, const passivedouble*, const int*,
-                       const passivedouble*, const int*,
-                       const passivedouble*, passivedouble*, const int*);
-
-extern "C" void dgemv_(char*, const int*, const int*, const passivedouble*,
-                       const passivedouble*, const int*, const passivedouble*,
-                       const int*, const passivedouble*, passivedouble*, const int*);
-#endif
-
-/* Constructor. Initialize the const member variables, if needed. */
-CBlasStructure::CBlasStructure(void)
-#if !(defined(HAVE_LIBXSMM) || defined(HAVE_BLAS) || defined(HAVE_MKL)) || (defined(CODI_REVERSE_TYPE) || defined(CODI_FORWARD_TYPE))
-  : mc (256), kc (128), nc (128) 
-#endif
-{}
+/* Constructor. */
+CBlasStructure::CBlasStructure(void) {}
 
 /* Destructor. Nothing to be done. */
 CBlasStructure::~CBlasStructure(void) {}
@@ -68,38 +52,18 @@ void CBlasStructure::gemm(const int M,        const int N,        const int K,
   if( config ) config->GEMM_Tick(&timeGemm);
 #endif
 
-#if (defined(CODI_REVERSE_TYPE) || defined(CODI_FORWARD_TYPE)) || !(defined(HAVE_LIBXSMM) || defined(HAVE_MKL) || defined(HAVE_BLAS))
-  /* Native implementation of the matrix product. This optimized implementation
-     assumes that the matrices are in column major order. This can be
-     accomplished by swapping N and M and A and B. This implementation is based
-     on https://github.com/flame/how-to-optimize-gemm. */
-  gemm_imp(N, M, K, B, A, C);
+  /* The matrices are stored in row major order, but the actual multiplication
+     is carried out in column major order. Therefore m and n are swapped as well
+     as A and B. I.e. the end result is C = B*A, where the dimensions of
+     the matrices are: A(k,n), B(m,k), C(m,n).
+     First map the the given arrays to the matrix structure. */
+  const Map<const Matrix<su2double,Dynamic,Dynamic> > matA(A, K, M);
+  const Map<const Matrix<su2double,Dynamic,Dynamic> > matB(B, N, K);
 
-#else
-#ifdef HAVE_LIBXSMM
+  Map<Matrix<su2double,Dynamic,Dynamic> > matC(C, N, M);
 
-  /* The gemm function of libxsmm is used to carry out the multiplication.
-     Note that libxsmm_gemm expects the matrices in column major order. That's
-     why the in the calling sequence A and B and M and N are reversed. */
-  su2double alpha = 1.0;
-  su2double beta  = 0.0;
-  char trans = 'N';
-
-  libxsmm_dgemm(&trans, &trans, &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
-
-#else // MKL and BLAS
-
-  /* The standard blas routine dgemm is used for the multiplication.
-     Call dgemm without transposing the matrices. In that case dgemm expects
-     the matrices in column major order, see the comments for libxsmm. */
-  su2double alpha = 1.0;
-  su2double beta  = 0.0;
-  char trans = 'N';
-
-  dgemm_(&trans, &trans, &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
-
-#endif
-#endif
+  /* Carry out the matrix multiplication. */
+  matC.noalias() = matB * matA;
 
   /* Store the profiling information, if needed. */
 #ifdef PROFILE
@@ -111,21 +75,6 @@ void CBlasStructure::gemm(const int M,        const int N,        const int K,
 void CBlasStructure::gemv(const int M,        const int N,   const su2double *A,
                           const su2double *x, su2double *y) {
 
-#if (defined (HAVE_BLAS) || defined(HAVE_MKL)) && !(defined(CODI_REVERSE_TYPE) || defined(CODI_FORWARD_TYPE))
-
-  /* The standard blas routine dgemv is used for the multiplication.
-     Note that dgemv expects the matrices in column major order, while
-     A is in row major order. This can be solved by using the transpose
-     and switching M and N. */
-     su2double alpha = 1.0;
-     su2double beta  = 0.0;
-     int       inc   = 1;
-     char trans = 'T';
-
-     dgemv_(&trans, &N, &M, &alpha, A, &N, x, &inc, &beta, y, &inc);
-
-#else
-
   /* Native implementation of the matix vector product.
      Initialize the elements of y to zero. */
   memset(y, 0, M*sizeof(su2double));  
@@ -136,71 +85,4 @@ void CBlasStructure::gemv(const int M,        const int N,   const su2double *A,
     for(int l=0; l<N; ++l)
       y[k] += AA[l]*x[l];
   }
-
-#endif
 }
-
-#if !(defined(HAVE_LIBXSMM) || defined(HAVE_BLAS) || defined(HAVE_MKL)) || (defined(CODI_REVERSE_TYPE) || defined(CODI_FORWARD_TYPE))
-
-/* Macros for accessing submatrices of a matmul using the leading dimension. */
-#define A(i, j) a[(j)*lda + (i)]
-#define B(i, j) b[(j)*ldb + (i)]
-#define C(i, j) c[(j)*ldc + (i)]
-
-/* Function, which perform the implementation of the gemm functionality.  */
-void CBlasStructure::gemm_imp(const int m,        const int n,        const int k,
-                              const su2double *a, const su2double *b, su2double *c) {
-
-  /* Initialize the elements of c to zero. */
-  memset(c, 0, m*n*sizeof(su2double));
-
-  /* Set the leading dimensions of the three matrices. */
-  const int lda = m;
-  const int ldb = k;
-  const int ldc = m;
-
-  /* The full matrix multiplication is split in several blocks.
-     Loop over these blocks. */
-  for(int p=0; p<k; p+=kc) {
-    int pb = min(k-p, kc);
-    for(int j=0; j<n; j+=nc) {
-      int jb = min(n-j, nc);
-      for(int i=0; i<m; i+=mc) {
-        int ib = min(m-i, mc);
-
-        /* Carry out the multiplication for this block. */
-        gemm_inner(ib, jb, pb, &A(i, p), lda, &B(p, j), ldb, &C(i, j), ldc);
-      }
-    }
-  }
-}
-
-/* Compute a portion of the c matrix one block at a time.
-   Handle ragged edges with calls to a slow but general function. */
-void CBlasStructure::gemm_inner(int m, int n, int k, const su2double *a, int lda,
-                                const su2double *b, int ldb, su2double *c, int ldc) {
-
-  /* Carry out the multiplication for this block. At the
-     moment simply a call to gemm_arbitrary. */
-  gemm_arbitrary(m, n, k, a, lda, b, ldb, c, ldc);
-}
-
-/* Naive gemm implementation to handle arbitrary sized matrices. */
-void CBlasStructure::gemm_arbitrary(int m, int n, int k, const su2double *a, int lda,
-                                    const su2double *b, int ldb, su2double *c, int ldc) {
-
-  /* The order of these loops is tuned for column-major matrices. */
-  for (int p = 0; p < k; p++) {
-    for (int j = 0; j < n; j++) {
-      for (int i = 0; i < m; i++) {
-        C(i, j) += A(i, p) * B(p, j);
-      }
-    }
-  }
-}
-
-#undef C
-#undef B
-#undef A
-
-#endif

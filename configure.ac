@@ -275,7 +275,7 @@ fi
 ###########################
 
 # Eigen base directory
-CXXFLAGS="-I../../../externals/Eigen $CXXFLAGS"
+CXXFLAGS="-I../../externals/Eigen $CXXFLAGS"
 if test "${MKLROOT+set}" = set; then
   CPPFLAGS="-DEIGEN_USE_MKL_ALL -DMKL_DIRECT_CALL $CPPFLAGS"
 fi

@@ -36,11 +36,6 @@
 #include "datatype_structure.hpp"
 #include "config_structure.hpp"
 
-/* LIBXSMM include files, if supported. */
-#ifdef HAVE_LIBXSMM
-#include "libxsmm.h"
-#endif
-
 /*!
  * \class CBlasStructure
  * \brief Class, which serves as an interface to the BLAS functionalities needed. 
@@ -101,55 +96,4 @@ public:
 
 private:
 
-#if !(defined(HAVE_LIBXSMM) || defined(HAVE_BLAS) || defined(HAVE_MKL)) || (defined(CODI_REVERSE_TYPE) || defined(CODI_FORWARD_TYPE))
-    /* Blocking parameters for the outer kernel.  We multiply mc x kc blocks of
-     the matrix A with kc x nc panels of the matrix B (this approach is referred
-     to as `gebp` in the literature). */
-  const int mc;
-  const int kc;
-  const int nc;
-
-  /*!
-   * \brief Function, which perform the implementation of the gemm functionality.
-   * \param[in]  m  - Number of rows of a and c.
-   * \param[in]  n  - Number of columns of b and c.
-   * \param[in]  k  - Number of columns of a and number of rows of b.
-   * \param[in]  a  - Input matrix in the multiplication.
-   * \param[in]  b  - Input matrix in the multiplication.
-   * \param[out] c  - Result of the matrix product a*b.
-   */
-  void gemm_imp(const int m,        const int n,        const int k,
-                const su2double *a, const su2double *b, su2double *c);
-
-  /*!
-   * \brief Compute a portion of the c matrix one block at a time.
-            Handle ragged edges with calls to a slow but general function.
-   * \param[in]  m   - Number of rows of a and c.
-   * \param[in]  n   - Number of columns of b and c.
-   * \param[in]  k   - Number of columns of a and number of rows of b.
-   * \param[in]  a   - Input matrix in the multiplication.
-   * \param[in]  lda - Leading dimension of the matrix a.
-   * \param[in]  b   - Input matrix in the multiplication.
-   * \param[in]  ldb - Leading dimension of the matrix b.
-   * \param[out] c   - Result of the matrix product a*b.
-   * \param[in]  ldc - Leading dimension of the matrix c.
-   */
-  void gemm_inner(int m, int n, int k, const su2double *a, int lda,
-                  const su2double *b, int ldb, su2double *c, int ldc);
-
-  /*!
-   * \brief Naive gemm implementation to handle arbitrary sized matrices.
-   * \param[in]  m   - Number of rows of a and c.
-   * \param[in]  n   - Number of columns of b and c.
-   * \param[in]  k   - Number of columns of a and number of rows of b.
-   * \param[in]  a   - Input matrix in the multiplication.
-   * \param[in]  lda - Leading dimension of the matrix a.
-   * \param[in]  b   - Input matrix in the multiplication.
-   * \param[in]  ldb - Leading dimension of the matrix b.
-   * \param[out] c   - Result of the matrix product a*b.
-   * \param[in]  ldc - Leading dimension of the matrix c.
-   */
-  void gemm_arbitrary(int m, int n, int k, const su2double *a, int lda,
-                      const su2double *b, int ldb, su2double *c, int ldc);
-#endif
 };

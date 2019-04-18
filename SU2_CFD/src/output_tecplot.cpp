@@ -609,7 +609,8 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
   char cstr[200];
   ofstream STL_File;
   su2double p[3] = {0.0,0.0,0.0}, u[3] = {0.0,0.0,0.0}, v[3] = {0.0,0.0,0.0}, n[3] = {0.0,0.0,0.0}, a;
-  unsigned long Point_0, Point_1, Point_2;
+  //su2double p_quad[4] ={0.0,0.0,0.0,0.0};
+  unsigned long Point_0, Point_1, Point_2, Point_3;
   
   /*---	STL format:
    solid NAME
@@ -641,10 +642,15 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
       
       /*--- Compute Normal vectors ---*/
       
+      // Nodes of bounded triangle are collected
       Point_0 = Conn_BoundTria[iNode+0]-1;
       Point_1 = Conn_BoundTria[iNode+1]-1;
       Point_2 = Conn_BoundTria[iNode+2]-1;
       
+      /* nDim==3 --> 3 dimensional space
+         p[0] has coordinates of node 1, p[1] of node 2 and p[2] of node 3. 2 direction vectors are created with coordinates of each dimension
+         In the end we have two span vectors for each dimension
+      */
       for (iDim = 0; iDim < nDim; iDim++) {
         p[0] = Coords[iDim][Point_0];
         p[1] = Coords[iDim][Point_1];
@@ -652,15 +658,18 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
         u[iDim] = p[1]-p[0];
         v[iDim] = p[2]-p[0];
       }
-      
+
+      // create normal vector by vector product
       n[0] = u[1]*v[2]-u[2]*v[1];
       n[1] = u[2]*v[0]-u[0]*v[2];
       n[2] = u[0]*v[1]-u[1]*v[0];
+      // length of vector, a is of type su2double
       a = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
       
       /*--- Print normal vector ---*/
       
       STL_File << "  facet normal ";
+      // write normed normal vector
       for (iDim = 0; iDim < nDim; iDim++) {
         STL_File << n[iDim]/a << " ";
       }
@@ -693,16 +702,118 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
     //      STL_File << LocalIndex[Conn_BoundQuad[iNode+2]] << "\t";
     //      STL_File << LocalIndex[Conn_BoundQuad[iNode+3]] << "\n";
     //    }
-    
+
+    // Splitting quadrilateral elements into two triangles and write them to STL
+    for (iElem = 0; iElem < nGlobal_BoundQuad; iElem++) {
+      
+      iNode = iElem*N_POINTS_QUADRILATERAL;
+      
+      /*--- Compute Normal vectors ---*/
+      
+      // Nodes of bounded triangle are collected
+      Point_0 = Conn_BoundQuad[iNode+0]-1;
+      Point_1 = Conn_BoundQuad[iNode+1]-1;
+      Point_2 = Conn_BoundQuad[iNode+2]-1;
+      Point_3 = Conn_BoundQuad[iNode+3]-1;
+      
+      /* nDim==3 --> 3 dimensional space
+        Split the quadrilateral element into two triangles and write them to the STL.
+        Compute distance between nodes first to split the element in a way that the quality remains good??
+      */
+
+     // first triangle...
+      for (iDim = 0; iDim < nDim; iDim++) {
+        p[0] = Coords[iDim][Point_0];
+        p[1] = Coords[iDim][Point_1];
+        p[2] = Coords[iDim][Point_3];
+        u[iDim] = p[1]-p[0];
+        v[iDim] = p[2]-p[0];
+      }
+
+      // create normal vector by vector product
+      n[0] = u[1]*v[2]-u[2]*v[1];
+      n[1] = u[2]*v[0]-u[0]*v[2];
+      n[2] = u[0]*v[1]-u[1]*v[0];
+      // length of vector, a is of type su2double
+      a = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+      
+      /*--- Print normal vector ---*/
+      
+      STL_File << "  facet normal ";
+      // write normed normal vector
+      for (iDim = 0; iDim < nDim; iDim++) {
+        STL_File << n[iDim]/a << " ";
+      }
+      STL_File << endl;
+      
+      /*--- Print nodes for facet ---*/
+      STL_File << "    outer loop" << endl;
+      
+      STL_File << "      vertex ";
+      for (iDim = 0; iDim < nDim; iDim++) STL_File << Coords[iDim][Point_0] << " ";
+      STL_File <<  endl;
+      
+      STL_File << "      vertex ";
+      for (iDim = 0; iDim < nDim; iDim++) STL_File << Coords[iDim][Point_1] << " ";
+      STL_File <<  endl;
+      
+      STL_File << "      vertex ";
+      for (iDim = 0; iDim < nDim; iDim++) STL_File << Coords[iDim][Point_3] << " ";
+      STL_File <<  endl;
+      
+      STL_File << "    endloop" << endl;
+      STL_File << "  endfacet" << endl;
+
+      // second triangle...
+      for (iDim = 0; iDim < nDim; iDim++) {
+        p[0] = Coords[iDim][Point_1];
+        p[1] = Coords[iDim][Point_2];
+        p[2] = Coords[iDim][Point_3];
+        u[iDim] = p[1]-p[0];
+        v[iDim] = p[2]-p[0];
+      }
+
+      // create normal vector by vector product
+      n[0] = u[1]*v[2]-u[2]*v[1];
+      n[1] = u[2]*v[0]-u[0]*v[2];
+      n[2] = u[0]*v[1]-u[1]*v[0];
+      // length of vector, a is of type su2double
+      a = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+      
+      /*--- Print normal vector ---*/
+      
+      STL_File << "  facet normal ";
+      // write normed normal vector
+      for (iDim = 0; iDim < nDim; iDim++) {
+        STL_File << n[iDim]/a << " ";
+      }
+      STL_File << endl;
+      
+      /*--- Print nodes for facet ---*/
+      STL_File << "    outer loop" << endl;
+      
+      STL_File << "      vertex ";
+      for (iDim = 0; iDim < nDim; iDim++) STL_File << Coords[iDim][Point_1] << " ";
+      STL_File <<  endl;
+      
+      STL_File << "      vertex ";
+      for (iDim = 0; iDim < nDim; iDim++) STL_File << Coords[iDim][Point_2] << " ";
+      STL_File <<  endl;
+      
+      STL_File << "      vertex ";
+      for (iDim = 0; iDim < nDim; iDim++) STL_File << Coords[iDim][Point_3] << " ";
+      STL_File <<  endl;
+      
+      STL_File << "    endloop" << endl;
+      STL_File << "  endfacet" << endl;
+    }
     /*--- Done with Surface Mesh ---*/
     
     STL_File << "endsolid" << endl;
     
     STL_File.close();
-    
-    
   }
-  
+
 }
 
 void COutput::SetCSV_MeshASCII(CConfig *config, CGeometry *geometry) {

@@ -1454,7 +1454,7 @@ inline unsigned short CConfig::GetnMarker_ActDiskOutlet(void) { return nMarker_A
 
 inline unsigned short CConfig::GetnMarker_Outlet(void) { return nMarker_Outlet; }
 
-inline unsigned short CConfig::GetnMarker_Periodic(void) { return nMarker_PerBound; }
+inline unsigned short CConfig::GetnMarker_Periodic(void) { return nMarker_PerBound; } //TK:: should we add this to a style guide ?
 
 inline unsigned short CConfig::GetnMarker_HeatFlux(void) { return nMarker_HeatFlux; }
 

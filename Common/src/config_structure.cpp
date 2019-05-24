@@ -2571,12 +2571,20 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
                     (Kind_FluidModel == CONSTANT_DENSITY));
   bool standard_air = ((Kind_FluidModel == STANDARD_AIR));
   
+  /*--- Check if Tecplot binary .szplt format can be written. ---*/
 #ifndef HAVE_TECIO
   if (Output_FileFormat == TECPLOT_BINARY) {
-    cout << "Tecplot binary file requested but SU2 was built without TecIO support." << "\n";
-    Output_FileFormat = TECPLOT;
+    SU2_MPI::Error(string("Tecplot binary file requested but SU2 was built without TecIO support.\n") + 
+                   string("Use OUTPUT_FORMAT= TECPLOT instead or build SU2 with TecIO support.\n") +
+                   string("Probably the --disable-tecio flag was set with the preconfigure.py command.\n"), CURRENT_FUNCTION);
   }
 #endif
+
+  /*--- Periodic boundary conditions are only allowed without multigrid. TK:: add Reason ---*/
+  if ((nMarker_PerBound != 0) && (nMGLevels > 0)) {
+    SU2_MPI::Error(string("Multigrid unavailable with periodic boundaries.\n") +
+                   string("Disable multigrid by setting MGLEVEL= 0.\n"), CURRENT_FUNCTION);
+  }
 
   /*--- Set the boolean Wall_Functions equal to true if there is a
    definition for the wall founctions ---*/
@@ -3039,7 +3047,7 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
 
   /*--- The Line Search should be applied only in the deformation stage. ---*/
 
-  if (Kind_SU2 != SU2_DEF) {
+  if (Kind_SU2 != SU2_DEF) { //TK:: ?? what 
   	Opt_RelaxFactor = 1.0;
   }
 

@@ -1626,12 +1626,6 @@ public:
   virtual su2double* GetAverageGridVel(unsigned short val_marker, unsigned short val_span);
 
   /*!
-   * \brief A virtual member.
-   * \param config - Config
-   */
-  virtual void Check_Periodicity(CConfig *config);
-
-  /*!
    * \brief Get the value of the customized temperature at a specified vertex on a specified marker.
    * \param[in] val_marker - Marker value
    * \param[in] val_vertex - Boundary vertex value
@@ -2611,12 +2605,6 @@ void UpdateTurboVertex(CConfig *config,unsigned short val_iZone, unsigned short 
    * \param[in] val - Value of the sensitivity.
    */
   void SetSensitivity(unsigned long iPoint, unsigned short iDim, su2double val);
-  
-  /*!
-   * \brief Check the mesh for periodicity and deactivate multigrid if periodicity is found.
-   * \param[in] config - Definition of the particular problem.
-   */
-  void Check_Periodicity(CConfig *config);
 
   /*!
 	 * \brief Get the average normal at a specific span for a given marker in the turbomachinery reference of frame.

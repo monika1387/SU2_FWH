@@ -80,6 +80,7 @@ def finite_differences( filename           ,
     config = SU2.io.Config(filename)
     config.NUMBER_PART = partitions
     config.NZONES      = int( nzones )
+    config.OPT_RELAXFACTOR = 1.0
 
     if quiet: 
         config.CONSOLE = 'CONCISE'

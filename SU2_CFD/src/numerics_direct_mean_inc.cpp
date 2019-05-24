@@ -86,7 +86,13 @@ CUpwFDSInc_Flow::~CUpwFDSInc_Flow(void) {
 void CUpwFDSInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
   
   AD::StartPreacc();
-  AD::SetPreaccIn(V_i, nDim+9); AD::SetPreaccIn(V_j, nDim+9); AD::SetPreaccIn(Normal, nDim);
+  AD::SetPreaccIn(V_i, nDim+9);
+  AD::SetPreaccIn(V_j, nDim+9);
+  AD::SetPreaccIn(Normal, nDim);
+  if (grid_movement) {
+    AD::SetPreaccIn(GridVel_i, nDim);
+    AD::SetPreaccIn(GridVel_j, nDim);
+  }
 
   /*--- Face area (norm or the normal vector) ---*/
   
@@ -275,6 +281,16 @@ CCentJSTInc_Flow::~CCentJSTInc_Flow(void) {
 
 void CCentJSTInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
 
+  AD::StartPreacc();
+  AD::SetPreaccIn(V_i, nDim+9);
+  AD::SetPreaccIn(V_j, nDim+9);
+  AD::SetPreaccIn(Normal, nDim);
+  if (grid_movement) {
+    AD::SetPreaccIn(GridVel_i, nDim);
+    AD::SetPreaccIn(GridVel_j, nDim);
+  }
+
+
   /*--- Primitive variables at point i and j ---*/
   
   Pressure_i    = V_i[0];             Pressure_j    = V_j[0];
@@ -394,7 +410,10 @@ void CCentJSTInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_
       }
     }
   }
-  
+
+  AD::SetPreaccOut(val_residual, nVar);
+  AD::EndPreacc();
+
 }
 
 CCentLaxInc_Flow::CCentLaxInc_Flow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {

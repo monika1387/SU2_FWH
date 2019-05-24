@@ -17860,19 +17860,6 @@ void CPhysicalGeometry::ReadUnorderedSensitivity(CConfig *config) {
   
 }
 
-void CPhysicalGeometry::Check_Periodicity(CConfig *config) {
-  
-  /*--- Check for the presence of any periodic BCs and disable multigrid
-   for now if found. ---*/
-
-  if ((config->GetnMarker_Periodic() != 0) && (config->GetnMGLevels() > 0)) {
-    if (rank == MASTER_NODE)
-      cout << "WARNING: Periodicity has been detected. Disabling multigrid. "<< endl;
-    config->SetMGLevels(0);
-  }
-  
-}
-
 su2double CPhysicalGeometry::Compute_MaxThickness(su2double *Plane_P0, su2double *Plane_Normal, CConfig *config, vector<su2double> &Xcoord_Airfoil, vector<su2double> &Ycoord_Airfoil, vector<su2double> &Zcoord_Airfoil) {
 
   unsigned long iVertex, jVertex, n, Trailing_Point, Leading_Point;

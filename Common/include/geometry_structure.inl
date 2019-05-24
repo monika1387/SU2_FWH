@@ -535,5 +535,3 @@ inline su2double CPhysicalGeometry::GetMinAngularCoord(unsigned short val_marker
 inline su2double CPhysicalGeometry::GetMaxAngularCoord(unsigned short val_marker, unsigned short val_span){return MaxAngularCoord[val_marker][val_span];}
 
 inline su2double CPhysicalGeometry::GetMinRelAngularCoord(unsigned short val_marker, unsigned short val_span){return MinRelAngularCoord[val_marker][val_span];}
-
-inline void CGeometry::Check_Periodicity(CConfig* config) {}

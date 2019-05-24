@@ -282,9 +282,11 @@ CCentJSTInc_Flow::~CCentJSTInc_Flow(void) {
 void CCentJSTInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
 
   AD::StartPreacc();
-  AD::SetPreaccIn(V_i, nDim+9);
-  AD::SetPreaccIn(V_j, nDim+9);
   AD::SetPreaccIn(Normal, nDim);
+  AD::SetPreaccIn(V_i, nDim+9);  AD::SetPreaccIn(V_j, nDim+9);
+  AD::SetPreaccIn(Sensor_i);     AD::SetPreaccIn(Sensor_j);
+  AD::SetPreaccIn(Lambda_i);     AD::SetPreaccIn(Lambda_j);
+  AD::SetPreaccIn(Und_Lapl_i, nVar); AD::SetPreaccIn(Und_Lapl_j, nVar);
   if (grid_movement) {
     AD::SetPreaccIn(GridVel_i, nDim);
     AD::SetPreaccIn(GridVel_j, nDim);

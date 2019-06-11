@@ -609,33 +609,34 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
   char cstr[200];
   ofstream STL_File;
   su2double p[3] = {0.0,0.0,0.0}, u[3] = {0.0,0.0,0.0}, v[3] = {0.0,0.0,0.0}, n[3] = {0.0,0.0,0.0}, a;
-  //su2double p_quad[4] ={0.0,0.0,0.0,0.0};
   unsigned long Point_0, Point_1, Point_2, Point_3;
   
-  /*---	STL format:
+  /*--- ASCII	STL format: for details see https://en.wikipedia.org/wiki/STL_(file_format)#ASCII_STL
    solid NAME
-   ...
-   facet normal 0.00 0.00 1.00
-   outer loop
-   vertex  2.00  2.00  0.00
-   vertex -1.00  1.00  0.00
-   vertex  0.00 -1.00  0.00
-   endloop
-   endfacet
-   ...
-   end solid
+     facet normal n_x n_y n_z
+       outer loop
+         vertex  p1_x p1_y p1_z
+         vertex  p2_x p2_y p2_z
+         vertex  p3_x p3_y p3_z
+       endloop
+     endfacet
+   ... -> repeat for each triangle
+   endsolid NAME
    ---*/
   
   if (nDim == 3) {
     
+    /*--- Written file is always "surface_grid.stl". TK:: Add variable name via cfg option here  ---*/
     strcpy(cstr, "surface_grid.stl");
     
     /*--- Open STL ASCII file and write the header. ---*/
     
     STL_File.open(cstr, ios::out);
     STL_File.precision(6);
-    STL_File << "solid surface_mesh" << endl;
+    STL_File << "solid " << "surface_mesh" << endl;
     
+    /*--- Loop over all Boundary Triangles, compute the unit normal 
+          and write normal + vertices them in the .stl file. ---*/
     for (iElem = 0; iElem < nGlobal_BoundTria; iElem++) {
       
       iNode = iElem*N_POINTS_TRIANGLE;
@@ -666,10 +667,9 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
       // length of vector, a is of type su2double
       a = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
       
-      /*--- Print normal vector ---*/
+      /*--- Write unit normal vector of triangle ---*/
       
       STL_File << "  facet normal ";
-      // write normed normal vector
       for (iDim = 0; iDim < nDim; iDim++) {
         STL_File << n[iDim]/a << " ";
       }
@@ -694,16 +694,10 @@ void COutput::SetSTL_MeshASCII(CConfig *config, CGeometry *geometry) {
       STL_File << "  endfacet" << endl;
       
     }
-    
-    //  for (iElem = 0; iElem < nGlobal_BoundQuad; iElem++) {
-    //      iNode = iElem*N_POINTS_QUADRILATERAL;
-    //      STL_File << LocalIndex[Conn_BoundQuad[iNode+0]] << "\t";
-    //      STL_File << LocalIndex[Conn_BoundQuad[iNode+1]] << "\t";
-    //      STL_File << LocalIndex[Conn_BoundQuad[iNode+2]] << "\t";
-    //      STL_File << LocalIndex[Conn_BoundQuad[iNode+3]] << "\n";
-    //    }
 
-    // Splitting quadrilateral elements into two triangles and write them to STL
+
+    /*--- Loop over quadrilateral elements, split each into two triangles 
+          and repeat writing procedure for each traingle ---*/
     for (iElem = 0; iElem < nGlobal_BoundQuad; iElem++) {
       
       iNode = iElem*N_POINTS_QUADRILATERAL;

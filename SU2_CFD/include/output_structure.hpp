@@ -78,7 +78,7 @@ class COutput {
   unsigned long nGlobal_Elem;  // Global number of elems without halos
   unsigned long nSurf_Elem,  // Global number of surface elems without halos
   nGlobal_Line,
-  nGlobal_BoundTria,
+  nGlobal_BoundTria, /*!< \brief Number of global boundary triangles. */
   nGlobal_BoundQuad,
   nGlobal_Tria,
   nGlobal_Quad,
@@ -88,8 +88,8 @@ class COutput {
   nGlobal_Pyra;
   su2double **Coords;              // node i (x, y, z) = (Coords[0][i], Coords[1][i], Coords[2][i])
   int *Conn_Line;
-  int *Conn_BoundTria;
-  int *Conn_BoundQuad;
+  int *Conn_BoundTria; /*!< \brief TK:: ?. */
+  int *Conn_BoundQuad; /*!< \brief TK:: ?. */
   int *Conn_Tria;  // triangle 1 = Conn_Tria[0], Conn_Tria[1], Conn_Tria[3]
   int *Conn_Quad;
   int *Conn_Tetr;

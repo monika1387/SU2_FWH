@@ -103,6 +103,9 @@ AC_ARG_WITH(Mutationpp-lib,
 AC_ARG_WITH(Mutationpp-include,
    	AS_HELP_STRING([--with-Mutationpp-include[=ARG]], [Mutation++ include directory, ARG = path to mutation++.h]),
 	[with_Mutationpp_include=$withval], [with_Mutationpp_include="no"])
+AC_ARG_WITH(libROM-lib,
+        AS_HELP_STRING([--with-libROM-lib[=ARG]], [LLNL libROM library directory, ARG = path to librom.a]),
+        [with_libROM_lib=$withval], [with_libROM_lib="no"])
 
 # Check for disabling of SU2 modules
 
@@ -220,7 +223,7 @@ AC_SUBST([su2_externals_LIBPTHREAD])
 
 ##########################
 
-# check for lib
+# check for Mutation lib
 Mutationpplib=libmutation++.a
 Mutationppheader=mutation++.h
 have_Mutationpp="no"
@@ -261,6 +264,32 @@ else
 fi
 AC_SUBST([MUTATIONPP_CXX])
 AC_SUBST([MUTATIONPP_LD])
+
+##########################
+
+# check for libROM lib
+libROMlib=librom.a
+have_libROM="no"
+
+if test "$with_libROM_lib" != "no"
+then 
+	AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
+	if test "$have_libROM" == "no"
+	then
+		AC_MSG_ERROR([libROM requested but library file not found.])
+	fi
+fi
+
+if test "$have_libROM" != "no"
+then 
+	AM_CONDITIONAL(BUILD_LIBROM,true)
+	CPPFLAGS="-DHAVE_LIBROM $CPPFLAGS"
+	LDFLAGS="-L$with_libROM_lib $LDFLAGS"
+	CXXFLAGS=" -I$with_libROM_lib $CXXFLAGS"
+	LIBS="$with_libROM_lib/"$libROMlib" -lrom $LIBS"
+else
+	AM_CONDITIONAL(BUILD_LIBROM,false)
+fi
 
 ##########################
 
@@ -402,6 +431,7 @@ Build Configuration Summary:
     CGNS support:         $enablecgns
     Mutation++ support:   $have_Mutationpp
     MKL support:          $have_MKL
+    libROM support:	  $have_libROM
     Datatype support:
         double            $build_NORMAL
         codi_reverse      $build_CODI_REVERSE

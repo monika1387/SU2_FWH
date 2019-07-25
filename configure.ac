@@ -267,37 +267,6 @@ AC_SUBST([MUTATIONPP_LD])
 
 ##########################
 
-# check for libROM lib
-libROMlib=librom.a
-have_libROM="no"
-
-if test "$with_libROM_lib" != "no"
-then 
-	AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
-	if test "$have_libROM" == "no"
-	then
-		libROMlib=libROM.a
-		AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
-		if test "$have_libROM" == "no"
-		then
-			AC_MSG_ERROR([libROM requested but library file not found.])
-		fi
-	fi
-fi
-
-if test "$have_libROM" != "no"
-then 
-	AM_CONDITIONAL(BUILD_LIBROM,true)
-	CPPFLAGS="-DHAVE_LIBROM $CPPFLAGS"
-	LDFLAGS="-L$with_libROM_lib $LDFLAGS"
-	CXXFLAGS=" -I$with_libROM_lib $CXXFLAGS"
-	LIBS="$with_libROM_lib/"$libROMlib" -lrom $LIBS"
-else
-	AM_CONDITIONAL(BUILD_LIBROM,false)
-fi
-
-##########################
-
 # Check if MKL is available, enable if 2019.0 or newer.
 
 have_MKL="no"
@@ -311,6 +280,58 @@ if test "${MKLROOT+set}" = set; then
     have_MKL="yes"
   fi
 fi
+
+##########################
+
+# check for libROM lib
+libROMlib=librom.a
+have_libROM="no"
+
+if test "$with_libROM_lib" != "no"
+then 
+	AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
+	libROMlibinc=lrom
+	if test "$have_libROM" == "no"
+	then
+		libROMlib=libROM.a
+		libROMlibinc=lROM
+		AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
+		if test "$have_libROM" == "no"
+		then
+			AC_MSG_ERROR([libROM requested but library file not found.])
+		fi
+	fi
+fi
+
+if test "$have_MKL" != "yes"
+then
+	have_libROM="no"
+	AC_MSG_ERROR([libROM requested but required MKL not included or found.])
+fi
+
+HDF5lib=libhdf5.a
+have_HDF5="no"
+if test "$with_libROM_lib" != "no"
+then
+        AC_CHECK_FILE(["$HDF5/lib/"$HDF5lib],[have_HDF5="yes"],[have_HDF5="no"])
+	if test "$have_HDF5" == "no"
+	then
+		AC_MSG_ERROR([libROM requested but required library HDF5 not found.])
+	fi
+fi
+
+
+if test "$have_libROM" != "no"
+then 
+	AM_CONDITIONAL(BUILD_LIBROM,true)
+	CPPFLAGS="-DHAVE_LIBROM $CPPFLAGS"
+	LDFLAGS="-L$with_libROM_lib -L$with_libROM_lib/ScalaWRAP -L$HDF5/lib"
+	CXXFLAGS=" -I$with_libROM_lib -std=c++11 $CXXFLAGS"
+	LIBS="$ -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lhdf5 $with_libROM_lib/"$libROMlib" -"$libROMlibinc" -lscalawrap $LIBS"
+else
+	AM_CONDITIONAL(BUILD_LIBROM,false)
+fi
+
 
 ###########################
 # Determine what versions of the code to build

@@ -50,9 +50,6 @@
 #include "../../Common/include/toolboxes/MMS/CTGVSolution.hpp"
 #include "../../Common/include/toolboxes/MMS/CUserDefinedSolution.hpp"
 
-#ifdef HAVE_LIBROM
-#include "StaticSVDBasisGenerator.h"
-#endif
 
 CSolver::CSolver(void) {
 
@@ -5311,31 +5308,37 @@ void CSolver::LoadInletProfile(CGeometry **geometry,
 }
 
 #ifdef HAVE_LIBROM
-void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, converged) {
+void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, bool converged) {
    
+   unsigned long iPoint, total_index;
+   unsigned short iVar;
+   std::cout << "Creating basis generator." << std::endl;
    std::unique_ptr<CAROM::SVDBasisGenerator> u_basis_generator;
    u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
                            int(nPointDomain * nVar),
                            1000,
-                           'su2_basis',
+                           "su2_basis",
                            1000,
                            0.0000000001));
-   
+   std::cout << "Getting data from SU2" << std::endl;
    double* u = new double[nPointDomain*nVar];
-   for (unsigned long iPoint = nPointDomain; iPoint < nPoint; iPoint++) {
-      for (unsigned short iVar = 0; iVar < nVar; iVar++) {
-         unsigned long total_index = iPoint*nVar + iVar;
-         u[total_index] = geometry[0]->node[iPoint]->GetSolution(iVar);
+   for (iPoint = nPointDomain; iPoint < nPoint; iPoint++) {
+      for (iVar = 0; iVar < nVar; iVar++) {
+         total_index = iPoint*nVar + iVar;
+         u[total_index] = node[iPoint]->GetSolution(iVar);
       }
    }
    
-   double dt = geometry[0]-node[iPoint]->GetDelta_Time();
+   // dt is different for each node, so just use a placeholder dt for now
+   double dt = node[0]->GetDelta_Time();
    double t = 0;
+   std::cout << "Giving data to libROM using takeSample" << std::endl;
    u_basis_generator->takeSample(u, t, dt);
    // not implemented yet: u_basis_generator->computeNextSampleTime(u, rhs, t);
    // bool u_samples = u_basis_generator->isNextSample(t);
    
    if (converged) {
+      std::cout << "Writing data..........." << std::endl;
       int rom_dim = u_basis_generator->getSpatialBasis()->numColumns();
       std::cout << "ROM dimension: " << rom_dim << std::endl;
       u_basis_generator->endSamples();

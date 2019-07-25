@@ -51,6 +51,7 @@
 #include <set>
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory>
 
 #include "fluid_model.hpp"
 #include "task_definition.hpp"
@@ -69,6 +70,10 @@
 #include "../../Common/include/blas_structure.hpp"
 #include "../../Common/include/graph_coloring_structure.hpp"
 #include "../../Common/include/toolboxes/MMS/CVerificationSolution.hpp"
+
+#ifdef HAVE_LIBROM
+#include "StaticSVDBasisGenerator.h"
+#endif
 
 using namespace std;
 

@@ -50,6 +50,9 @@
 #include "../../Common/include/toolboxes/MMS/CTGVSolution.hpp"
 #include "../../Common/include/toolboxes/MMS/CUserDefinedSolution.hpp"
 
+#ifdef HAVE_LIBROM
+#include "StaticSVDBasisGenerator.h"
+#endif
 
 CSolver::CSolver(void) {
 
@@ -5306,6 +5309,39 @@ void CSolver::LoadInletProfile(CGeometry **geometry,
   delete [] Normal;
   
 }
+
+#ifdef HAVE_LIBROM
+void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, converged) {
+   
+   std::unique_ptr<CAROM::SVDBasisGenerator> u_basis_generator;
+   u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
+                           int(nPointDomain * nVar),
+                           1000,
+                           'su2_basis',
+                           1000,
+                           0.0000000001));
+   
+   double* u = new double[nPointDomain*nVar];
+   for (unsigned long iPoint = nPointDomain; iPoint < nPoint; iPoint++) {
+      for (unsigned short iVar = 0; iVar < nVar; iVar++) {
+         unsigned long total_index = iPoint*nVar + iVar;
+         u[total_index] = geometry[0]->node[iPoint]->GetSolution(iVar);
+      }
+   }
+   
+   double dt = geometry[0]-node[iPoint]->GetDelta_Time();
+   double t = 0;
+   u_basis_generator->takeSample(u, t, dt);
+   // not implemented yet: u_basis_generator->computeNextSampleTime(u, rhs, t);
+   // bool u_samples = u_basis_generator->isNextSample(t);
+   
+   if (converged) {
+      int rom_dim = u_basis_generator->getSpatialBasis()->numColumns();
+      std::cout << "ROM dimension: " << rom_dim << std::endl;
+      u_basis_generator->endSamples();
+   }
+}
+#endif
 
 void CSolver::SetVerificationSolution(unsigned short nDim,
                                       unsigned short nVar,

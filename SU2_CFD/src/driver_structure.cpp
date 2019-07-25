@@ -4159,6 +4159,16 @@ void CFluidDriver::Run() {
     for (iZone = 0; iZone < nZone; iZone++)
     checkConvergence += (int) integration_container[iZone][INST_0][FLOW_SOL]->GetConvergence();
 
+     /*--- Save iteration solution for libROM ---*/
+#ifdef HAVE_LIBROM
+     if (nZone > 1) {
+        std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
+     }
+     bool converged = false;
+     if (checkConvergence == nZone) converged = true;
+     solver_container[0]->SavelibROM(solver_container, geometry_container, config_container, converged);
+#endif
+     
     /*--- If convergence was reached in every zone --*/
 
   if (checkConvergence == nZone) break;

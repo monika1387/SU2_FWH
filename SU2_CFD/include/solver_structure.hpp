@@ -4310,6 +4310,16 @@ public:
    * \param[in] config   - Definition of the particular problem.
    */
   virtual void ComputeVerificationError(CGeometry *geometry, CConfig *config);
+   
+#ifdef HAVE_LIBROM
+  /*!
+   * \brief Get current solution and send to libROM.
+   * \param[in] solver - Solver container
+   * \param[in] geometry - Geometrical definition.
+   * \param[in] config - Definition of the particular problem.
+   */
+  void SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, bool converged);
+#endif
   
 protected:
   /*!

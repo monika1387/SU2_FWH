@@ -276,7 +276,12 @@ then
 	AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
 	if test "$have_libROM" == "no"
 	then
-		AC_MSG_ERROR([libROM requested but library file not found.])
+		libROMlib=libROM.a
+		AC_CHECK_FILE([$with_libROM_lib/$libROMlib],[have_libROM="yes"],[have_libROM="no"])
+		if test "$have_libROM" == "no"
+		then
+			AC_MSG_ERROR([libROM requested but library file not found.])
+		fi
 	fi
 fi
 

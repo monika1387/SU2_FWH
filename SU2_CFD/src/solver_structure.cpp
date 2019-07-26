@@ -101,6 +101,9 @@ CSolver::CSolver(void) {
   Restart_Data       = NULL;
   node               = NULL;
   nOutputVariables   = 0;
+#ifdef HAVE_LIBROM
+  u_basis_generator  = NULL;
+#endif
 
   /*--- Inlet profile data structures. ---*/
 
@@ -5312,20 +5315,24 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
    
    unsigned long iPoint, total_index;
    unsigned short iVar;
-   std::cout << "Creating basis generator." << std::endl;
-   std::unique_ptr<CAROM::SVDBasisGenerator> u_basis_generator;
-   u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
-                           int(nPointDomain * nVar),
-                           1000,
-                           "su2_basis",
-                           1000,
-                           0.0000000001));
+   if (!u_basis_generator) {
+      std::cout << "Creating basis generator." << std::endl;
+      u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
+                              int(nPointDomain * nVar),
+                              1000,
+                              "su2_basis",
+                              1000,
+                              0.0000000001));
+   }
+
    std::cout << "Getting data from SU2" << std::endl;
    double* u = new double[nPointDomain*nVar];
-   for (iPoint = nPointDomain; iPoint < nPoint; iPoint++) {
+   //std::cout << "U vector: " << std::endl;
+   for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
       for (iVar = 0; iVar < nVar; iVar++) {
          total_index = iPoint*nVar + iVar;
          u[total_index] = node[iPoint]->GetSolution(iVar);
+     //    std::cout << node[iPoint]->GetSolution(iVar) << std::endl;
       }
    }
    
@@ -5338,9 +5345,10 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
    // bool u_samples = u_basis_generator->isNextSample(t);
    
    if (converged) {
-      std::cout << "Writing data..........." << std::endl;
+      std::cout << "Computing SVD" << std::endl;
       int rom_dim = u_basis_generator->getSpatialBasis()->numColumns();
-      std::cout << "ROM dimension: " << rom_dim << std::endl;
+      std::cout << "Basis dimension: " << rom_dim << std::endl;
+      std::cout << "Writing data..........." << std::endl;
       u_basis_generator->endSamples();
    }
 }

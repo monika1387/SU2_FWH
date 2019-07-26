@@ -173,6 +173,10 @@ public:
   CVariable* node_infty; /*!< \brief CVariable storing the free stream conditions. */
   
   CVerificationSolution *VerificationSolution; /*!< \brief Verification solution class used within the solver. */
+  
+#ifdef HAVE_LIBROM
+  std::unique_ptr<CAROM::SVDBasisGenerator> u_basis_generator;
+#endif  
 
   /*!
    * \brief Constructor of the class.

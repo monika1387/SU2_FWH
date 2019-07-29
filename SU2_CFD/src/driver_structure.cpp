@@ -4138,6 +4138,7 @@ void CFluidDriver::Run() {
   else
     nIntIter = 1;
 
+  bool converged = false;
   for (IntIter = 0; IntIter < nIntIter; IntIter++) {
 
     /*--- At each pseudo time-step updates transfer data ---*/
@@ -4159,22 +4160,24 @@ void CFluidDriver::Run() {
     for (iZone = 0; iZone < nZone; iZone++)
     checkConvergence += (int) integration_container[iZone][INST_0][FLOW_SOL]->GetConvergence();
 
-     /*--- Save iteration solution for libROM ---*/
-#ifdef HAVE_LIBROM
-     std::cout << "Starting libROM saving function." << std::endl;
-     if (nZone > 1) {
-        std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
-     }
-     bool converged = false;
-     if (checkConvergence == nZone) converged = true;
-     solver_container[0][INST_0][MESH_0][FLOW_SOL]->SavelibROM(solver_container[0][INST_0][MESH_0], geometry_container[0][INST_0][0], config_container[0], converged);
-#endif
-     
     /*--- If convergence was reached in every zone --*/
 
-  if (checkConvergence == nZone) break;
+    if (checkConvergence == nZone) {
+      converged = true;
+      break;
+    }
   }
 
+   /*--- Save iteration solution for libROM ---*/
+   
+#ifdef HAVE_LIBROM
+   std::cout << "Starting libROM saving function." << std::endl;
+   if (nZone > 1) {
+      std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
+   }
+   solver_container[0][INST_0][MESH_0][FLOW_SOL]->SavelibROM(solver_container[0][INST_0][MESH_0], geometry_container[0][INST_0][0], config_container[0], converged);
+#endif
+   
 }
 
 void CFluidDriver::Transfer_Data(unsigned short donorZone, unsigned short targetZone) {

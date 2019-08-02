@@ -1728,6 +1728,9 @@ void CConfig::SetConfig_Options() {
   /*!\brief VOLUME_SENS_FILENAME
    *  \n DESCRIPTION: Output file volume sensitivity (discrete adjoint))  \ingroup Config*/
   addStringOption("VOLUME_SENS_FILENAME", VolSens_FileName, string("volume_sens"));
+  /*!\brief LIBROM_BASE_FILENAME
+   *  \n DESCRIPTION: Output base file name for libROM (Reduced order modelling)  \ingroup Config*/
+  addStringOption("LIBROM_BASE_FILENAME", libROMbase_FileName, string("su2"));
   /*!\brief WRT_SOL_FREQ
    *  \n DESCRIPTION: Writing solution file frequency  \ingroup Config*/
   addUnsignedLongOption("WRT_SOL_FREQ", Wrt_Sol_Freq, 1000);

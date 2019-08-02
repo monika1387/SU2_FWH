@@ -51,6 +51,7 @@
 #include <set>
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory>
 
 #include "fluid_model.hpp"
 #include "task_definition.hpp"
@@ -69,6 +70,10 @@
 #include "../../Common/include/blas_structure.hpp"
 #include "../../Common/include/graph_coloring_structure.hpp"
 #include "../../Common/include/toolboxes/MMS/CVerificationSolution.hpp"
+
+#ifdef HAVE_LIBROM
+#include "StaticSVDBasisGenerator.h"
+#endif
 
 using namespace std;
 
@@ -168,6 +173,10 @@ public:
   CVariable* node_infty; /*!< \brief CVariable storing the free stream conditions. */
   
   CVerificationSolution *VerificationSolution; /*!< \brief Verification solution class used within the solver. */
+  
+#ifdef HAVE_LIBROM
+  std::unique_ptr<CAROM::SVDBasisGenerator> u_basis_generator;
+#endif  
 
   /*!
    * \brief Constructor of the class.
@@ -4310,6 +4319,16 @@ public:
    * \param[in] config   - Definition of the particular problem.
    */
   virtual void ComputeVerificationError(CGeometry *geometry, CConfig *config);
+   
+#ifdef HAVE_LIBROM
+  /*!
+   * \brief Get current solution and send to libROM.
+   * \param[in] solver - Solver container
+   * \param[in] geometry - Geometrical definition.
+   * \param[in] config - Definition of the particular problem.
+   */
+  void SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, bool converged);
+#endif
   
 protected:
   /*!

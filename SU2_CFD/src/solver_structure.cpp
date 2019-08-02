@@ -101,6 +101,9 @@ CSolver::CSolver(void) {
   Restart_Data       = NULL;
   node               = NULL;
   nOutputVariables   = 0;
+#ifdef HAVE_LIBROM
+  u_basis_generator  = NULL;
+#endif
 
   /*--- Inlet profile data structures. ---*/
 
@@ -241,7 +244,11 @@ CSolver::~CSolver(void) {
   if (Inlet_Data        != NULL) {delete [] Inlet_Data;        Inlet_Data        = NULL;}
 
   if (VerificationSolution != NULL) {delete VerificationSolution; VerificationSolution = NULL;}
-  
+ 
+#ifdef HAVE_LIBROM
+  if (u_basis_generator != NULL) u_basis_generator = nullptr;
+#endif 
+
 }
 
 void CSolver::InitiatePeriodicComms(CGeometry *geometry,
@@ -5306,6 +5313,73 @@ void CSolver::LoadInletProfile(CGeometry **geometry,
   delete [] Normal;
   
 }
+
+#ifdef HAVE_LIBROM
+void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, bool converged) {
+   
+   bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
+                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
+   bool time_stepping = config->GetUnsteady_Simulation() == TIME_STEPPING;
+   unsigned long iPoint, total_index;
+   unsigned short iVar;
+   string filename = config->GetlibROMbase_FileName();
+ 
+   if (!u_basis_generator) {
+      std::cout << "Creating basis generator." << std::endl;
+      u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
+                              int(nPointDomain * nVar),
+                              1000,
+                              filename,
+                              1000,
+                              0));
+   std::cout << "nPointDomain: " << nPointDomain << " and nPoint: " << nPoint << std::endl; 
+   }
+
+   if (time_stepping or dual_time) {
+      double* u = new double[nPointDomain*nVar];
+      for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+         for (iVar = 0; iVar < nVar; iVar++) {
+            total_index = iPoint*nVar + iVar;
+            u[total_index] = node[iPoint]->GetSolution(iVar);
+         }
+      }
+      
+      // dt is different for each node, so just use a placeholder dt for now
+      double dt = node[0]->GetDelta_Time();
+      double t = 0;
+      std::cout << "Taking sample" << std::endl;
+      u_basis_generator->takeSample(u, t, dt);
+      // not implemented yet: u_basis_generator->computeNextSampleTime(u, rhs, t);
+      // bool u_samples = u_basis_generator->isNextSample(t);
+   }
+   
+   if (converged) {
+
+      if (!time_stepping && !dual_time) {
+         double* u = new double[nPointDomain*nVar];
+         for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+            for (iVar = 0; iVar < nVar; iVar++) {
+               total_index = iPoint*nVar + iVar;
+               u[total_index] = node[iPoint]->GetSolution(iVar);
+            }
+         }
+         
+         // dt is different for each node, so just use a placeholder dt for now
+         double dt = node[0]->GetDelta_Time();
+         double t = 0;
+         std::cout << "Taking sample" << std::endl;
+         u_basis_generator->takeSample(u, t, dt);
+      }
+
+      u_basis_generator->writeSnapshot();
+      std::cout << "Computing SVD" << std::endl;
+      int rom_dim = u_basis_generator->getSpatialBasis()->numColumns();
+      std::cout << "Basis dimension: " << rom_dim << std::endl;
+      u_basis_generator->endSamples();
+      std::cout << "ROM Sampling ended" << std::endl;
+   }
+}
+#endif
 
 void CSolver::SetVerificationSolution(unsigned short nDim,
                                       unsigned short nVar,

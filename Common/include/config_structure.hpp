@@ -163,6 +163,7 @@ private:
   su2double CM_Target; /*!< \brief Weight of the drag coefficient. */
   su2double *HTP_Min_XCoord, *HTP_Min_YCoord; /*!< \brief Identification of the HTP. */
   unsigned short Unsteady_Simulation;	/*!< \brief Steady or unsteady (time stepping or dual time stepping) computation. */
+  bool Steady_FixedTS;                 /*!< \brief True if a fixed time step is desired for steady case. */
   unsigned short Dynamic_Analysis;	/*!< \brief Static or dynamic structural analysis. */
   unsigned short nStartUpIter;	/*!< \brief Start up iterations using the fine grid. */
   su2double FixAzimuthalLine; /*!< \brief Fix an azimuthal line due to misalignments of the nearfield. */
@@ -754,7 +755,8 @@ private:
   SurfAdjCoeff_FileName,			/*!< \brief Output file with the adjoint variables on the surface. */
   New_SU2_FileName,       		/*!< \brief Output SU2 mesh file converted from CGNS format. */
   SurfSens_FileName,			/*!< \brief Output file for the sensitivity on the surface (discrete adjoint). */
-  VolSens_FileName;			/*!< \brief Output file for the sensitivity in the volume (discrete adjoint). */
+  VolSens_FileName,			/*!< \brief Output file for the sensitivity in the volume (discrete adjoint). */
+  libROMbase_FileName;                  /*!< \brief Output base file name for libROM (reduced order modelling). */
   bool Low_MemoryOutput,      /*!< \brief Output less information for lower memory use */
   Wrt_Output,                 /*!< \brief Write any output files */
   Wrt_Vol_Sol,                /*!< \brief Write a volume solution file */
@@ -5115,6 +5117,12 @@ public:
    *         dual time stepping method (unsteady).
    */
   unsigned short GetUnsteady_Simulation(void);
+   
+  /*!
+   * \brief Provides option to fix the time step for steady cases.
+   * \return True if a fixed time step is desired, false otherwise.
+   */
+  bool GetSteady_FixedTS(void);
   
   /*!
    * \brief Provides the number of chemical reactions in the chemistry model
@@ -5541,6 +5549,12 @@ public:
    */
   string GetVolSens_FileName(void);
   
+  /*!
+   * \brief Get the name of the file to be sent to libROM (reduced order modelling).
+   * \return Name of the file to be sent to libROM (reduced order modelling).
+   */
+  string GetlibROMbase_FileName(void);
+
   /*!
    * \brief Augment the input filename with the iteration number for an unsteady file.
    * \param[in] val_filename - String value of the base filename.

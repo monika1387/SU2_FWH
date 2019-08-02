@@ -4171,7 +4171,6 @@ void CFluidDriver::Run() {
    /*--- Save iteration solution for libROM ---*/
    
 #ifdef HAVE_LIBROM
-   std::cout << "Starting libROM saving function." << std::endl;
    if (nZone > 1) {
       std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
    }

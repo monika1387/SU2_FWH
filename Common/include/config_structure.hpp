@@ -755,7 +755,8 @@ private:
   SurfAdjCoeff_FileName,			/*!< \brief Output file with the adjoint variables on the surface. */
   New_SU2_FileName,       		/*!< \brief Output SU2 mesh file converted from CGNS format. */
   SurfSens_FileName,			/*!< \brief Output file for the sensitivity on the surface (discrete adjoint). */
-  VolSens_FileName;			/*!< \brief Output file for the sensitivity in the volume (discrete adjoint). */
+  VolSens_FileName,			/*!< \brief Output file for the sensitivity in the volume (discrete adjoint). */
+  libROMbase_FileName;                  /*!< \brief Output base file name for libROM (reduced order modelling). */
   bool Low_MemoryOutput,      /*!< \brief Output less information for lower memory use */
   Wrt_Output,                 /*!< \brief Write any output files */
   Wrt_Vol_Sol,                /*!< \brief Write a volume solution file */
@@ -5548,6 +5549,12 @@ public:
    */
   string GetVolSens_FileName(void);
   
+  /*!
+   * \brief Get the name of the file to be sent to libROM (reduced order modelling).
+   * \return Name of the file to be sent to libROM (reduced order modelling).
+   */
+  string GetlibROMbase_FileName(void);
+
   /*!
    * \brief Augment the input filename with the iteration number for an unsteady file.
    * \param[in] val_filename - String value of the base filename.

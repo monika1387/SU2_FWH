@@ -240,8 +240,7 @@ public:
   *sumdFdYih, *sumdFdYjh, *sumdFdYieve, *sumdFdYjeve;
   unsigned short RHOS_INDEX, T_INDEX, TVE_INDEX, VEL_INDEX, P_INDEX,
  	RHO_INDEX, H_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX;
-  CVariable *var;
-
+  
   /*!
    * \brief Constructor of the class.
    */

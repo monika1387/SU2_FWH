@@ -60,8 +60,8 @@ inline su2double CFluidModel::GetLaminarViscosity () {
         LaminarViscosity->SetViscosity(Temperature, Density);
         Mu = LaminarViscosity->GetViscosity();
         LaminarViscosity->SetDerViscosity(Temperature, Density);
-        dmudrho_T= LaminarViscosity->Getdmudrho_T(); 
-        dmudT_rho= LaminarViscosity->GetdmudT_rho();  
+        dmudrho_T= LaminarViscosity->Getdmudrho_T();
+        dmudT_rho= LaminarViscosity->GetdmudT_rho();
         return Mu;
 }
 
@@ -77,11 +77,10 @@ inline su2double CFluidModel::GetThermalConductivity () {
         ThermalConductivity->SetConductivity(Temperature, Density, Mu, Mu_Turb, Cp);
         Kt = ThermalConductivity->GetConductivity();
         ThermalConductivity->SetDerConductivity(Temperature, Density, dmudrho_T, dmudT_rho, Cp);
-        dktdrho_T= ThermalConductivity->Getdktdrho_T(); 
+        dktdrho_T= ThermalConductivity->Getdktdrho_T();
         dktdT_rho= ThermalConductivity->GetdktdT_rho();
         return Kt;
 }
-
 
 inline su2double CFluidModel::Getdktdrho_T () {
         return dktdrho_T;
@@ -101,3 +100,14 @@ inline void CFluidModel::SetTDState_Ps (su2double P, su2double s ) { }
 inline void CFluidModel::ComputeDerivativeNRBC_Prho (su2double P, su2double rho ){ }
 inline void CFluidModel::SetTDState_T (su2double val_Temperature) { }
 inline void CFluidModel::SetEddyViscosity (su2double val_Mu_Turb) { Mu_Turb = val_Mu_Turb; }
+inline void CFluidModel::CalcdPdu(su2double *V, su2double *val_eves,
+                             CConfig *config, su2double *val_dPdU) { }
+inline void CFluidModel::CalcEve(CConfig *config, su2double val_Tve,
+                            unsigned short val_Species) { }
+inline void CFluidModel::CalcHs(CConfig *config, su2double val_T,
+                           su2double val_eves, unsigned short val_Species) { }
+inline void CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { }
+inline void CFluidModel::CalcdTdU(su2double *V, CConfig *config,
+                             su2double *val_dTdU) { }
+inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config,
+                                                            su2double *val_dTvedU) {}

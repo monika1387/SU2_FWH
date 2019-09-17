@@ -3986,6 +3986,7 @@ void CFluidDriver::Run() {
   unsigned short iZone, jZone, checkConvergence;
   unsigned long IntIter, nIntIter;
   bool unsteady;
+  bool libROM = config_container[MESH_0]->GetSave_libROM();
 
   /*--- Run a single iteration of a multi-zone problem by looping over all
    zones and executing the iterations. Note that data transers between zones
@@ -4051,10 +4052,12 @@ void CFluidDriver::Run() {
    /*--- Save iteration solution for libROM ---*/
    
 #ifdef HAVE_LIBROM
-   if (nZone > 1) {
-      std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
+   if (libROM) {
+      if (nZone > 1) {
+         std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
+      }
+      solver_container[0][INST_0][MESH_0][FLOW_SOL]->SavelibROM(solver_container[0][INST_0][MESH_0], geometry_container[0][INST_0][0], config_container[0], converged);
    }
-   solver_container[0][INST_0][MESH_0][FLOW_SOL]->SavelibROM(solver_container[0][INST_0][MESH_0], geometry_container[0][INST_0][0], config_container[0], converged);
 #endif
    
 }

@@ -423,6 +423,7 @@ private:
   CFLSolid,       /*!< \brief CFL in (heat) solid solvers. */
   Max_DeltaTime,  		/*!< \brief Max delta time. */
   Unst_CFL;		/*!< \brief Unsteady CFL number. */
+  bool libROM;                /*!< \brief Flag for saving to libROM. */
   bool ReorientElements;		/*!< \brief Flag for enabling element reorientation. */
   bool AddIndNeighbor;			/*!< \brief Include indirect neighbor in the agglomeration process. */
   unsigned short nDV,		/*!< \brief Number of design variables. */
@@ -2776,6 +2777,12 @@ public:
    */
   bool GetReorientElements(void);
   
+  /*!
+   * \brief Get whether or not to save to libROM.
+   * \return True if specified in config file.
+   */
+  bool GetSave_libROM(void);
+   
   /*!
    * \brief Get the Courant Friedrich Levi number for unsteady simulations.
    * \return CFL number for unsteady simulations.

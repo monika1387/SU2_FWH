@@ -1645,6 +1645,11 @@ void CConfig::SetConfig_Options() {
   /* DESCRIPTION: Automatically reorient elements that seem flipped */
   addBoolOption("REORIENT_ELEMENTS",ReorientElements, true);
 
+  /*!\par CONFIG_CATEGORY: Reduced order modelling specific config options. */
+  /* DESCRIPTION: Flag for saving data with libROM. */
+  addBoolOption("SAVE_LIBROM",libROM, false);
+   
+   
   /*!\par CONFIG_CATEGORY: Input/output files and formats \ingroup Config */
   /*--- Options related to input/output files and formats ---*/
 

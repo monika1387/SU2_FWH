@@ -5323,7 +5323,12 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
    unsigned long iPoint, total_index;
    unsigned short iVar;
    string filename = config->GetlibROMbase_FileName();
+
+   unsigned long ExtIter = config->GetExtIter();
+   unsigned long nExtIter = config->GetnExtIter();
+   bool StopCalc = ((ExtIter+1) == nExtIter);
  
+   su2double* Coord;
    if (!u_basis_generator) {
       std::cout << "Creating basis generator." << std::endl;
       u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
@@ -5333,6 +5338,14 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
                               1000,
                               0));
    std::cout << "nPointDomain: " << nPointDomain << " and nPoint: " << nPoint << std::endl; 
+
+   std::ofstream f;
+   f.open(filename + to_string(rank) + ".csv");
+      for (iPoint = 0; iPoint< nPointDomain; iPoint++) {
+         Coord = geometry->node[iPoint]->GetCoord();
+         f << Coord[0] << ", " << Coord[1] << "\n"; 
+      }
+   f.close();
    }
 
    if (time_stepping or dual_time) {
@@ -5344,16 +5357,16 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
          }
       }
       
-      // dt is different for each node, so just use a placeholder dt for now
-      double dt = node[0]->GetDelta_Time();
-      double t = 0;
+      // give solution and time steps to libROM:
+      double dt = config->GetDelta_UnstTimeND();
+      double t =  config->GetCurrent_UnstTime();
       std::cout << "Taking sample" << std::endl;
       u_basis_generator->takeSample(u, t, dt);
       // not implemented yet: u_basis_generator->computeNextSampleTime(u, rhs, t);
       // bool u_samples = u_basis_generator->isNextSample(t);
    }
    
-   if (converged) {
+   if (converged or StopCalc) {
 
       if (!time_stepping && !dual_time) {
          double* u = new double[nPointDomain*nVar];

@@ -5340,7 +5340,7 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
    std::cout << "nPointDomain: " << nPointDomain << " and nPoint: " << nPoint << std::endl; 
 
    std::ofstream f;
-   f.open(filename + to_string(rank) + ".csv");
+   f.open(filename + "_mesh_" + to_string(rank) + ".csv");
       for (iPoint = 0; iPoint< nPointDomain; iPoint++) {
          Coord = geometry->node[iPoint]->GetCoord();
          f << Coord[0] << ", " << Coord[1] << "\n"; 
@@ -5364,6 +5364,7 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
       u_basis_generator->takeSample(u, t, dt);
       // not implemented yet: u_basis_generator->computeNextSampleTime(u, rhs, t);
       // bool u_samples = u_basis_generator->isNextSample(t);
+      delete u;
    }
    
    if (converged or StopCalc) {

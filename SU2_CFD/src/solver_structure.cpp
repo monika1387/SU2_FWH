@@ -50,6 +50,10 @@
 #include "../../Common/include/toolboxes/MMS/CTGVSolution.hpp"
 #include "../../Common/include/toolboxes/MMS/CUserDefinedSolution.hpp"
 
+#ifdef HAVE_LIBROM
+#include "StaticSVDBasisGenerator.h"
+#include "IncrementalSVDBasisGenerator.h"
+#endif
 
 CSolver::CSolver(void) {
 
@@ -5323,6 +5327,7 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
    unsigned long iPoint, total_index;
    unsigned short iVar;
    string filename = config->GetlibROMbase_FileName();
+   unsigned short pod_basis = config->GetKind_PODBasis();
 
    unsigned long ExtIter = config->GetExtIter();
    unsigned long nExtIter = config->GetnExtIter();
@@ -5330,22 +5335,39 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
  
    su2double* Coord;
    if (!u_basis_generator) {
-      std::cout << "Creating basis generator." << std::endl;
-      u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
-                              int(nPointDomain * nVar),
-                              1000,
-                              filename,
-                              1000,
-                              0));
-   std::cout << "nPointDomain: " << nPointDomain << " and nPoint: " << nPoint << std::endl; 
-
-   std::ofstream f;
-   f.open(filename + to_string(rank) + ".csv");
-      for (iPoint = 0; iPoint< nPointDomain; iPoint++) {
-         Coord = geometry->node[iPoint]->GetCoord();
-         f << Coord[0] << ", " << Coord[1] << "\n"; 
+      if (pod_basis == STATIC_POD) {
+         std::cout << "Creating static basis generator." << std::endl;
+         u_basis_generator.reset(new CAROM::StaticSVDBasisGenerator(
+            int(nPointDomain * nVar),
+            5000,
+            filename,
+            500, // max basis size
+            0));
       }
-   f.close();
+      else {
+         std::cout << "Creating incremental basis generator." << std::endl;
+         u_basis_generator.reset(new CAROM::IncrementalSVDBasisGenerator(
+            int(nPointDomain * nVar),
+            1.0e-2,
+            true,
+            true,
+            500, // max basis size
+            config->GetDelta_UnstTimeND(),
+            5000,
+            1.0e-2,
+            config->GetDelta_UnstTimeND(),
+            filename));
+      }
+      
+      std::cout << "nPointDomain: " << nPointDomain << " and nPoint: " << nPoint << std::endl;
+
+      std::ofstream f;
+      f.open(filename + to_string(rank) + ".csv");
+         for (iPoint = 0; iPoint< nPointDomain; iPoint++) {
+            Coord = geometry->node[iPoint]->GetCoord();
+            f << Coord[0] << ", " << Coord[1] << "\n";
+         }
+      f.close();
    }
 
    if (time_stepping or dual_time) {
@@ -5379,12 +5401,14 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
          
          // dt is different for each node, so just use a placeholder dt for now
          double dt = node[0]->GetDelta_Time();
-         double t = 0;
+         double t = dt*ExtIter;
          std::cout << "Taking sample" << std::endl;
          u_basis_generator->takeSample(u, t, dt);
       }
-
-      u_basis_generator->writeSnapshot();
+      
+      if (pod_basis == STATIC_POD) {
+         u_basis_generator->writeSnapshot();
+      }
       std::cout << "Computing SVD" << std::endl;
       int rom_dim = u_basis_generator->getSpatialBasis()->numColumns();
       std::cout << "Basis dimension: " << rom_dim << std::endl;

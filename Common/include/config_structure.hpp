@@ -423,9 +423,10 @@ private:
   CFLSolid,       /*!< \brief CFL in (heat) solid solvers. */
   Max_DeltaTime,  		/*!< \brief Max delta time. */
   Unst_CFL;		/*!< \brief Unsteady CFL number. */
-  bool libROM;                /*!< \brief Flag for saving to libROM. */
-  bool ReorientElements;		/*!< \brief Flag for enabling element reorientation. */
-  bool AddIndNeighbor;			/*!< \brief Include indirect neighbor in the agglomeration process. */
+  bool libROM;                   /*!< \brief Flag for saving to libROM. */
+  unsigned short POD_Basis_Gen;  /*!< \brief Incremental or static POD basis generation. */
+  bool ReorientElements;		   /*!< \brief Flag for enabling element reorientation. */
+  bool AddIndNeighbor;			   /*!< \brief Include indirect neighbor in the agglomeration process. */
   unsigned short nDV,		/*!< \brief Number of design variables. */
   nObj, nObjW;              /*! \brief Number of objective functions. */
   unsigned short* nDV_Value;		/*!< \brief Number of values for each design variable (might be different than 1 if we allow arbitrary movement). */
@@ -2782,6 +2783,12 @@ public:
    * \return True if specified in config file.
    */
   bool GetSave_libROM(void);
+   
+  /*!
+   * \brief Get kind of POD basis to generate (static or incremental).
+   * \return Returns STATIC_POD or ICREMENTAL_POD.
+  */
+  unsigned short GetKind_PODBasis(void);
    
   /*!
    * \brief Get the Courant Friedrich Levi number for unsteady simulations.

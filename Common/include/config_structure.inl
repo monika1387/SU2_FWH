@@ -335,6 +335,8 @@ inline bool CConfig::GetReorientElements(void) { return ReorientElements; }
 
 inline bool CConfig::GetSave_libROM(void) { return libROM; }
 
+inline unsigned short CConfig::GetKind_PODBasis(void) { return POD_Basis_Gen; }
+
 inline unsigned long CConfig::GetIter_Avg_Objective(void) { return Iter_Avg_Objective ; }
 
 inline long CConfig::GetDyn_RestartIter(void) { return Dyn_RestartIter; }

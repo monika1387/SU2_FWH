@@ -1649,6 +1649,9 @@ void CConfig::SetConfig_Options() {
   /* DESCRIPTION: Flag for saving data with libROM. */
   addBoolOption("SAVE_LIBROM",libROM, false);
    
+  /* DESCRIPTION: Flag for saving data with libROM. */
+  addEnumOption("BASIS_GENERATION",POD_Basis_Gen, POD_Map, STATIC_POD);
+   
    
   /*!\par CONFIG_CATEGORY: Input/output files and formats \ingroup Config */
   /*--- Options related to input/output files and formats ---*/

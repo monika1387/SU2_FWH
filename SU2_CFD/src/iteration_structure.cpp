@@ -35,9 +35,6 @@
  * License along with SU2. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_LIBROM
-#include "StaticSVDBasisGenerator.h"
-#endif
 
 #include "../include/iteration_structure.hpp"
 

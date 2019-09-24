@@ -1545,7 +1545,7 @@ public:
    */
   virtual void Source_Residual(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics, CNumerics *second_numerics,
                                CConfig *config, unsigned short iMesh);
-  
+
   /*!
    * \brief A virtual member.
    * \param[in] geometry - Geometrical definition of the problem.
@@ -9236,15 +9236,15 @@ public:
                        CConfig *config, unsigned short iMesh);
 
   /*!
-     * \brief Source term integration.
-     * \param[in] geometry - Geometrical definition of the problem.
-     * \param[in] solver_container - Container vector with all the solutions.
-     * \param[in] numerics - Description of the numerical method.
+   * \brief Source term integration.
+   * \param[in] geometry - Geometrical definition of the problem.
+   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] numerics - Description of the numerical method.
    * \param[in] second_numerics - Description of the second numerical method.
-     * \param[in] config - Definition of the particular problem.
-     * \param[in] iMesh - Index of the mesh in multigrid computations.
-     */
-  void Source_Residual(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics,
+   * \param[in] config - Definition of the particular problem.
+   * \param[in] iMesh - Index of the mesh in multigrid computations.
+   */
+  void Source_Residual(CGeometry *geometry, CSolver **solver, CNumerics *numerics,
                        CNumerics *second_numerics, CConfig *config, unsigned short iMesh);
 
   /*!
@@ -9308,6 +9308,12 @@ public:
      * \param[in] config - Definition of the particular problem.
      */
   void SetPreconditioner(CConfig *config, unsigned short iPoint);
+
+  /*!
+   * \brief Compute the pressure at the infinity.
+   * \return Value of the pressure at the infinity.
+   */
+  CFluidModel* GetFluidModel(void);
 
   /*!
    * \brief Set the fluid solver nondimensionalization.
@@ -9913,7 +9919,7 @@ public:
    * \param[in] iMesh - Index of the mesh in multigrid computations.
    * \param[in] iRKStep - Current step of the Runge-Kutta iteration.
    */
-  void Source_Residual(CGeometry *geometry, CSolver **solution_container, CNumerics *numerics,
+  void Source_Residual(CGeometry *geometry, CSolver **solution, CNumerics *numerics,
                        CNumerics *second_solver, CConfig *config, unsigned short iMesh);
 
   /*!

@@ -64,6 +64,7 @@ libSU2Core_sources =  ../src/definition_structure.cpp \
   ../src/fluid_model_pvdw.cpp \
   ../src/fluid_model_ppr.cpp \
   ../src/fluid_model_inc.cpp \
+  ../src/fluid_model_tne2.cpp \ 
   ../src/integration_structure.cpp \
   ../src/integration_time.cpp \
   ../src/drivers/CMultizoneDriver.cpp \
@@ -79,7 +80,7 @@ libSU2Core_sources =  ../src/definition_structure.cpp \
   ../src/numerics_direct_tne2.cpp \
   ../src/numerics_direct_transition.cpp \
   ../src/numerics_direct_turbulent.cpp \
-	../src/numerics_direct_tne2_turbulent.cpp \
+  ../src/numerics_direct_tne2_turbulent.cpp \
   ../src/numerics_direct_elasticity_nonlinear.cpp \
   ../src/numerics_direct_elasticity_linear.cpp \
   ../src/numerics_direct_elasticity.cpp \
@@ -103,7 +104,7 @@ libSU2Core_sources =  ../src/definition_structure.cpp \
   ../src/solver_direct_mean_inc.cpp \
   ../src/solver_direct_tne2.cpp \
   ../src/solver_direct_transition.cpp \
-	../src/solver_direct_tne2_turbulent.cpp \
+  ../src/solver_direct_tne2_turbulent.cpp \
   ../src/solver_direct_turbulent.cpp \
   ../src/solver_direct_elasticity.cpp \
   ../src/solver_structure.cpp \
@@ -116,17 +117,17 @@ libSU2Core_sources =  ../src/definition_structure.cpp \
   ../src/variables/CVariable.cpp \
   ../src/variables/CAdjNSVariable.cpp \
   ../src/variables/CTurbSSTVariable.cpp \
-	../src/variables/CTNE2TurbSSTVariable.cpp \
+  ../src/variables/CTNE2TurbSSTVariable.cpp \
   ../src/variables/CAdjTurbVariable.cpp \
   ../src/variables/CTransLMVariable.cpp \
   ../src/variables/CDiscAdjFEAVariable.cpp \
   ../src/variables/CIncEulerVariable.cpp \
   ../src/variables/CTurbVariable.cpp \
-	../src/variables/CTNE2TurbVariable.cpp \
+  ../src/variables/CTNE2TurbVariable.cpp \
   ../src/variables/CNSVariable.cpp \
   ../src/variables/CBaselineVariable.cpp \
   ../src/variables/CTurbSAVariable.cpp \
-	../src/variables/CTNE2TurbSAVariable.cpp \
+  ../src/variables/CTNE2TurbSAVariable.cpp \
   ../src/variables/CFEAVariable.cpp \
   ../src/variables/CAdjEulerVariable.cpp \
   ../src/variables/CDiscAdjVariable.cpp \

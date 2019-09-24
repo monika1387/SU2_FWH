@@ -50,7 +50,6 @@
 #include "../../Common/include/config_structure.hpp"
 #include "../../Common/include/gauss_structure.hpp"
 #include "../../Common/include/element_structure.hpp"
-#include "variables/CTNE2EulerVariable.hpp"
 #include "fluid_model.hpp"
 
 using namespace std;
@@ -241,6 +240,8 @@ public:
   unsigned short RHOS_INDEX, T_INDEX, TVE_INDEX, VEL_INDEX, P_INDEX,
  	RHO_INDEX, H_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX;
   
+  CFluidModel* FluidModel;
+
   /*!
    * \brief Constructor of the class.
    */
@@ -678,6 +679,12 @@ public:
    * \param[in] val_volume Volume of the control volume.
    */
   void SetVolume(su2double val_volume);
+
+  /*!
+   * \brief Retrieves the fluid model of the problem.
+   * \param[in] FluidModel
+   */
+  void SetFluidModel( CFluidModel* val_fluid_model );
 
   /*!
    * \brief Retrieves the value of the species density in the primitive variable vector.
@@ -2052,7 +2059,8 @@ public:
      * \param[out] val_Jacobian_j - Jacobian of the numerical method at node j (implicit computation).
      * \param[in] config - Definition of the particular problem.
      */
-    void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config);
+    void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j,
+                         CConfig *config);
 
 };
 
@@ -4730,13 +4738,19 @@ public:
   void GetKeqConstants(su2double *A, unsigned short val_reaction, CConfig *config);
 
   /*!
-   * \brief Residual of the rotational frame source term.
+   * \brief Residual of the vibrational relaxation source term.
    * \param[out] val_residual - Pointer to the total residual.
    * \param[out] val_Jacobian_i - Jacobian of the numerical method at node i (implicit computation).
    * \param[in] config - Definition of the particular problem.
    */
   void ComputeVibRelaxation(su2double *val_residual, su2double **val_Jacobian_i, CConfig *config);
 
+  /*!
+   * \brief Residual of the rotational frame source term.
+   * \param[out] val_residual - Pointer to the total residual.
+   * \param[out] val_Jacobian_i - Jacobian of the numerical method at node i (implicit computation).
+   * \param[in] config - Definition of the particular problem.
+   */
   void ComputeAxisymmetric(su2double *val_residual, su2double **val_Jacobian, CConfig *config);
 };
 

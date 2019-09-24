@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file fluid_model.inl
  * \brief In-Line subroutines of the <i>solver_structure.hpp</i> file.
  * \author S. Vitale, M. Pini, G. Gori, A. Guardone, P. Colonna
@@ -100,14 +100,10 @@ inline void CFluidModel::SetTDState_Ps (su2double P, su2double s ) { }
 inline void CFluidModel::ComputeDerivativeNRBC_Prho (su2double P, su2double rho ){ }
 inline void CFluidModel::SetTDState_T (su2double val_Temperature) { }
 inline void CFluidModel::SetEddyViscosity (su2double val_Mu_Turb) { Mu_Turb = val_Mu_Turb; }
-inline void CFluidModel::CalcdPdu(su2double *V, su2double *val_eves,
-                             CConfig *config, su2double *val_dPdU) { }
-inline void CFluidModel::CalcEve(CConfig *config, su2double val_Tve,
-                            unsigned short val_Species) { }
-inline void CFluidModel::CalcHs(CConfig *config, su2double val_T,
-                           su2double val_eves, unsigned short val_Species) { }
-inline void CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { }
-inline void CFluidModel::CalcdTdU(su2double *V, CConfig *config,
-                             su2double *val_dTdU) { }
-inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config,
-                                                            su2double *val_dTvedU) {}
+
+inline void CFluidModel::CalcdPdU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dPdU) { }
+inline su2double CFluidModel::CalcEve(CConfig *config, su2double val_Tve, unsigned short val_Species) {}
+inline su2double CFluidModel::CalcHs(CConfig *config, su2double val_T, su2double val_eves, unsigned short val_Species) { }
+inline su2double CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { }
+inline void CFluidModel::CalcdTdU(su2double *V, CConfig *config, su2double *val_dTdU) { }
+inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dTvedU) {}

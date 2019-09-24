@@ -560,7 +560,7 @@ inline void CSolver::AddStiffMatrix(su2double ** StiffMatrix_Elem, unsigned long
                      
 inline void CSolver::Source_Residual(CGeometry *geometry, CSolver **solver_container, 
                           CNumerics *numerics, CNumerics *second_numerics, CConfig *config, unsigned short iMesh) { }
-                     
+
 inline void CSolver::Source_Template(CGeometry *geometry, CSolver **solver_container, 
                           CNumerics *numerics, CConfig *config, unsigned short iMesh) { }
 
@@ -1648,6 +1648,8 @@ inline void CEulerSolver::ComputeBackVelocity(su2double *turboVelocity, su2doubl
 
 
 inline CFluidModel* CEulerSolver::GetFluidModel(void) { return FluidModel;}
+
+inline CFluidModel* CTNE2EulerSolver::GetFluidModel(void) { return FluidModel;}
 
 inline void CEulerSolver::SetPressure_Inf(su2double p_inf) {Pressure_Inf = p_inf;}
 

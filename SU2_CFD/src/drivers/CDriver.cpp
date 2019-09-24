@@ -1847,7 +1847,7 @@ void CDriver::Integration_Postprocessing(CIntegration ***integration, CGeometry 
   }
 
   /*--- DeAllocate solution for a template problem ---*/
-  if (template_solver) integration[val_iInst][TEMPLATE_SOL] = new CSingleGridIntegration(config);
+  if (template_solver) delete integration[val_iInst][TEMPLATE_SOL];
 
   /*--- DeAllocate solution for direct problem ---*/
   if (euler || ns) delete integration[val_iInst][FLOW_SOL];
@@ -2300,6 +2300,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
             numerics[iMGlevel][TNE2_SOL][CONV_BOUND_TERM] = new CUpwRoe_TNE2(nDim, nVar_TNE2, nPrimVar_TNE2, nPrimVarGrad_TNE2, config);
 
         }
+
         break;
       case SPACE_UPWIND :
         if (compressible) {
@@ -2326,12 +2327,6 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
                 numerics[iMGlevel][TNE2_SOL][CONV_BOUND_TERM] = new CUpwAUSMPLUSUP2_TNE2(nDim, nVar_TNE2, nPrimVar_TNE2, nPrimVarGrad_TNE2, config);
               }
               break;
-            //case HLLC:
-            //  for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
-            //    numerics[iMGlevel][TNE2_SOL][CONV_TERM] = new CUpwHLLC_TNE2(nDim, nVar_TNE2, nPrimVar_TNE2, nPrimVarGrad_TNE2, config);
-            //    numerics[iMGlevel][TNE2_SOL][CONV_BOUND_TERM] = new CUpwHLLC_TNE2(nDim, nVar_TNE2, nPrimVar_TNE2, nPrimVarGrad_TNE2, config);
-            //  }
-            //  break;
 
             case MSW:
               for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
@@ -2375,6 +2370,16 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
     for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
       numerics[iMGlevel][TNE2_SOL][SOURCE_FIRST_TERM] = new CSource_TNE2(nDim, nVar_TNE2, nPrimVar_TNE2, nPrimVarGrad_TNE2, config);
       numerics[iMGlevel][TNE2_SOL][SOURCE_SECOND_TERM] = new CSourceNothing(nDim, nVar_TNE2, config);
+    }
+
+    /*--- Passing FluidModel to all numerics ---*/
+    for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++){
+      numerics[iMGlevel][TNE2_SOL][CONV_TERM]->SetFluidModel(solver[MESH_0][TNE2_SOL]->GetFluidModel());
+      numerics[iMGlevel][TNE2_SOL][CONV_BOUND_TERM]->SetFluidModel(solver[MESH_0][TNE2_SOL]->GetFluidModel());
+      numerics[iMGlevel][TNE2_SOL][SOURCE_FIRST_TERM]->SetFluidModel(solver[MESH_0][TNE2_SOL]->GetFluidModel());
+      numerics[iMGlevel][TNE2_SOL][SOURCE_SECOND_TERM]->SetFluidModel(solver[MESH_0][TNE2_SOL]->GetFluidModel());
+      numerics[iMGlevel][TNE2_SOL][VISC_TERM]->SetFluidModel(solver[MESH_0][TNE2_SOL]->GetFluidModel());
+      numerics[iMGlevel][TNE2_SOL][VISC_BOUND_TERM]->SetFluidModel(solver[MESH_0][TNE2_SOL]->GetFluidModel());
     }
   }
 
@@ -3395,7 +3400,7 @@ void CDriver::Iteration_Preprocessing(CConfig* config, CIteration *&iteration) {
     case TNE2_EULER: case TNE2_NAVIER_STOKES: case TNE2_RANS:
 
       if (rank == MASTER_NODE)
-          cout << ": Two-Temp Euler/Navier-Stokes/RANS fluid iteration." << endl;
+          cout << "Two-Temp Euler/Navier-Stokes/RANS fluid iteration." << endl;
       iteration = new CTNE2Iteration(config);
 
       break;

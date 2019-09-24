@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file option_structure.hpp
  * \brief Defines classes for referencing options for easy input in CConfig
  * \author J. Hicken, B. Tracey
@@ -277,10 +277,10 @@ static const map<string, ENUM_MULTIZONE> Multizone_Map = CCreateMap<string, ENUM
  * \brief types of fluid solvers
  */
 enum ENUM_FSI_FLUID_PROBLEM {
-	  NO_SOLVER_FFSI = 0,			/*!< \brief Definition of no solver. */
-	  EULER_FFSI = 1,				/*!< \brief Euler equations for the FSI problem */
-	  NAVIER_STOKES_FFSI = 2,		/*!< \brief NS equations for the FSI problem */
-	  RANS_FFSI = 3 				/*!< \brief RANS equations for the FSI problem */
+  NO_SOLVER_FFSI = 0,			/*!< \brief Definition of no solver. */
+  EULER_FFSI = 1,				/*!< \brief Euler equations for the FSI problem */
+  NAVIER_STOKES_FFSI = 2,		/*!< \brief NS equations for the FSI problem */
+  RANS_FFSI = 3 				/*!< \brief RANS equations for the FSI problem */
 };
 static const map<string, ENUM_FSI_FLUID_PROBLEM> FSI_Fluid_Solver_Map = CCreateMap<string, ENUM_FSI_FLUID_PROBLEM>
 ("NONE", NO_SOLVER_FFSI)
@@ -303,8 +303,8 @@ static const map<string, ENUM_FSI_STRUC_PROBLEM> FSI_Struc_Solver_Map = CCreateM
  * \brief Material geometric conditions
  */
 enum ENUM_STRUCT_SOLVER {
-	SMALL_DEFORMATIONS = 0,			/*!< \brief Definition of linear elastic material. */
-	LARGE_DEFORMATIONS = 1,			/*!< \brief Definition of Neo-Hookean material. */
+  SMALL_DEFORMATIONS = 0,			/*!< \brief Definition of linear elastic material. */
+  LARGE_DEFORMATIONS = 1,			/*!< \brief Definition of Neo-Hookean material. */
 };
 static const map<string, ENUM_STRUCT_SOLVER> Struct_Map = CCreateMap<string, ENUM_STRUCT_SOLVER>
 ("SMALL_DEFORMATIONS", SMALL_DEFORMATIONS)
@@ -315,10 +315,10 @@ static const map<string, ENUM_STRUCT_SOLVER> Struct_Map = CCreateMap<string, ENU
  * \brief Material model
  */
 enum ENUM_MATERIAL_MODEL {
-	LINEAR_ELASTIC = 0,			/*!< \brief Definition of linear elastic material. */
-	NEO_HOOKEAN = 1,			/*!< \brief Definition of Neo-Hookean material. */
-	KNOWLES = 2,				/*!< \brief Definition of Knowles stored-energy potential */
-	IDEAL_DE = 3				/*!< \brief Definition of ideal Dielectric Elastomer */
+  LINEAR_ELASTIC = 0,			/*!< \brief Definition of linear elastic material. */
+  NEO_HOOKEAN = 1,			/*!< \brief Definition of Neo-Hookean material. */
+  KNOWLES = 2,				/*!< \brief Definition of Knowles stored-energy potential */
+  IDEAL_DE = 3				/*!< \brief Definition of ideal Dielectric Elastomer */
 };
 static const map<string, ENUM_MATERIAL_MODEL> Material_Map = CCreateMap<string, ENUM_MATERIAL_MODEL>
 ("LINEAR_ELASTIC", LINEAR_ELASTIC)
@@ -543,13 +543,14 @@ static const map<string, ENUM_SPACE> Space_Map = CCreateMap<string, ENUM_SPACE>
  * \brief types of fluid model
  */
 enum ENUM_FLUIDMODEL {
-	STANDARD_AIR = 0,
-	IDEAL_GAS = 1, /*!< \brief _____. */
-	VW_GAS = 2,
-	PR_GAS = 3,
+  STANDARD_AIR = 0,
+  IDEAL_GAS = 1, /*!< \brief _____. */
+  VW_GAS = 2,
+  PR_GAS = 3,
   CONSTANT_DENSITY = 4,
   INC_IDEAL_GAS = 5,
-  INC_IDEAL_GAS_POLY = 6
+  INC_IDEAL_GAS_POLY = 6,
+  TNE2_GAS_MODEL= 7
 };
 
 static const map<string, ENUM_FLUIDMODEL> FluidModel_Map = CCreateMap<string, ENUM_FLUIDMODEL>
@@ -559,21 +560,22 @@ static const map<string, ENUM_FLUIDMODEL> FluidModel_Map = CCreateMap<string, EN
 ("PR_GAS", PR_GAS)
 ("CONSTANT_DENSITY", CONSTANT_DENSITY)
 ("INC_IDEAL_GAS", INC_IDEAL_GAS)
-("INC_IDEAL_GAS_POLY", INC_IDEAL_GAS_POLY);
+("INC_IDEAL_GAS_POLY", INC_IDEAL_GAS_POLY)
+("TNE2_GAS_MODEL", TNE2_GAS_MODEL);
 
 /*!
  * \brief types of gas models
  */
 enum ENUM_GASMODEL {
-   NO_MODEL   = 0,
-   ARGON      = 1,
-   AIR7       = 2,
-   AIR21      = 3,
-   O2         = 4,
-   N2         = 5,
-   AIR5       = 6,
-   ARGON_SID  = 7,
-   ONESPECIES = 8
+  NO_MODEL   = 0,
+  ARGON      = 1,
+  AIR7       = 2,
+  AIR21      = 3,
+  O2         = 4,
+  N2         = 5,
+  AIR5       = 6,
+  ARGON_SID  = 7,
+  ONESPECIES = 8
 };
 static const map<string, ENUM_GASMODEL> GasModel_Map = CCreateMap<string, ENUM_GASMODEL>
 ("NONE", NO_MODEL)
@@ -591,7 +593,7 @@ static const map<string, ENUM_GASMODEL> GasModel_Map = CCreateMap<string, ENUM_G
  */
 enum ENUM_TRANSCOEFFMODEL {
   WBE      = 0,
-	GUPTAYOS = 1
+  GUPTAYOS = 1
 };
 static const map<string, ENUM_TRANSCOEFFMODEL> TransCoeffModel_Map = CCreateMap<string, ENUM_TRANSCOEFFMODEL>
 ("WBE", WBE)
@@ -601,9 +603,9 @@ static const map<string, ENUM_TRANSCOEFFMODEL> TransCoeffModel_Map = CCreateMap<
  * \brief types of density models
  */
 enum ENUM_DENSITYMODEL {
-	CONSTANT = 0,
+  CONSTANT = 0,
   BOUSSINESQ = 1,
-	VARIABLE = 2
+  VARIABLE = 2
 };
 
 static const map<string, ENUM_DENSITYMODEL> DensityModel_Map = CCreateMap<string, ENUM_DENSITYMODEL>
@@ -616,8 +618,8 @@ static const map<string, ENUM_DENSITYMODEL> DensityModel_Map = CCreateMap<string
  */
 
 enum ENUM_INIT_OPTION {
-	REYNOLDS = 0, /*!< \brief _____. */
-	TD_CONDITIONS = 1
+  REYNOLDS = 0, /*!< \brief _____. */
+  TD_CONDITIONS = 1
 
 };
 
@@ -630,8 +632,8 @@ static const map<string, ENUM_INIT_OPTION> InitOption_Map = CCreateMap<string, E
  */
 
 enum ENUM_FREESTREAM_OPTION {
-	TEMPERATURE_FS = 0, /*!< \brief _____. */
-	DENSITY_FS = 1
+  TEMPERATURE_FS = 0, /*!< \brief _____. */
+  DENSITY_FS = 1
 
 };
 
@@ -643,8 +645,8 @@ static const map<string, ENUM_FREESTREAM_OPTION> FreeStreamOption_Map = CCreateM
  * \brief types of viscosity model
  */
 enum ENUM_VISCOSITYMODEL {
-	CONSTANT_VISCOSITY = 0, /*!< \brief _____. */
-	SUTHERLAND = 1,
+  CONSTANT_VISCOSITY = 0, /*!< \brief _____. */
+  SUTHERLAND = 1,
   POLYNOMIAL_VISCOSITY = 2
 };
 
@@ -657,8 +659,8 @@ static const map<string, ENUM_VISCOSITYMODEL> ViscosityModel_Map = CCreateMap<st
  * \brief types of thermal conductivity model
  */
 enum ENUM_CONDUCTIVITYMODEL {
-	CONSTANT_CONDUCTIVITY = 0, /*!< \brief _____. */
-	CONSTANT_PRANDTL = 1,
+  CONSTANT_CONDUCTIVITY = 0, /*!< \brief _____. */
+  CONSTANT_PRANDTL = 1,
   POLYNOMIAL_CONDUCTIVITY = 2
 };
 
@@ -946,11 +948,11 @@ static const map<string, ENUM_HYBRIDRANSLES> HybridRANSLES_Map = CCreateMap<stri
  * \brief types of Roe Low Dissipation Schemes
  */
 enum ENUM_ROELOWDISS {
-    NO_ROELOWDISS = 0, /*!< \brief No Roe Low Dissipation model. */
-    FD            = 1, /*!< \brief Numerical Blending based on DDES's F_d function */
-    NTS           = 2, /*!< \brief Numerical Blending of Travin and Shur. */
-    NTS_DUCROS    = 3,  /*!< \brief Numerical Blending of Travin and Shur + Ducros' Shock Sensor. */
-    FD_DUCROS     = 4 /*!< \brief Numerical Blending based on DDES's F_d function + Ducros' Shock Sensor */
+  NO_ROELOWDISS = 0, /*!< \brief No Roe Low Dissipation model. */
+  FD            = 1, /*!< \brief Numerical Blending based on DDES's F_d function */
+  NTS           = 2, /*!< \brief Numerical Blending of Travin and Shur. */
+  NTS_DUCROS    = 3,  /*!< \brief Numerical Blending of Travin and Shur + Ducros' Shock Sensor. */
+  FD_DUCROS     = 4 /*!< \brief Numerical Blending based on DDES's F_d function + Ducros' Shock Sensor */
 };
 static const map<string, ENUM_ROELOWDISS> RoeLowDiss_Map = CCreateMap<string, ENUM_ROELOWDISS>
 ("NONE", NO_ROELOWDISS)
@@ -1503,8 +1505,8 @@ static const map<string, ENUM_OBJECTIVE> Objective_Map = CCreateMap<string, ENUM
  */
 
 enum ENUM_RESIDUAL {
-	RHO_RESIDUAL = 1, 	      /*!< \brief Rho equation residual criteria equation. */
-	RHO_ENERGY_RESIDUAL = 2 	      /*!< \brief RhoE equation residual criteria equation. */
+  RHO_RESIDUAL = 1, 	      /*!< \brief Rho equation residual criteria equation. */
+  RHO_ENERGY_RESIDUAL = 2 	      /*!< \brief RhoE equation residual criteria equation. */
 };
 
 static const map<string, ENUM_RESIDUAL> Residual_Map = CCreateMap<string, ENUM_RESIDUAL>
@@ -1865,7 +1867,7 @@ static const map<string, ENUM_GEO_ANALYTIC> Geo_Analytic_Map = CCreateMap<string
  * \brief types of axis orientation
  */
 enum ENUM_GEO_DESCRIPTION {
-	TWOD_AIRFOIL = 0, /*!< \brief Airfoil analysis. */
+  TWOD_AIRFOIL = 0, /*!< \brief Airfoil analysis. */
   WING = 1, 	      /*!< \brief Wing analysis. */
   FUSELAGE = 2,    /*!< \brief Fuselage analysis. */
   NACELLE = 3      /*!< \brief Nacelle analysis. */
@@ -2486,8 +2488,8 @@ public:
   }
 
   ~COptionDoubleArray() {
-     if(def  != NULL) delete [] def;
-     if(vals != NULL) delete [] vals;
+    if(def  != NULL) delete [] def;
+    if(vals != NULL) delete [] vals;
   };
   string SetValue(vector<string> option_value) {
     COptionBase::SetValue(option_value);
@@ -2902,46 +2904,46 @@ public:
     unsigned int i = 0;
     for (unsigned short iDV = 0; iDV < this->nDV; iDV++) {
       switch (this->design_variable[iDV]) {
-        case NO_DEFORMATION:       nParamDV = 0; break;
-        case FFD_SETTING:          nParamDV = 0; break;
-        case FFD_CONTROL_POINT_2D: nParamDV = 5; break;
-        case FFD_CAMBER_2D:        nParamDV = 2; break;
-        case FFD_THICKNESS_2D:     nParamDV = 2; break;
-        case FFD_TWIST_2D:         nParamDV = 3; break;
-        case HICKS_HENNE:          nParamDV = 2; break;
-        case SURFACE_BUMP:         nParamDV = 3; break;
-        case CST:                  nParamDV = 3; break;
-        case ANGLE_OF_ATTACK:      nParamDV = 1; break;
-        case SCALE:                nParamDV = 0; break;
-        case TRANSLATION:          nParamDV = 3; break;
-        case ROTATION:             nParamDV = 6; break;
-        case NACA_4DIGITS:         nParamDV = 3; break;
-        case PARABOLIC:            nParamDV = 2; break;
-        case AIRFOIL:              nParamDV = 2; break;
-        case FFD_CONTROL_POINT:    nParamDV = 7; break;
-        case FFD_NACELLE:          nParamDV = 6; break;
-        case FFD_GULL:             nParamDV = 2; break;
-        case FFD_TWIST:            nParamDV = 8; break;
-        case FFD_ROTATION:         nParamDV = 7; break;
-        case FFD_CONTROL_SURFACE:  nParamDV = 7; break;
-        case FFD_CAMBER:           nParamDV = 3; break;
-        case FFD_THICKNESS:        nParamDV = 3; break;
-        case FFD_ANGLE_OF_ATTACK:  nParamDV = 2; break;
-        case SURFACE_FILE:         nParamDV = 0; break;
-        case DV_EFIELD:            nParamDV = 2; break;
-        case DV_YOUNG:             nParamDV = 0; break;
-        case DV_POISSON:           nParamDV = 0; break;
-        case DV_RHO:               nParamDV = 0; break;
-        case DV_RHO_DL:            nParamDV = 0; break;
-        case SCALE_GRID:           nParamDV = 0; break;
-        case TRANSLATE_GRID:       nParamDV = 3; break;
-        case ROTATE_GRID:          nParamDV = 6; break;
-        default : {
-          string newstring;
-          newstring.append(this->name);
-          newstring.append(": undefined design variable type found in configuration file.");
-          return newstring;
-        }
+      case NO_DEFORMATION:       nParamDV = 0; break;
+      case FFD_SETTING:          nParamDV = 0; break;
+      case FFD_CONTROL_POINT_2D: nParamDV = 5; break;
+      case FFD_CAMBER_2D:        nParamDV = 2; break;
+      case FFD_THICKNESS_2D:     nParamDV = 2; break;
+      case FFD_TWIST_2D:         nParamDV = 3; break;
+      case HICKS_HENNE:          nParamDV = 2; break;
+      case SURFACE_BUMP:         nParamDV = 3; break;
+      case CST:                  nParamDV = 3; break;
+      case ANGLE_OF_ATTACK:      nParamDV = 1; break;
+      case SCALE:                nParamDV = 0; break;
+      case TRANSLATION:          nParamDV = 3; break;
+      case ROTATION:             nParamDV = 6; break;
+      case NACA_4DIGITS:         nParamDV = 3; break;
+      case PARABOLIC:            nParamDV = 2; break;
+      case AIRFOIL:              nParamDV = 2; break;
+      case FFD_CONTROL_POINT:    nParamDV = 7; break;
+      case FFD_NACELLE:          nParamDV = 6; break;
+      case FFD_GULL:             nParamDV = 2; break;
+      case FFD_TWIST:            nParamDV = 8; break;
+      case FFD_ROTATION:         nParamDV = 7; break;
+      case FFD_CONTROL_SURFACE:  nParamDV = 7; break;
+      case FFD_CAMBER:           nParamDV = 3; break;
+      case FFD_THICKNESS:        nParamDV = 3; break;
+      case FFD_ANGLE_OF_ATTACK:  nParamDV = 2; break;
+      case SURFACE_FILE:         nParamDV = 0; break;
+      case DV_EFIELD:            nParamDV = 2; break;
+      case DV_YOUNG:             nParamDV = 0; break;
+      case DV_POISSON:           nParamDV = 0; break;
+      case DV_RHO:               nParamDV = 0; break;
+      case DV_RHO_DL:            nParamDV = 0; break;
+      case SCALE_GRID:           nParamDV = 0; break;
+      case TRANSLATE_GRID:       nParamDV = 3; break;
+      case ROTATE_GRID:          nParamDV = 6; break;
+      default : {
+        string newstring;
+        newstring.append(this->name);
+        newstring.append(": undefined design variable type found in configuration file.");
+        return newstring;
+      }
       }
 
       for (unsigned short iParamDV = 0; iParamDV < nParamDV; iParamDV++) {
@@ -2964,9 +2966,9 @@ public:
              (this->design_variable[iDV] == FFD_CONTROL_SURFACE) ||
              (this->design_variable[iDV] == FFD_CAMBER) ||
              (this->design_variable[iDV] == FFD_THICKNESS))) {
-              ss >> this->FFDTag[iDV];
-              this->paramDV[iDV][iParamDV] = 0;
-            }
+          ss >> this->FFDTag[iDV];
+          this->paramDV[iDV][iParamDV] = 0;
+        }
         else
           ss >> this->paramDV[iDV][iParamDV];
 
@@ -3043,25 +3045,25 @@ public:
     unsigned int i = 0;
     for (unsigned short iDV = 0; iDV < this->nDV; iDV++) {
       switch (this->design_variable[iDV]) {
-        case FFD_CONTROL_POINT:
-          if((this->paramDV[iDV][4] == 0) &&
-             (this->paramDV[iDV][5] == 0) &&
-             (this->paramDV[iDV][6] == 0)) {
-            nValueDV = 3;
-          } else {
-            nValueDV = 1;
-          }
-          break;
-        case FFD_CONTROL_POINT_2D:
-          if((this->paramDV[iDV][3] == 0) &&
-             (this->paramDV[iDV][4] == 0)) {
-            nValueDV = 2;
-          } else {
-            nValueDV = 1;
-          }
-          break;
-        default :
+      case FFD_CONTROL_POINT:
+        if((this->paramDV[iDV][4] == 0) &&
+           (this->paramDV[iDV][5] == 0) &&
+           (this->paramDV[iDV][6] == 0)) {
+          nValueDV = 3;
+        } else {
           nValueDV = 1;
+        }
+        break;
+      case FFD_CONTROL_POINT_2D:
+        if((this->paramDV[iDV][3] == 0) &&
+           (this->paramDV[iDV][4] == 0)) {
+          nValueDV = 2;
+        } else {
+          nValueDV = 1;
+        }
+        break;
+      default :
+        nValueDV = 1;
       }
 
       this->nDV_Value[iDV] = nValueDV;
@@ -3438,7 +3440,7 @@ protected:
 
 public:
   COptionRiemann(string option_field_name, unsigned short & nMarker_Riemann, string* & Marker_Riemann, unsigned short* & option_field, const map<string, Tenum> m, su2double* & var1, su2double* & var2, su2double** & FlowDir) : size(nMarker_Riemann),
-  	  	  	  	  marker(Marker_Riemann), field(option_field), var1(var1), var2(var2), flowdir(FlowDir) {
+    marker(Marker_Riemann), field(option_field), var1(var1), var2(var2), flowdir(FlowDir) {
     this->name = option_field_name;
     this->m = m;
   }
@@ -3484,15 +3486,15 @@ public:
 
     for (unsigned long i = 0; i < nVals; i++) {
       this->marker[i].assign(option_value[7*i]);
-        // Check to see if the enum value is in the map
-    if (this->m.find(option_value[7*i + 1]) == m.end()) {
-      string str;
-      str.append(this->name);
-      str.append(": invalid option value ");
-      str.append(option_value[0]);
-      str.append(". Check current SU2 options in config_template.cfg.");
-      return str;
-    }
+      // Check to see if the enum value is in the map
+      if (this->m.find(option_value[7*i + 1]) == m.end()) {
+        string str;
+        str.append(this->name);
+        str.append(": invalid option value ");
+        str.append(option_value[0]);
+        str.append(". Check current SU2 options in config_template.cfg.");
+        return str;
+      }
       Tenum val = this->m[option_value[7*i + 1]];
       this->field[i] = val;
 
@@ -3546,7 +3548,7 @@ class COptionGiles : public COptionBase{
 
 public:
   COptionGiles(string option_field_name, unsigned short & nMarker_Giles, string* & Marker_Giles, unsigned short* & option_field, const map<string, Tenum> m, su2double* & var1, su2double* & var2, su2double** & FlowDir, su2double* & relfac1, su2double* & relfac2) : size(nMarker_Giles),
-  	  	  	  	  marker(Marker_Giles), field(option_field), var1(var1), var2(var2), flowdir(FlowDir), relfac1(relfac1), relfac2(relfac2) {
+    marker(Marker_Giles), field(option_field), var1(var1), var2(var2), flowdir(FlowDir), relfac1(relfac1), relfac2(relfac2) {
     this->name = option_field_name;
     this->m = m;
   }
@@ -3598,15 +3600,15 @@ public:
 
     for (unsigned int i = 0; i < nVals; i++) {
       this->marker[i].assign(option_value[9*i]);
-        // Check to see if the enum value is in the map
-    if (this->m.find(option_value[9*i + 1]) == m.end()) {
-      string str;
-      str.append(this->name);
-      str.append(": invalid option value ");
-      str.append(option_value[0]);
-      str.append(". Check current SU2 options in config_template.cfg.");
-      return str;
-    }
+      // Check to see if the enum value is in the map
+      if (this->m.find(option_value[9*i + 1]) == m.end()) {
+        string str;
+        str.append(this->name);
+        str.append(": invalid option value ");
+        str.append(option_value[0]);
+        str.append(". Check current SU2 options in config_template.cfg.");
+        return str;
+      }
       Tenum val = this->m[option_value[9*i + 1]];
       this->field[i] = val;
 
@@ -3935,7 +3937,7 @@ public:
     for (unsigned long i = 0; i < nVals; i++) {
       this->marker_turboIn[i].assign(option_value[mod_num*i]);
       this->marker_turboOut[i].assign(option_value[mod_num*i+1]);
-     }
+    }
 
 
     return "";
@@ -3983,8 +3985,8 @@ public:
   COptionActDisk(const string name,
                  unsigned short & nMarker_ActDiskInlet, unsigned short & nMarker_ActDiskOutlet, string * & Marker_ActDiskInlet, string * & Marker_ActDiskOutlet,
                  su2double ** & ActDisk_PressJump, su2double ** & ActDisk_TempJump, su2double ** & ActDisk_Omega) :
-  inlet_size(nMarker_ActDiskInlet), outlet_size(nMarker_ActDiskOutlet), marker_inlet(Marker_ActDiskInlet), marker_outlet(Marker_ActDiskOutlet),
-  press_jump(ActDisk_PressJump), temp_jump(ActDisk_TempJump), omega(ActDisk_Omega) {
+    inlet_size(nMarker_ActDiskInlet), outlet_size(nMarker_ActDiskOutlet), marker_inlet(Marker_ActDiskInlet), marker_outlet(Marker_ActDiskOutlet),
+    press_jump(ActDisk_PressJump), temp_jump(ActDisk_TempJump), omega(ActDisk_Omega) {
     this->name = name;
   }
 
@@ -4077,8 +4079,8 @@ public:
   COptionWallFunction(const string name, unsigned short &nMarker_WF,
                       string* &Marker_WF, unsigned short* &type_WF,
                       unsigned short** &intInfo_WF, su2double** &doubleInfo_WF) :
-  nMarkers(nMarker_WF), markers(Marker_WF), walltype(type_WF),
-  intInfo(intInfo_WF), doubleInfo(doubleInfo_WF) {
+    nMarkers(nMarker_WF), markers(Marker_WF), walltype(type_WF),
+    intInfo(intInfo_WF), doubleInfo(doubleInfo_WF) {
     this->name = name;
   }
 
@@ -4134,10 +4136,10 @@ public:
             must be specified. Hence the counter must be updated
             accordingly. ---*/
       switch( typeWF ) {
-        case EQUILIBRIUM_WALL_MODEL:    counter += 3; break;
-        case NONEQUILIBRIUM_WALL_MODEL: counter += 2; break;
-        case LOGARITHMIC_WALL_MODEL: counter += 3; break;
-        default: break;
+      case EQUILIBRIUM_WALL_MODEL:    counter += 3; break;
+      case NONEQUILIBRIUM_WALL_MODEL: counter += 2; break;
+      case LOGARITHMIC_WALL_MODEL: counter += 3; break;
+      default: break;
       }
 
       /* In case the counter is larger than totalSize, the data for
@@ -4185,91 +4187,91 @@ public:
             is needed, which is extracted from option_value. ---*/
       switch( this->walltype[i] ) {
 
-        case EQUILIBRIUM_WALL_MODEL: {
+      case EQUILIBRIUM_WALL_MODEL: {
 
-          /* LES equilibrium wall model. The exchange distance, stretching
+        /* LES equilibrium wall model. The exchange distance, stretching
              factor and number of points in the wall model must be specified. */
-          this->intInfo[i]    = new unsigned short[1];
-          this->doubleInfo[i] = new su2double[2];
+        this->intInfo[i]    = new unsigned short[1];
+        this->doubleInfo[i] = new su2double[2];
 
-          istringstream ss_1st(option_value[counter++]);
-          if (!(ss_1st >> this->doubleInfo[i][0])) {
-            return badValue(option_value, "su2double", this->name);
-          }
-
-          istringstream ss_2nd(option_value[counter++]);
-          if (!(ss_2nd >> this->doubleInfo[i][1])) {
-            return badValue(option_value, "su2double", this->name);
-          }
-
-          istringstream ss_3rd(option_value[counter++]);
-          if (!(ss_3rd >> this->intInfo[i][0])) {
-            return badValue(option_value, "unsigned short", this->name);
-          }
-
-          break;
+        istringstream ss_1st(option_value[counter++]);
+        if (!(ss_1st >> this->doubleInfo[i][0])) {
+          return badValue(option_value, "su2double", this->name);
         }
 
-        case NONEQUILIBRIUM_WALL_MODEL: {
+        istringstream ss_2nd(option_value[counter++]);
+        if (!(ss_2nd >> this->doubleInfo[i][1])) {
+          return badValue(option_value, "su2double", this->name);
+        }
 
-          /* LES non-equilibrium model. The RANS turbulence model and
+        istringstream ss_3rd(option_value[counter++]);
+        if (!(ss_3rd >> this->intInfo[i][0])) {
+          return badValue(option_value, "unsigned short", this->name);
+        }
+
+        break;
+      }
+
+      case NONEQUILIBRIUM_WALL_MODEL: {
+
+        /* LES non-equilibrium model. The RANS turbulence model and
              the exchange distance need to be specified. */
-          this->intInfo[i]    = new unsigned short[1];
-          this->doubleInfo[i] = new su2double[1];
+        this->intInfo[i]    = new unsigned short[1];
+        this->doubleInfo[i] = new su2double[1];
 
-          /* Check for a valid RANS turbulence model. */
-          map<string, ENUM_TURB_MODEL>::const_iterator iit;
-          iit = Turb_Model_Map.find(option_value[counter++]);
-          if(iit == Turb_Model_Map.end()) {
-            string newstring;
-            newstring.append(this->name);
-            newstring.append(", marker ");
-            newstring.append(this->markers[i]);
-            newstring.append(", wall function type ");
-            newstring.append(option_value[counter-2]);
-            newstring.append(": Invalid RANS turbulence model, ");
-            newstring.append(option_value[counter-1]);
-            newstring.append(", specified");
-            return newstring;
-          }
-
-          this->intInfo[i][0] = iit->second;
-
-          /* Extract the exchange distance. */
-          istringstream ss_1st(option_value[counter++]);
-          if (!(ss_1st >> this->doubleInfo[i][0])) {
-            return badValue(option_value, "su2double", this->name);
-          }
-
-          break;
+        /* Check for a valid RANS turbulence model. */
+        map<string, ENUM_TURB_MODEL>::const_iterator iit;
+        iit = Turb_Model_Map.find(option_value[counter++]);
+        if(iit == Turb_Model_Map.end()) {
+          string newstring;
+          newstring.append(this->name);
+          newstring.append(", marker ");
+          newstring.append(this->markers[i]);
+          newstring.append(", wall function type ");
+          newstring.append(option_value[counter-2]);
+          newstring.append(": Invalid RANS turbulence model, ");
+          newstring.append(option_value[counter-1]);
+          newstring.append(", specified");
+          return newstring;
         }
-        case LOGARITHMIC_WALL_MODEL: {
 
-          /* LES Logarithmic law-of-the-wall model. The exchange distance, stretching
+        this->intInfo[i][0] = iit->second;
+
+        /* Extract the exchange distance. */
+        istringstream ss_1st(option_value[counter++]);
+        if (!(ss_1st >> this->doubleInfo[i][0])) {
+          return badValue(option_value, "su2double", this->name);
+        }
+
+        break;
+      }
+      case LOGARITHMIC_WALL_MODEL: {
+
+        /* LES Logarithmic law-of-the-wall model. The exchange distance, stretching
            factor and number of points in the wall model must be specified. */
-          this->intInfo[i]    = new unsigned short[1];
-          this->doubleInfo[i] = new su2double[2];
+        this->intInfo[i]    = new unsigned short[1];
+        this->doubleInfo[i] = new su2double[2];
 
-          istringstream ss_1st(option_value[counter++]);
-          if (!(ss_1st >> this->doubleInfo[i][0])) {
-            return badValue(option_value, "su2double", this->name);
-          }
-
-          istringstream ss_2nd(option_value[counter++]);
-          if (!(ss_2nd >> this->doubleInfo[i][1])) {
-            return badValue(option_value, "su2double", this->name);
-          }
-
-          istringstream ss_3rd(option_value[counter++]);
-          if (!(ss_3rd >> this->intInfo[i][0])) {
-            return badValue(option_value, "unsigned short", this->name);
-          }
-
-          break;
+        istringstream ss_1st(option_value[counter++]);
+        if (!(ss_1st >> this->doubleInfo[i][0])) {
+          return badValue(option_value, "su2double", this->name);
         }
 
-        default: // Just to avoid a compiler warning.
-          break;
+        istringstream ss_2nd(option_value[counter++]);
+        if (!(ss_2nd >> this->doubleInfo[i][1])) {
+          return badValue(option_value, "su2double", this->name);
+        }
+
+        istringstream ss_3rd(option_value[counter++]);
+        if (!(ss_3rd >> this->intInfo[i][0])) {
+          return badValue(option_value, "unsigned short", this->name);
+        }
+
+        break;
+      }
+
+      default: // Just to avoid a compiler warning.
+        break;
       }
     }
 

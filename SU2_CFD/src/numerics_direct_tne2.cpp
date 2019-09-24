@@ -35,7 +35,6 @@
  * License along with SU2. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../include/numerics_structure.hpp"
-#include "../include/variables/CTNE2EulerVariable.hpp"
 #include <limits>
 
 CUpwRoe_TNE2::CUpwRoe_TNE2(unsigned short val_nDim, unsigned short val_nVar,
@@ -128,10 +127,10 @@ void CUpwRoe_TNE2::ComputeResidual(su2double *val_residual,
     RoeV[iVar] = (R*V_j[iVar] + V_i[iVar])/(R+1);
 
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    RoeEve[iSpecies] = var->CalcEve(config, RoeV[TVE_INDEX], iSpecies);
+    RoeEve[iSpecies] = FluidModel->CalcEve(config, RoeV[TVE_INDEX], iSpecies);
 
   /*--- Calculate derivatives of pressure ---*/
-  var->CalcdPdU(RoeV, RoeEve, config, RoedPdU);
+  FluidModel->CalcdPdU(RoeV, RoeEve, config, RoedPdU);
 
   /*--- Calculate dual grid tangent vectors for P & invP ---*/
   CreateBasis(UnitNormal);
@@ -383,11 +382,11 @@ void CUpwMSW_TNE2::ComputeResidual(su2double *val_residual,
   ProjVelst_j = onemw*ProjVel_j + w*ProjVel_i;
 
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    Evest_i[iSpecies] = var->CalcEve(config, Vst_i[TVE_INDEX], iSpecies);
-    Evest_j[iSpecies] = var->CalcEve(config, Vst_j[TVE_INDEX], iSpecies);
+    Evest_i[iSpecies] = FluidModel->CalcEve(config, Vst_i[TVE_INDEX], iSpecies);
+    Evest_j[iSpecies] = FluidModel->CalcEve(config, Vst_j[TVE_INDEX], iSpecies);
   }
-  var->CalcdPdU(Vst_i, Evest_i, config, dPdUst_i);
-  var->CalcdPdU(Vst_j, Evest_j, config, dPdUst_j);
+  FluidModel->CalcdPdU(Vst_i, Evest_i, config, dPdUst_i);
+  FluidModel->CalcdPdU(Vst_j, Evest_j, config, dPdUst_j);
 
   /*--- Flow eigenvalues at i (Lambda+) ---*/
   for (iSpecies = 0; iSpecies < nSpecies+nDim-1; iSpecies++)
@@ -1064,90 +1063,6 @@ void CUpwAUSMPLUSUP2_TNE2::ComputeResidual(su2double *val_residual, su2double **
 
   for (iDim = 0; iDim < nDim; iDim++)
     val_residual[nSpecies+iDim] += pF*UnitNormal[iDim]*Area;
-
-  /*--- Roe's Jacobian -> checking if there is an improvement over TNE2 AUSM Jacobian---*/
-  //if (implicit){
-  //
-  //  /*--- Compute Roe Variables ---*/
-  //  R    = sqrt(abs(V_j[RHO_INDEX]/V_i[RHO_INDEX]));
-  //  for (iVar = 0; iVar < nVar; iVar++)
-  //    RoeU[iVar] = (R*U_j[iVar] + U_i[iVar])/(R+1);
-  //  for (iVar = 0; iVar < nPrimVar; iVar++)
-  //    RoeV[iVar] = (R*V_j[iVar] + V_i[iVar])/(R+1);
-
-  //  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-  //    RoeEve[iSpecies] = var->CalcEve(config, RoeV[TVE_INDEX], iSpecies);
-
-  /*--- Calculate derivatives of pressure ---*/
-  //    var->CalcdPdU(RoeV, RoeEve, config, RoedPdU);
-
-  /*--- Calculate dual grid tangent vectors for P & invP ---*/
-  //    CreateBasis(UnitNormal);
-
-  /*--- Compute projected P, invP, and Lambda ---*/
-  //  GetPMatrix(RoeU, RoeV, RoedPdU, UnitNormal, l, m, P_Tensor);
-  //  GetPMatrix_inv(RoeU, RoeV, RoedPdU, UnitNormal, l, m, invP_Tensor);
-
-  //  RoeSoundSpeed = sqrt((1.0+RoedPdU[nSpecies+nDim])*
-  //      RoeV[P_INDEX]/RoeV[RHO_INDEX]);
-
-  /*--- Compute projected velocities ---*/
-  //  ProjVelocity = 0.0; ProjVelocity_i = 0.0; ProjVelocity_j = 0.0;
-  //  for (iDim = 0; iDim < nDim; iDim++) {
-  //    ProjVelocity   += RoeV[VEL_INDEX+iDim] * UnitNormal[iDim];
-  //    ProjVelocity_i += V_i[VEL_INDEX+iDim]  * UnitNormal[iDim];
-  //    ProjVelocity_j += V_j[VEL_INDEX+iDim]  * UnitNormal[iDim];
-  //  }
-
-  /*--- Calculate eigenvalues ---*/
-  //  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-  //    Lambda[iSpecies] = ProjVelocity;
-  //  for (iDim = 0; iDim < nDim-1; iDim++)
-  //    Lambda[nSpecies+iDim] = ProjVelocity;
-  //  Lambda[nSpecies+nDim-1] = ProjVelocity + RoeSoundSpeed;
-  //  Lambda[nSpecies+nDim]   = ProjVelocity - RoeSoundSpeed;
-  //  Lambda[nSpecies+nDim+1] = ProjVelocity;
-
-  /*--- Harten and Hyman (1983) entropy correction ---*/
-  //  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-  //    Epsilon[iSpecies] = 4.0*max(0.0, max(Lambda[iDim]-ProjVelocity_i,
-  //                                         ProjVelocity_j-Lambda[iDim] ));
-  //  for (iDim = 0; iDim < nDim-1; iDim++)
-  //    Epsilon[nSpecies+iDim] = 4.0*max(0.0, max(Lambda[iDim]-ProjVelocity_i,
-  //                                              ProjVelocity_j-Lambda[iDim] ));
-  //  Epsilon[nSpecies+nDim-1] = 4.0*max(0.0, max(Lambda[nSpecies+nDim-1]-(ProjVelocity_i+V_i[A_INDEX]),
-  //                                     (ProjVelocity_j+V_j[A_INDEX])-Lambda[nSpecies+nDim-1]));
-  //  Epsilon[nSpecies+nDim]   = 4.0*max(0.0, max(Lambda[nSpecies+nDim]-(ProjVelocity_i-V_i[A_INDEX]),
-  //                                     (ProjVelocity_j-V_j[A_INDEX])-Lambda[nSpecies+nDim]));
-  //  Epsilon[nSpecies+nDim+1] = 4.0*max(0.0, max(Lambda[iDim]-ProjVelocity_i,
-  //                                              ProjVelocity_j-Lambda[iDim] ));
-  //  for (iVar = 0; iVar < nVar; iVar++)
-  //    if ( fabs(Lambda[iVar]) < Epsilon[iVar] )
-  //      Lambda[iVar] = (Lambda[iVar]*Lambda[iVar] + Epsilon[iVar]*Epsilon[iVar])/(2.0*Epsilon[iVar]);
-  //    else
-  //      Lambda[iVar] = fabs(Lambda[iVar]);
-
-  //  for (iVar = 0; iVar < nVar; iVar++)
-  //    Lambda[iVar] = fabs(Lambda[iVar]);
-
-  /*--- Calculate inviscid projected Jacobians ---*/
-  // Note: Scaling value is 0.5 because inviscid flux is based on 0.5*(Fc_i+Fc_j)
-  //  GetInviscidProjJac(U_i, V_i, dPdU_i, Normal, 0.5, val_Jacobian_i);
-  //  GetInviscidProjJac(U_j, V_j, dPdU_j, Normal, 0.5, val_Jacobian_j);
-
-  /*--- Roe's Flux approximation ---*/
-  //  for (iVar = 0; iVar < nVar; iVar++) {
-  //    for (jVar = 0; jVar < nVar; jVar++) {
-
-  /*--- Compute |Proj_ModJac_Tensor| = P x |Lambda| x inverse P ---*/
-  //      Proj_ModJac_Tensor_ij = 0.0;
-  //      for (kVar = 0; kVar < nVar; kVar++)
-  //        Proj_ModJac_Tensor_ij += P_Tensor[iVar][kVar]*Lambda[kVar]*invP_Tensor[kVar][jVar];
-  //      val_Jacobian_i[iVar][jVar] += 0.5*Proj_ModJac_Tensor_ij*Area;
-  //      val_Jacobian_j[iVar][jVar] -= 0.5*Proj_ModJac_Tensor_ij*Area;
-  //    }
-  //  }
-  //}
 
   /*--- AUSM's Jacobian....requires tiny CFL's (this must be fixed) ---*/
   if (implicit) {
@@ -1934,9 +1849,9 @@ void CCentLax_TNE2::ComputeResidual(su2double *val_resconv,
   for (iVar = 0; iVar < nPrimVar; iVar++)
     MeanV[iVar] = 0.5*(V_i[iVar]+V_j[iVar]);
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    MeanEve[iSpecies] = var->CalcEve(config, MeanV[TVE_INDEX], iSpecies);
+    MeanEve[iSpecies] = FluidModel->CalcEve(config, MeanV[TVE_INDEX], iSpecies);
 
-  var->CalcdPdU(MeanV, MeanEve, config, MeandPdU);
+  FluidModel->CalcdPdU(MeanV, MeanEve, config, MeandPdU);
 
   /*--- Get projected flux tensor ---*/
   GetInviscidProjFlux(MeanU, MeanV, Normal, ProjFlux);
@@ -2207,7 +2122,7 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
   V   = val_primvar;
   GV  = val_gradprimvar;
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    hs[iSpecies]  = var->CalcHs(config, T, val_eve[iSpecies], iSpecies);
+    hs[iSpecies]  = FluidModel->CalcHs(config, T, val_eve[iSpecies], iSpecies);
 
   /*--- Calculate the velocity divergence ---*/
   div_vel = 0.0;
@@ -2354,7 +2269,7 @@ void CAvgGrad_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
     Ys[iSpecies]   = val_Mean_PrimVar[RHOS_INDEX+iSpecies];
     Ys_i[iSpecies] = V_i[RHOS_INDEX+iSpecies]/V_i[RHO_INDEX];
     Ys_j[iSpecies] = V_j[RHOS_INDEX+iSpecies]/V_j[RHO_INDEX];
-    hs[iSpecies]   = var->CalcHs(config, T, val_Mean_Eve[iSpecies], iSpecies);
+    hs[iSpecies]   = FluidModel->CalcHs(config, T, val_Mean_Eve[iSpecies], iSpecies);
     Cvtr[iSpecies] = (3.0/2.0 + xi[iSpecies]/2.0)*Ru/Ms[iSpecies];
   }
   for (iDim = 0; iDim < nDim; iDim++)
@@ -2669,7 +2584,7 @@ void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,
   V   = val_primvar;
   GV  = val_gradprimvar;
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    hs[iSpecies]  = var->CalcHs(config, T, val_eve[iSpecies], iSpecies);
+    hs[iSpecies]  = FluidModel->CalcHs(config, T, val_eve[iSpecies], iSpecies);
 
   /*--- Calculate the velocity divergence ---*/
   div_vel = 0.0;
@@ -2816,7 +2731,8 @@ void CAvgGradCorrected_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
     Ys[iSpecies]   = val_Mean_PrimVar[RHOS_INDEX+iSpecies];
     Ys_i[iSpecies] = V_i[RHOS_INDEX+iSpecies]/V_i[RHO_INDEX];
     Ys_j[iSpecies] = V_j[RHOS_INDEX+iSpecies]/V_j[RHO_INDEX];
-    hs[iSpecies]   = var->CalcHs(config, T, val_Mean_Eve[iSpecies], iSpecies);
+
+    hs[iSpecies]   = FluidModel->CalcHs(config, T, val_Mean_Eve[iSpecies], iSpecies);
     Cvtr[iSpecies] = (3.0/2.0 + xi[iSpecies]/2.0)*Ru/Ms[iSpecies];
   }
   for (iDim = 0; iDim < nDim; iDim++)
@@ -3622,7 +3538,7 @@ void CSource_TNE2::ComputeVibRelaxation(su2double *val_residual,
     taus[iSpecies] = tauMW[iSpecies] + tauP[iSpecies];
 
     /*--- Calculate vib.-el. energies ---*/
-    estar[iSpecies] = var->CalcEve(config, T, iSpecies);
+    estar[iSpecies] = FluidModel->CalcEve(config, T, iSpecies);
 
     /*--- Add species contribution to residual ---*/
     val_residual[nEv] += rhos * (estar[iSpecies] -
@@ -3634,7 +3550,7 @@ void CSource_TNE2::ComputeVibRelaxation(su2double *val_residual,
 
       /*--- Rename ---*/
       rhos = V_i[RHOS_INDEX+iSpecies];
-      Cvvsst[iSpecies] = var->CalcCvve(T, config, iSpecies);
+      Cvvsst[iSpecies] = FluidModel->CalcCvve(T, config, iSpecies);
 
       for (iVar = 0; iVar < nVar; iVar++) {
         val_Jacobian_i[nEv][iVar] += rhos/taus[iSpecies]*(Cvvsst[iSpecies]*dTdU_i[iVar] -

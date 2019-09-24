@@ -230,13 +230,13 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double val_pressure,
   hf        = config->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
 
   /*--- Rename & initialize for convenience ---*/
-  RuSI      = UNIVERSAL_GAS_CONSTANT;           // Universal gas constant [J/(mol*K)]
-  Ru        = 1000.0*RuSI;                       // Universal gas constant [J/(kmol*K)]
-  Tve       = val_temperature_ve;                // Vibrational temperature [K]
-  T         = val_temperature;                   // Translational-rotational temperature [K]
-  sqvel     = 0.0;                               // Velocity^2 [m2/s2]
-  rhoE      = 0.0;                               // Mixture total energy per mass [J/kg]
-  rhoEve    = 0.0;                               // Mixture vib-el energy per mass [J/kg]
+  RuSI      = UNIVERSAL_GAS_CONSTANT;          // Universal gas constant [J/(mol*K)]
+  Ru        = 1000.0*RuSI;                     // Universal gas constant [J/(kmol*K)]
+  Tve       = val_temperature_ve;              // Vibrational temperature [K]
+  T         = val_temperature;                 // Translational-rotational temperature [K]
+  sqvel     = 0.0;                             // Velocity^2 [m2/s2]
+  rhoE      = 0.0;                             // Mixture total energy per mass [J/kg]
+  rhoEve    = 0.0;                             // Mixture vib-el energy per mass [J/kg]
   denom     = 0.0;
   conc      = 0.0;
   rhoCvtr   = 0.0;

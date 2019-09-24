@@ -1,4 +1,4 @@
-/*!
+﻿/*!
 * fluid_model_tne2.cpp
 * \brief Source of the two-temperature model
 * \author W. Maier
@@ -37,11 +37,28 @@
 
 #include "../include/fluid_model.hpp"
 
-CTNE2ModelGas::CTNE2ModelGas()  : CFluidModel() {}
+CTNE2ModelGas::CTNE2ModelGas(unsigned short val_nSpecies,
+                             unsigned short val_nDim,
+                             bool val_ionization)  : CFluidModel() {
+
+  nSpecies      = val_nSpecies;
+  nDim          = val_nDim;
+  ionization    = val_ionization;
+  RHOS_INDEX    = 0;
+  T_INDEX       = nSpecies;
+  TVE_INDEX     = nSpecies+1;
+  VEL_INDEX     = nSpecies+2;
+  P_INDEX       = nSpecies+nDim+2;
+  RHO_INDEX     = nSpecies+nDim+3;
+  H_INDEX       = nSpecies+nDim+4;
+  A_INDEX       = nSpecies+nDim+5;
+  RHOCVTR_INDEX = nSpecies+nDim+6;
+  RHOCVVE_INDEX = nSpecies+nDim+7;
+}
 
 CTNE2ModelGas::~CTNE2ModelGas(void) { }
 
-void CTNE2ModelGas::CalcdPdu(su2double *V, su2double *val_eves,
+void CTNE2ModelGas::CalcdPdU(su2double *V, su2double *val_eves,
                              CConfig *config, su2double *val_dPdU) {
 
   // Note: Requires SetDensity(), SetTemperature(), SetPressure(), & SetGasProperties()
@@ -120,7 +137,6 @@ void CTNE2ModelGas::CalcdPdu(su2double *V, su2double *val_eves,
       //        denom += g[iSpecies][iEl] * exp(-thetae[iSpecies][iEl]/Tve);
       //      }
       //      eels = Ru/Ms[iSpecies] * (num/denom);
-
       val_dPdU[iSpecies] -= rho_el * Ru/Ms[nSpecies-1] * (val_eves[iSpecies])/rhoCvve;
     }
     ef = hf[nSpecies-1] - Ru/Ms[nSpecies-1]*Tref[nSpecies-1];
@@ -141,7 +157,7 @@ void CTNE2ModelGas::CalcdPdu(su2double *V, su2double *val_eves,
 
 }
 
-void CTNE2ModelGas::CalcEve(CConfig *config, su2double val_Tve,
+su2double CTNE2ModelGas::CalcEve(CConfig *config, su2double val_Tve,
                             unsigned short val_Species) {
 
   unsigned short iEl, *nElStates;
@@ -201,7 +217,7 @@ void CTNE2ModelGas::CalcEve(CConfig *config, su2double val_Tve,
   return Ev + Eel;
 }
 
-void CTNE2ModelGas::CalcHs(CConfig *config, su2double val_T,
+su2double CTNE2ModelGas::CalcHs(CConfig *config, su2double val_T,
                            su2double val_eves, unsigned short val_Species) {
 
   su2double RuSI, Ru, *xi, *Ms, *hf, *Tref, T, eve, ef, hs;
@@ -230,7 +246,7 @@ void CTNE2ModelGas::CalcHs(CConfig *config, su2double val_T,
   return hs;
 }
 
-void CTNE2ModelGas::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) {
+su2double CTNE2ModelGas::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) {
 
   unsigned short iEl, *nElStates;
   su2double *Ms, *thetav, **thetae, **g, RuSI, Ru;

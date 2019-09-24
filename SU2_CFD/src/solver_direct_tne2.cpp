@@ -1434,14 +1434,14 @@ void CTNE2EulerSolver::Upwind_Residual(CGeometry *geometry, CSolver **solution_c
   delete [] dTdU_j;
   delete [] dTvedU_i;
   delete [] dTvedU_j;
-  //delete [] Eve_i;
-  //delete [] Eve_j;
+  delete [] Eve_i;
+  delete [] Eve_j;
   delete [] Cvve_i;
   delete [] Cvve_j;
 }
 
-void CTNE2EulerSolver::Source_Residual(CGeometry *geometry, CSolver **solution_container, CNumerics *numerics,
-                                       CNumerics *second_solver, CConfig *config, unsigned short iMesh) {
+void CTNE2EulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver, CNumerics *numerics,
+                                       CNumerics *second_numerics, CConfig *config, unsigned short iMesh) {
 
   unsigned short iVar, jVar;
   unsigned long iPoint;
@@ -1469,7 +1469,6 @@ void CTNE2EulerSolver::Source_Residual(CGeometry *geometry, CSolver **solution_c
   numerics->SetAIndex      ( node[0]->GetAIndex()       );
   numerics->SetRhoCvtrIndex( node[0]->GetRhoCvtrIndex() );
   numerics->SetRhoCvveIndex( node[0]->GetRhoCvveIndex() );
-
 
   /*--- Initialize the source residual to zero ---*/
   for (iVar = 0; iVar < nVar; iVar++) Residual[iVar] = 0.0;
@@ -3146,10 +3145,19 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
   thetav                  = config->GetCharVibTemp();
   thetae                  = config->GetCharElTemp();
   g                       = config->GetElDegeneracy();
-  ionization = config->GetIonization();
 
+
+  /*--- Check for ionization ---*/
+  ionization = config->GetIonization();
   if (ionization) { nHeavy = nSpecies-1; nEl = 1; }
   else            { nHeavy = nSpecies;   nEl = 0; }
+
+  /*--- Instatiate the correct fluid model ---*/
+  // THERE WILL NEED TO BE A BETTER WAY TO INSTANTIATE THIS FOR CMUTATION adn CHARDCODE
+  switch (config->GetKind_FluidModel()) {
+  default:
+    FluidModel = new CTNE2ModelGas(nSpecies, nDim, ionization);
+  }
 
   /*--- Compressible non dimensionalization ---*/
 
@@ -6766,9 +6774,10 @@ void CTNE2NSSolver::Viscous_Residual(CGeometry *geometry,
 }
 
 void CTNE2NSSolver::Source_Residual(CGeometry *geometry,
-                                    CSolver **solution_container,
+                                    CSolver **solution,
                                     CNumerics *numerics,
-                                    CNumerics *second_solver, CConfig *config,
+                                    CNumerics *second_solver,
+                                    CConfig *config,
                                     unsigned short iMesh) {
   bool implicit, err;
   unsigned short iMarker, iVar, jVar;
@@ -7766,16 +7775,16 @@ void CTNE2NSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
     GradY[iSpecies] = new su2double[nDim];
 
   //  /*--- Pass structure of the primitive variable vector to CNumerics ---*/
-  //  sour_numerics->SetRhosIndex   ( node[0]->GetRhosIndex()    );
-  //  sour_numerics->SetRhoIndex    ( node[0]->GetRhoIndex()     );
-  //  sour_numerics->SetPIndex      ( node[0]->GetPIndex()       );
-  //  sour_numerics->SetTIndex      ( node[0]->GetTIndex()       );
-  //  sour_numerics->SetTveIndex    ( node[0]->GetTveIndex()     );
-  //  sour_numerics->SetVelIndex    ( node[0]->GetVelIndex()     );
-  //  sour_numerics->SetHIndex      ( node[0]->GetHIndex()       );
-  //  sour_numerics->SetAIndex      ( node[0]->GetAIndex()       );
-  //  sour_numerics->SetRhoCvtrIndex( node[0]->GetRhoCvtrIndex() );
-  //  sour_numerics->SetRhoCvveIndex( node[0]->GetRhoCvveIndex() );
+    sour_numerics->SetRhosIndex   ( node[0]->GetRhosIndex()    );
+    sour_numerics->SetRhoIndex    ( node[0]->GetRhoIndex()     );
+    sour_numerics->SetPIndex      ( node[0]->GetPIndex()       );
+    sour_numerics->SetTIndex      ( node[0]->GetTIndex()       );
+    sour_numerics->SetTveIndex    ( node[0]->GetTveIndex()     );
+    sour_numerics->SetVelIndex    ( node[0]->GetVelIndex()     );
+    sour_numerics->SetHIndex      ( node[0]->GetHIndex()       );
+    sour_numerics->SetAIndex      ( node[0]->GetAIndex()       );
+    sour_numerics->SetRhoCvtrIndex( node[0]->GetRhoCvtrIndex() );
+    sour_numerics->SetRhoCvveIndex( node[0]->GetRhoCvveIndex() );
 
   /*--- Loop over all of the vertices on this boundary marker ---*/
   for(iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {

@@ -206,6 +206,8 @@ inline void CNumerics::GetKeqConstants(su2double *A, unsigned short val_reaction
 
 inline su2double CNumerics::GetPrecond_Beta() { return 0; }
 
+inline void CNumerics::SetFluidModel(CFluidModel* val_fluid_model) {FluidModel = val_fluid_model; }
+
 inline void CNumerics::SetRhosIndex(unsigned short val_Index) { RHOS_INDEX = val_Index; }
 
 inline void CNumerics::SetRhoIndex(unsigned short val_Index) { RHO_INDEX = val_Index; }

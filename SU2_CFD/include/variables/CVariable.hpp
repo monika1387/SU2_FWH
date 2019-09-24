@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file CVariable.hpp
  * \brief Declaration and inlines of the parent class for defining problem
           variables, function definitions in file <i>CVariable.cpp</i>.
@@ -1250,13 +1250,15 @@ public:
   /*!
    * \brief A virtual member.
    */
-  inline virtual bool Cons2PrimVar(CConfig *config, su2double *U, su2double *V, su2double *dPdU,
+  inline virtual bool Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
+                                   su2double *U, su2double *V, su2double *dPdU,
                                    su2double *dTdU, su2double *dTvedU) { return false; }
 
   /*!
    * \brief A virtual member.
    */
-  inline virtual bool Cons2PrimVar(CConfig *config, su2double *U, su2double *V,
+  inline virtual bool Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
+                                   su2double *U, su2double *V,
                                    su2double *val_dPdU, su2double *val_dTdU,
                                    su2double *val_dTvedU, su2double *val_eves,
                                    su2double *val_Cvves) { return false; }
@@ -1609,7 +1611,7 @@ public:
    * \param[in] config - Configuration parameters.
    * \param[in] Coord - Physical coordinates.
    */
-  inline virtual bool SetPrimVar_Compressible(CConfig *config) { return true; }
+  inline virtual bool SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel) { return true; }
 
   /*!
    * \brief A virtual member.

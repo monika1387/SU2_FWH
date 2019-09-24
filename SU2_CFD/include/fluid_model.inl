@@ -102,8 +102,8 @@ inline void CFluidModel::SetTDState_T (su2double val_Temperature) { }
 inline void CFluidModel::SetEddyViscosity (su2double val_Mu_Turb) { Mu_Turb = val_Mu_Turb; }
 
 inline void CFluidModel::CalcdPdU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dPdU) { }
-inline su2double CFluidModel::CalcEve(CConfig *config, su2double val_Tve, unsigned short val_Species) {}
-inline su2double CFluidModel::CalcHs(CConfig *config, su2double val_T, su2double val_eves, unsigned short val_Species) { }
-inline su2double CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { }
+inline su2double CFluidModel::CalcEve(CConfig *config, su2double val_Tve, unsigned short val_Species) { return 0.0; }
+inline su2double CFluidModel::CalcHs(CConfig *config, su2double val_T, su2double val_eves, unsigned short val_Species) { return 0.0; }
+inline su2double CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { return 0.0; }
 inline void CFluidModel::CalcdTdU(su2double *V, CConfig *config, su2double *val_dTdU) { }
 inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dTvedU) {}

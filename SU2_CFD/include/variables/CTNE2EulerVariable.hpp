@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file CEulerVariable.hpp
  * \brief Class for defining the variables of the compressible Euler solver.
  * \author F. Palacios, T. Economon, W. Maier, S.R. Copeland
@@ -205,78 +205,19 @@ public:
   inline su2double **GetGradient_Primitive(void) {return Gradient_Primitive; }
 
   /*!
-   * \brief Set the value of the velocity*velocity.
-   */
-  void SetVelocity2(void);
-
-  /*!
-   * \brief Set the value of the mixture density.
-   */
-  bool SetDensity(void);
-
-  /*!
-   * \brief Set the value of the pressure.  Requires T&Tve calculation.
-   */
-  bool SetPressure(CConfig *config);
-
-  /*!
-   * \brief Set the value of the speed of the sound.
-   * \param[in] config
-   */
-  bool SetSoundSpeed(CConfig *config);
-
-  /*!
    * \brief Set the value of the enthalpy.
    */
   inline void SetEnthalpy(void) { Primitive[H_INDEX] = (Solution[nSpecies+nDim] + Primitive[P_INDEX]) / Primitive[RHO_INDEX]; }
-
-  /*!
-   * \brief Sets gas mixture quantities (\f$\rho C^{trans-rot}_v\f$ & \f$\rho C^{vib-el}_v\f$)
-   */
-  void SetGasProperties(CConfig *config);
-
-  /*!
-   * \brief Calculates vib.-el. energy per mass, \f$e^{vib-el}_s\f$, for input species (not including KE)
-   */
-  su2double CalcEve(CConfig *config, su2double val_Tve, unsigned short val_Species);
 
   /*!
    * \brief Returns the stored value of Eve at the specified node
    */
   inline su2double *GetEve(void) { return eves; }
 
-  /*!
-   * \brief Calculates enthalpy per mass, \f$h^{vib-el}_s\f$, for input species (not including KE)
-   */
-  su2double CalcHs(CConfig *config, su2double val_T, su2double val_eves,
-                   unsigned short val_Species);
-
-  /*!
-   * \brief Calculates enthalpy per mass, \f$C^{vib-el}_{v_s}\f$, for input species (not including KE)
-   */
-  su2double CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species);
-
-  /*!
+   /*!
    * \brief Returns the value of Cvve at the specified node
    */
-  su2double *GetCvve(void) { return Cvves; }
-
-  /*!
-   * \brief Calculates partial derivative of pressure w.r.t. conserved variables \f$\frac{\partial P}{\partial U}\f$
-   * \param[in] config - Configuration settings
-   * \param[in] dPdU - Passed-by-reference array to assign the derivatives
-   */
-  void CalcdPdU(su2double *V, su2double *val_eves, CConfig *config, su2double *dPdU);
-
-  /*!
-   * \brief Set partial derivative of temperature w.r.t. density \f$\frac{\partial P}{\partial \rho_s}\f$
-   */
-  void CalcdTdU(su2double *V, CConfig *config, su2double *dTdU);
-
-  /*!
-   * \brief Set partial derivative of vib.-el. temperature w.r.t. density \f$\frac{\partial P}{\partial \rho_s}\f$
-   */
-  void CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config, su2double *dTvedU);
+  inline su2double *GetCvve(void) { return Cvves; }
 
   /*!
    * \brief Set partial derivative of pressure w.r.t. density \f$\frac{\partial P}{\partial \rho_s}\f$
@@ -306,7 +247,7 @@ public:
   /*!
    * \brief Set all the primitive variables for compressible flows.
    */
-  bool SetPrimVar_Compressible(CConfig *config);
+  bool SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \brief Set all the primitive variables for compressible flows.
@@ -316,7 +257,8 @@ public:
   /*!
    * \brief Set all the conserved variables.
    */
-  bool Cons2PrimVar(CConfig *config, su2double *U, su2double *V, su2double *dPdU,
+  bool Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
+                    su2double *U, su2double *V, su2double *dPdU,
                     su2double *dTdU, su2double *dTvedU, su2double *val_eves,
                     su2double *val_Cvves);
 
@@ -361,12 +303,6 @@ public:
    * \return Pointer to the primitive variable vector.
    */
   inline su2double *GetPrimVar(void) { return Primitive; }
-
-  /*!
-   * \brief A virtual member.
-   * \param[in] config - Configuration parameters.
-   */
-  bool SetTemperature(CConfig *config);
 
   /*!
    * \brief Get the norm 2 of the velocity.

@@ -623,7 +623,7 @@ public:
    * \param[in] th1 - first thermodynamic variable (P).
    * \param[in] th2 - second thermodynamic variable (s).
    */
-   void SetTDState_Ps (su2double P, su2double s );
+  void SetTDState_Ps (su2double P, su2double s );
 
   /*!
    * \brief compute some derivatives of enthalpy and entropy needed for subsonic inflow BC
@@ -644,9 +644,9 @@ class CTNE2ModelGas : public CFluidModel {
 
 protected:
 
- bool ionization;          /*!< \brief Presence of charged species in gas mixture. */
- unsigned short nSpecies;  /*!< \brief Number of species in the gas mixture. */
- unsigned short nDim;      /*!< \brief Number of dimensions. */
+  bool ionization;          /*!< \brief Presence of charged species in gas mixture. */
+  unsigned short nSpecies;  /*!< \brief Number of species in the gas mixture. */
+  unsigned short nDim;      /*!< \brief Number of dimensions. */
 
 private:
 

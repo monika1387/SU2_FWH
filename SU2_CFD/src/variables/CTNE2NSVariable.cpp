@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file CTNE2NSVariable.cpp
  * \brief Definition of the solution fields.
  * \author F. Palacios, T. Economon, S.R. Copeland, W. Maier
@@ -558,16 +558,16 @@ bool CTNE2NSVariable::SetVorticity(void) {
   return false;
 }
 
-bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config) {
+bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel) {
 
   bool nonPhys, bkup;
   unsigned short iVar;
 
-  nonPhys = Cons2PrimVar(config, Solution, Primitive, dPdU, dTdU, dTvedU, eves, Cvves);
+  nonPhys = Cons2PrimVar(config, FluidModel, Solution, Primitive, dPdU, dTdU, dTvedU, eves, Cvves);
   if (nonPhys) {
     for (iVar = 0; iVar < nVar; iVar++)
       Solution[iVar] = Solution_Old[iVar];
-    bkup = Cons2PrimVar(config, Solution, Primitive, dPdU, dTdU, dTvedU, eves, Cvves);
+    bkup = Cons2PrimVar(config, FluidModel, Solution, Primitive, dPdU, dTdU, dTvedU, eves, Cvves);
   }
 
   SetVelocity2();

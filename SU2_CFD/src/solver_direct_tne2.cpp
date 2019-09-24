@@ -526,7 +526,7 @@ CTNE2EulerSolver::CTNE2EulerSolver(CGeometry *geometry, CConfig *config, unsigne
                                       Mvec_Inf, Temperature_Inf,
                                       Temperature_ve_Inf, nDim, nVar,
                                       nPrimVar, nPrimVarGrad, config);
-  check_infty = node_infty->SetPrimVar_Compressible(config);
+  check_infty = node_infty->SetPrimVar_Compressible(config, FluidModel);
 
   /*--- Initialize the solution to the far-field state everywhere. ---*/
   for (iPoint = 0; iPoint < nPoint; iPoint++)
@@ -537,7 +537,7 @@ CTNE2EulerSolver::CTNE2EulerSolver(CGeometry *geometry, CConfig *config, unsigne
   /*--- Check that the initial solution is physical, report any non-physical nodes ---*/
   counter_local = 0;
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    nonPhys = node[iPoint]->SetPrimVar_Compressible(config);
+    nonPhys = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
 
     if (nonPhys) {
       bool ionization;
@@ -831,7 +831,7 @@ void CTNE2EulerSolver::Preprocessing(CGeometry *geometry, CSolver **solution_con
   for (iPoint = 0; iPoint < nPoint; iPoint ++) {
 
     /*--- Primitive variables [rho1,...,rhoNs,T,Tve,u,v,w,P,rho,h,c] ---*/
-    nonPhys = node[iPoint]->SetPrimVar_Compressible(config);
+    nonPhys = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
     if (nonPhys) ErrorCounter++;
 
     /*--- Initialize the convective residual vector ---*/
@@ -1348,9 +1348,9 @@ void CTNE2EulerSolver::Upwind_Residual(CGeometry *geometry, CSolver **solution_c
       //      }
 
 
-      chk_err_i = node[iPoint]->Cons2PrimVar(config, Conserved_i, Primitive_i,
+      chk_err_i = node[iPoint]->Cons2PrimVar(config, FluidModel,  Conserved_i, Primitive_i,
                                              dPdU_i, dTdU_i, dTvedU_i, Eve_i, Cvve_i);
-      chk_err_j = node[jPoint]->Cons2PrimVar(config, Conserved_j, Primitive_j,
+      chk_err_j = node[jPoint]->Cons2PrimVar(config, FluidModel, Conserved_j, Primitive_j,
                                              dPdU_j, dTdU_j, dTvedU_j, Eve_j, Cvve_j);
 
 
@@ -4108,7 +4108,7 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
   unsigned long iVertex, iPoint, Point_Normal;
   su2double P_Total, T_Total, Velocity[3], Velocity2, H_Total, Temperature, Riemann,
       Pressure, Density, Energy, *Flow_Dir, Mach2, SoundSpeed2, SoundSpeed_Total2, Vel_Mag,
-      alpha, aa, bb, cc, dd, Area, UnitaryNormal[3];
+      alpha, aa, bb, cc, dd, Area, UnitNormal[3];
 
   bool implicit             = (config->GetKind_TimeIntScheme_TNE2() == EULER_IMPLICIT);
   bool grid_movement        = config->GetGrid_Movement();
@@ -4124,7 +4124,7 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
   su2double *U_domain = new su2double[nVar];      su2double *U_inlet = new su2double[nVar];
   su2double *V_domain = new su2double[nPrimVar];  su2double *V_inlet = new su2double[nPrimVar];
   su2double *Normal   = new su2double[nDim];
-  su2double UnitNormal[3];
+  //su2double UnitNormal[3];
 
   nSpecies = config->GetnSpecies();
   su2double Spec_Density[nSpecies]; //QT THROWING AN ERROR WHEN USING nSPECIES
@@ -4194,7 +4194,7 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
            from the domain interior. ---*/
         Riemann   = 2.0*sqrt(SoundSpeed2)/Gamma_Minus_One;
         for (iDim = 0; iDim < nDim; iDim++)
-          Riemann += Velocity[iDim]*UnitaryNormal[iDim];
+          Riemann += Velocity[iDim]*UnitNormal[iDim];
 
         /*--- Total speed of sound ---*/
         SoundSpeed_Total2 = Gamma_Minus_One*(H_Total - (Energy + Pressure/Density)+0.5*Velocity2) + SoundSpeed2;
@@ -4203,7 +4203,7 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
            be negative due to outward facing boundary normal convention. ---*/
         alpha = 0.0;
         for (iDim = 0; iDim < nDim; iDim++)
-          alpha += UnitaryNormal[iDim]*Flow_Dir[iDim];
+          alpha += UnitNormal[iDim]*Flow_Dir[iDim];
 
         /*--- Coefficients in the quadratic equation for the velocity ---*/
         aa =  1.0 + 0.5*Gamma_Minus_One*alpha*alpha;
@@ -4294,12 +4294,12 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
            from the domain interior. ---*/
         Riemann = Two_Gamma_M1*sqrt(SoundSpeed2);
         for (iDim = 0; iDim < nDim; iDim++)
-          Riemann += Velocity[iDim]*UnitaryNormal[iDim];
+          Riemann += Velocity[iDim]*UnitNormal[iDim];
 
         /*--- Speed of sound squared for fictitious inlet state ---*/
         SoundSpeed2 = Riemann;
         for (iDim = 0; iDim < nDim; iDim++)
-          SoundSpeed2 -= Vel_Mag*Flow_Dir[iDim]*UnitaryNormal[iDim];
+          SoundSpeed2 -= Vel_Mag*Flow_Dir[iDim]*UnitNormal[iDim];
 
         SoundSpeed2 = max(0.0,0.5*Gamma_Minus_One*SoundSpeed2);
         SoundSpeed2 = SoundSpeed2*SoundSpeed2;
@@ -4376,14 +4376,14 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
   delete [] Normal;
 }
 
-void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution_container,
+void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution,
                                  CNumerics *conv_numerics, CNumerics *visc_numerics, CConfig *config, unsigned short val_marker) {
 
   unsigned short iVar, iDim, iSpecies,iEl, nHeavy, nEl, *nElStates;
   unsigned long iVertex, iPoint, Point_Normal;
   su2double Pressure, P_Exit, Velocity[3], Temperature, Tve,
       Velocity2, Entropy, Density, Energy, Riemann, Vn, SoundSpeed, Mach_Exit, Vn_Exit,
-      Area, UnitaryNormal[3];
+      Area, UnitNormal[3];
   su2double *Ms, *xi, *thetav, **thetae, *Tref, **g, *hf, RuSI, Ru;
   su2double Ef, Ev, Ee;
   su2double thoTve, exptv, thsqr, Cvvs, Cves;
@@ -4471,7 +4471,7 @@ void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution_contain
       Area = sqrt (Area);
 
       for (iDim = 0; iDim < nDim; iDim++)
-        UnitaryNormal[iDim] = Normal[iDim]/Area;
+        UnitNormal[iDim] = Normal[iDim]/Area;
 
       /*--- Current solution at this boundary node ---*/
       for (iVar = 0; iVar < nVar; iVar++)     U_domain[iVar] = node[iPoint]->GetSolution(iVar);
@@ -4497,7 +4497,7 @@ void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution_contain
       for (iDim = 0; iDim < nDim; iDim++) {
         Velocity[iDim] = V_domain[VEL_INDEX+iDim];
         Velocity2 += Velocity[iDim]*Velocity[iDim];
-        Vn += Velocity[iDim]*UnitaryNormal[iDim];
+        Vn += Velocity[iDim]*UnitNormal[iDim];
       }
       Energy      = U_domain[nVar-2]/Density;
       Temperature = V_domain[T_INDEX];
@@ -4543,7 +4543,7 @@ void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution_contain
         Vn_Exit    = Riemann - 2.0*SoundSpeed/Gamma_Minus_One;
         Velocity2  = 0.0;
         for (iDim = 0; iDim < nDim; iDim++) {
-          Velocity[iDim] = Velocity[iDim] + (Vn_Exit-Vn)*UnitaryNormal[iDim];
+          Velocity[iDim] = Velocity[iDim] + (Vn_Exit-Vn)*UnitNormal[iDim];
           Velocity2 += Velocity[iDim]*Velocity[iDim];
         }
 
@@ -4896,13 +4896,13 @@ void CTNE2EulerSolver::BC_Supersonic_Inlet(CGeometry *geometry, CSolver **soluti
       geometry->vertex[val_marker][iVertex]->GetNormal(Normal);
       for (iDim = 0; iDim < nDim; iDim++) Normal[iDim] = -Normal[iDim];
 
-      su2double Area = 0.0;su2double UnitaryNormal[3];
+      su2double Area = 0.0;su2double UnitNormal[3];
       for (iDim = 0; iDim < nDim; iDim++)
         Area += Normal[iDim]*Normal[iDim];
       Area = sqrt (Area);
 
       for (iDim = 0; iDim < nDim; iDim++)
-        UnitaryNormal[iDim] = Normal[iDim]/Area;
+        UnitNormal[iDim] = Normal[iDim]/Area;
 
       /*--- Set various quantities in the solver class ---*/
       conv_numerics->SetNormal(Normal);
@@ -6102,7 +6102,7 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
                                    Mvec_Inf, Temperature_Inf,
                                    Temperature_ve_Inf, nDim, nVar,
                                    nPrimVar, nPrimVarGrad, config);
-  check_infty = node_infty->SetPrimVar_Compressible(config);
+  check_infty = node_infty->SetPrimVar_Compressible(config, FluidModel);
 
   Velocity_Inf = new su2double[nDim];
   for (iDim = 0; iDim < nDim; iDim++)
@@ -6118,7 +6118,7 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
   /*--- Check that the initial solution is physical, report any non-physical nodes ---*/
   counter_local = 0;
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    check = node[iPoint]->SetPrimVar_Compressible(config);
+    check = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
 
     if (check) {
       bool ionization;
@@ -6359,7 +6359,7 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
   for (iPoint = 0; iPoint < nPoint; iPoint ++) {
     /*--- Set the primitive variables incompressible (dens, vx, vy, vz, beta)
           and compressible (temp, vx, vy, vz, press, dens, enthal, sos)---*/
-    nonPhys = node[iPoint]->SetPrimVar_Compressible(config);
+    nonPhys = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
     if (nonPhys) {
       ErrorCounter++;
     }

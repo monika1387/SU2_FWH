@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file CNSVariable.hpp
  * \brief Class for defining the variables of the compressible Navier-Stokes solver.
  * \author F. Palacios, T. Economon, W. Maier, S.R. Copeland
@@ -179,6 +179,6 @@ public:
   /*!
    * \brief Set all the primitive variables for compressible flows
    */
-  bool SetPrimVar_Compressible(CConfig *config);
+  bool SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel);
 
 };

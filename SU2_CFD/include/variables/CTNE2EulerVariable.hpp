@@ -205,6 +205,11 @@ public:
   inline su2double **GetGradient_Primitive(void) {return Gradient_Primitive; }
 
   /*!
+   * \brief Set the value of the velocity squared.
+   */
+  void SetVelocity2(void);
+
+  /*!
    * \brief Set the value of the enthalpy.
    */
   inline void SetEnthalpy(void) { Primitive[H_INDEX] = (Solution[nSpecies+nDim] + Primitive[P_INDEX]) / Primitive[RHO_INDEX]; }

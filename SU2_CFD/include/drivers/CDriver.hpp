@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file driver_structure.hpp
  * \brief Headers of the main subroutines for driving single or multi-zone problems.
  *        The subroutines and functions are in the <i>driver_structure.cpp</i> file.
@@ -76,7 +76,7 @@ protected:
   su2double MDOFs;                              /*!< \brief Total number of DOFs in millions in the calculation (including ghost points).*/
   su2double MDOFsDomain;                        /*!< \brief Total number of DOFs in millions in the calculation (excluding ghost points).*/
   unsigned long ExtIter;                        /*!< \brief External iteration.*/
-  ofstream **ConvHist_file;                       /*!< \brief Convergence history file.*/
+  ofstream **ConvHist_file;                     /*!< \brief Convergence history file.*/
   ofstream FSIHist_file;                        /*!< \brief FSI convergence history file.*/
   unsigned short iMesh,                         /*!< \brief Iterator on mesh levels.*/
                 iZone,                          /*!< \brief Iterator on zones.*/
@@ -89,16 +89,16 @@ protected:
        mixingplane,                             /*!< \brief mixing-plane simulation flag.*/
        fsi,                                     /*!< \brief FSI simulation flag.*/
        fem_solver;                              /*!< \brief FEM fluid solver simulation flag. */
-  CIteration ***iteration_container;             /*!< \brief Container vector with all the iteration methods. */
+  CIteration ***iteration_container;            /*!< \brief Container vector with all the iteration methods. */
   COutput *output;                              /*!< \brief Pointer to the COutput class. */
-  CIntegration ****integration_container;        /*!< \brief Container vector with all the integration methods. */
-  CGeometry ****geometry_container;              /*!< \brief Geometrical definition of the problem. */
-  CSolver *****solver_container;                 /*!< \brief Container vector with all the solutions. */
-  CNumerics ******numerics_container;            /*!< \brief Description of the numerical method (the way in which the equations are solved). */
+  CIntegration ****integration_container;       /*!< \brief Container vector with all the integration methods. */
+  CGeometry ****geometry_container;             /*!< \brief Geometrical definition of the problem. */
+  CSolver *****solver_container;                /*!< \brief Container vector with all the solutions. */
+  CNumerics ******numerics_container;           /*!< \brief Description of the numerical method (the way in which the equations are solved). */
   CConfig **config_container;                   /*!< \brief Definition of the particular problem. */
   CConfig *driver_config;                       /*!< \brief Definition of the driver configuration. */
   CSurfaceMovement **surface_movement;          /*!< \brief Surface movement classes of the problem. */
-  CVolumetricMovement ***grid_movement;          /*!< \brief Volume grid movement classes of the problem. */
+  CVolumetricMovement ***grid_movement;         /*!< \brief Volume grid movement classes of the problem. */
   CFreeFormDefBox*** FFDBox;                    /*!< \brief FFD FFDBoxes of the problem. */
   CInterpolator ***interpolator_container;      /*!< \brief Definition of the interpolation method between non-matching discretizations of the interface. */
   CTransfer ***transfer_container;              /*!< \brief Definition of the transfer of information and the physics involved in the interface. */
@@ -167,7 +167,7 @@ protected:
 
   /*!
    * \brief Definition and allocation of all solution classes.
-   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] solver - Container vector with all the solutions.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
    */
@@ -175,7 +175,7 @@ protected:
 
   /*!
    * \brief Restart of the solvers from the restart files.
-   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] solver - Container vector with all the solutions.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
    */
@@ -183,7 +183,7 @@ protected:
 
   /*!
    * \brief Definition and allocation of all solution classes.
-   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] solver - Container vector with all the solutions.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
    */
@@ -213,7 +213,7 @@ protected:
   /*!
    * \brief Definition and allocation of all solver classes.
    * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] solver - Container vector with all the solutions.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
    */
@@ -222,7 +222,7 @@ protected:
   /*!
    * \brief Definition and allocation of all solver classes.
    * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] solver - Container vector with all the solutions.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
    */
@@ -655,7 +655,7 @@ public:
 
   /*!
    * \brief Preprocess the inlets via file input for all solvers.
-   * \param[in] solver_container - Container vector with all the solutions.
+   * \param[in] solver - Container vector with all the solutions.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
    */
@@ -1079,18 +1079,7 @@ public:
 
   /*!
    * \brief Run a Discrete Adjoint iteration for the FSI problem.
-   * \param[in] iteration_container - Container vector with all the iteration methods.
-   * \param[in] output - Pointer to the COutput class.
-   * \param[in] integration_container - Container vector with all the integration methods.
-   * \param[in] geometry_container - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] numerics_container - Description of the numerical method (the way in which the equations are solved).
-   * \param[in] config_container - Definition of the particular problem.
-   * \param[in] surface_movement - Surface movement classes of the problem.
-   * \param[in] grid_movement - Volume grid movement classes of the problem.
-   * \param[in] FFDBox - FFD FFDBoxes of the problem.
-   */
-
+    */
   void Run();
 
   /*!
@@ -1099,7 +1088,6 @@ public:
    * \param[in] ZONE_STRUCT - zone of the structural solver.
    * \param[in] kind_recording - kind of recording (flow, structure, mesh, cross terms)
    */
-
   void Iterate_Direct(unsigned short ZONE_FLOW, unsigned short ZONE_STRUCT, unsigned short kind_recording);
 
   /*!

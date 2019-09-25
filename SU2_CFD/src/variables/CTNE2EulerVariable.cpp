@@ -470,7 +470,17 @@ su2double CTNE2EulerVariable::GetProjVel(su2double *val_vector) {
   return ProjVel;
 }
 
+void CTNE2EulerVariable::SetVelocity2(void) {
 
+  unsigned short iDim;
+
+  Velocity2 = 0.0;
+  for (iDim = 0; iDim < nDim; iDim++) {
+    Primitive[VEL_INDEX+iDim] = Solution[nSpecies+iDim] / Primitive[RHO_INDEX];
+    Velocity2 +=  Solution[nSpecies+iDim]*Solution[nSpecies+iDim]
+        / (Primitive[RHO_INDEX]*Primitive[RHO_INDEX]);
+  }
+}
 
 bool CTNE2EulerVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel) {
 

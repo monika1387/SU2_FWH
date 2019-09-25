@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file config_structure.cpp
  * \brief Main file for managing the config file
  * \author F. Palacios, T. Economon, B. Tracey, H. Kline
@@ -6322,14 +6322,14 @@ void CConfig::SetOutput(unsigned short val_software, unsigned short val_izone) {
       case MAXIMUM_HEATFLUX:           cout << "Maximum heat flux objective function." << endl; break;
       case FIGURE_OF_MERIT:            cout << "Rotor Figure of Merit objective function." << endl; break;
       case BUFFET_SENSOR:              cout << "Buffet sensor objective function." << endl; break;
-      case SURFACE_TOTAL_PRESSURE:         cout << "Average total pressure objective function." << endl; break;
-      case SURFACE_STATIC_PRESSURE:        cout << "Average static pressure objective function." << endl; break;
-      case SURFACE_MASSFLOW:             cout << "Mass flow rate objective function." << endl; break;
-      case SURFACE_MACH:             cout << "Mach number objective function." << endl; break;
-      case CUSTOM_OBJFUNC:        		cout << "Custom objective function." << endl; break;
-      case REFERENCE_GEOMETRY:        cout << "Target geometry objective function." << endl; break;
-      case REFERENCE_NODE:            cout << "Target node displacement objective function." << endl; break;
-      case VOLUME_FRACTION:           cout << "Volume fraction objective function." << endl; break;
+      case SURFACE_TOTAL_PRESSURE:     cout << "Average total pressure objective function." << endl; break;
+      case SURFACE_STATIC_PRESSURE:    cout << "Average static pressure objective function." << endl; break;
+      case SURFACE_MASSFLOW:           cout << "Mass flow rate objective function." << endl; break;
+      case SURFACE_MACH:               cout << "Mach number objective function." << endl; break;
+      case CUSTOM_OBJFUNC:        	   cout << "Custom objective function." << endl; break;
+      case REFERENCE_GEOMETRY:         cout << "Target geometry objective function." << endl; break;
+      case REFERENCE_NODE:             cout << "Target node displacement objective function." << endl; break;
+      case VOLUME_FRACTION:            cout << "Volume fraction objective function." << endl; break;
       }
     }
     else {

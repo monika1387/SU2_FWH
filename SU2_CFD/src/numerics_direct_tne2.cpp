@@ -1417,11 +1417,11 @@ void CUpwAUSMPWplus_TNE2::ComputeResidual(su2double *val_residual,
     rhos_j[iSpecies] = V_j[RHOS_INDEX+iSpecies];
   }
   for (iDim = 0; iDim < nDim; iDim++) {
-    u_i[iDim] = 0.0; // V_i[VEL_INDEX+iDim];
-    u_j[iDim] = 0.0; // V_j[VEL_INDEX+iDim];
+    u_i[iDim] = V_i[VEL_INDEX+iDim];
+    u_j[iDim] = V_j[VEL_INDEX+iDim];
   }
-  P_i       = 0.0; // V_i[P_INDEX];
-  P_j       = 0.0; // V_j[P_INDEX];
+  P_i       = V_i[P_INDEX];
+  P_j       = V_j[P_INDEX];
   h_i       = V_i[H_INDEX];
   h_j       = V_j[H_INDEX];
   rho_i     = V_i[RHO_INDEX];

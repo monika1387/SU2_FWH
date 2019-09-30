@@ -885,7 +885,7 @@ void CConfig::SetConfig_Options() {
   /* DESCRIPTION: Specify chemical model for multi-species simulations */
   addEnumOption("GAS_MODEL", Kind_GasModel, GasModel_Map, N2);
   /* DESCRIPTION: Specify transport coefficient model for multi-species simulations */
-  addEnumOption("TRANSPORT_COEFF_MODEL", Kind_TransCoeffModel, TransCoeffModel_Map, WBE);
+  addEnumOption("TRANSPORT_COEFF_MODEL", Kind_TransCoeffModel, TransCoeffModel_Map, WILKE);
   /* DESCRIPTION: Specify mass fraction of each species */
   addDoubleListOption("GAS_COMPOSITION", nSpecies, Gas_Composition);
 
@@ -2862,6 +2862,9 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
                     (Kind_FluidModel == INC_IDEAL_GAS) ||
                     (Kind_FluidModel == INC_IDEAL_GAS_POLY) ||
                     (Kind_FluidModel == CONSTANT_DENSITY));
+  bool tne2      = ((Kind_Solver == TNE2_EULER) ||
+                    (Kind_Solver == TNE2_NAVIER_STOKES) ||
+                    (Kind_Solver == TNE2_RANS));
   bool standard_air = ((Kind_FluidModel == STANDARD_AIR));
 
   if (nZone > 1){
@@ -3145,7 +3148,9 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
   }
 
   /*--- Check for Fluid model consistency ---*/
-
+  if ((tne2) && ((Kind_FluidModel != MUTATION) || (Kind_FluidModel != TNE2_GAS_MODEL))){
+    Kind_FluidModel = TNE2_GAS_MODEL;
+  }
   if (standard_air) {
     if (Gamma != 1.4 || Gas_Constant != 287.058) {
       Gamma = 1.4;

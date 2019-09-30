@@ -573,7 +573,7 @@ bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *Flui
   SetVelocity2();
 
   switch (config->GetKind_TransCoeffModel()) {
-  case WBE:
+  case WILKE:
     SetTransportCoefficients_WBE(config);
     break;
   case GUPTAYOS:

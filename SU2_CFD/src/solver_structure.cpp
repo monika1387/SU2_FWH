@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file solver_structure.cpp
  * \brief Main subroutines for solving primal and adjoint problems.
  * \author F. Palacios, T. Economon

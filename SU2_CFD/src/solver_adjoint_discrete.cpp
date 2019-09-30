@@ -38,9 +38,7 @@
 #include "../include/solver_structure.hpp"
 #include "../include/variables/CDiscAdjVariable.hpp"
 
-CDiscAdjSolver::CDiscAdjSolver(void) : CSolver () {
-
-}
+CDiscAdjSolver::CDiscAdjSolver(void) : CSolver () {}
 
 CDiscAdjSolver::CDiscAdjSolver(CGeometry *geometry, CConfig *config)  : CSolver() {}
 

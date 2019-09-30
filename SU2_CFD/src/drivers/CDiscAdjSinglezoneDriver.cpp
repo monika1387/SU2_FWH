@@ -75,7 +75,7 @@ CDiscAdjSinglezoneDriver::CDiscAdjSinglezoneDriver(char* confFile,
 
   case DISC_ADJ_TNE2_EULER: case DISC_ADJ_TNE2_NAVIER_STOKES: case DISC_ADJ_TNE2_RANS:
     if (rank == MASTER_NODE)
-      cout << "Direct iteration: Euler/Navier-Stokes/RANS equation." << endl;
+      cout << "Direct iteration: TNE2 Euler/Navier-Stokes/RANS equation." << endl;
     direct_iteration = new CTNE2Iteration(config);
     MainVariables = FLOW_CONS_VARS;
     SecondaryVariables = MESH_COORDS;

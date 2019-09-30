@@ -9204,6 +9204,18 @@ public:
   void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
 
   /*!
+   * \brief Set the freestream pressure.
+   * \param[in] Value of freestream pressure.
+   */
+  void SetPressure_Inf(su2double p_inf);
+
+  /*!
+   * \brief Set the freestream temperature.
+   * \param[in] Value of freestream temperature.
+   */
+  void SetTemperature_Inf(su2double t_inf);
+
+  /*!
    * \brief Load a solution from a restart file.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] solver - Container vector with all of the solvers.

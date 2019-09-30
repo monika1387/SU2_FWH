@@ -6332,7 +6332,6 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
               SPRINTF (flow_resid, ", %14.8e, %14.8e, %14.8e, %14.8e, %14.8e, %14.8e, %14.8e", log10 (residual_flow[0]), log10 (residual_flow[1]), log10 (residual_flow[2]), log10 (residual_flow[3]), log10 (residual_flow[4]), log10 (residual_flow[5]), log10 (residual_flow[6]) );
             }
           }
-
           /*--- Turbulent residual ---*/
           if (turbulent) {
             switch(nVar_Turb) {
@@ -7071,7 +7070,6 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
         case TNE2_EULER: case TNE2_NAVIER_STOKES:
 
           /*--- Write history file ---*/
-
           if ((!DualTime_Iteration) && (output_files)) {
           if (!turbo) {
             config[val_iZone]->GetHistFile()[0] << begin << direct_coeff;
@@ -7346,19 +7344,17 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
 
       case DISC_ADJ_TNE2_EULER: case DISC_ADJ_TNE2_NAVIER_STOKES:
         if (!DualTime_Iteration) {
-          ConvHist_file[0] << begin << adjoint_coeff << adj_flow_resid << end;
-          ConvHist_file[0].flush();
+          config[val_iZone]->GetHistFile()[0] << begin << adjoint_coeff << adj_flow_resid << end;
+          config[val_iZone]->GetHistFile()[0].flush();
         }
         if ((val_iZone == 0 && val_iInst == 0)|| fluid_structure){
           if (DualTime_Iteration || !Unsteady){
             cout.precision(6);
             cout.setf(ios::fixed, ios::floatfield);
-            if (compressible) {
-              cout.width(15); cout << log10(residual_adjflow[0]);
-              cout.width(15); cout << log10(residual_adjflow[1]);
-              cout.width(15); cout << log10(residual_adjflow[4]);
-              cout.width(15); cout << log10(residual_adjflow[5]);
-            }
+            cout.width(15); cout << log10(residual_adjflow[0]);
+            cout.width(15); cout << log10(residual_adjflow[1]);
+            cout.width(15); cout << log10(residual_adjflow[4]);
+            cout.width(15); cout << log10(residual_adjflow[5]);
 
             if (disc_adj) {
               cout.precision(4);
@@ -7367,14 +7363,6 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
                 if (compressible) {
                 cout.width(14); cout << Total_Sens_Press;
                 cout.width(14); cout << Total_Sens_AoA;
-                }
-                if (incompressible) {
-                  cout.width(14); cout << Total_Sens_ModVel;
-                  if (energy) {
-                    cout.width(14); cout << Total_Sens_Temp;
-                  } else {
-                    cout.width(14); cout << Total_Sens_BPressure;
-                  }
                 }
               } else {
                 cout.width(14); cout << Total_Sens_BPressure;

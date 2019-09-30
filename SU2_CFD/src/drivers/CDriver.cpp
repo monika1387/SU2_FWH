@@ -1116,10 +1116,8 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][FLOW_SOL]->GetnVar();
     }
     if (tne2_euler) {
-      if (compressible) {
-        solver[iMGlevel][TNE2_SOL] = new CTNE2EulerSolver(geometry[iMGlevel], config, iMGlevel);
-        solver[iMGlevel][TNE2_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_TNE2_SYS, false);
-      }
+      solver[iMGlevel][TNE2_SOL] = new CTNE2EulerSolver(geometry[iMGlevel], config, iMGlevel);
+      solver[iMGlevel][TNE2_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_TNE2_SYS, false);
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][TNE2_SOL]->GetnVar();
     }
     if (ns) {
@@ -3437,7 +3435,7 @@ void CDriver::Iteration_Preprocessing(CConfig* config, CIteration *&iteration) {
 
     case DISC_ADJ_TNE2_EULER: case DISC_ADJ_TNE2_NAVIER_STOKES: case DISC_ADJ_TNE2_RANS:
       if (rank == MASTER_NODE)
-        cout << "Discrete adjoint Euler/Navier-Stokes/RANS fluid iteration." << endl;
+        cout << "Discrete adjoint TNE2 Euler/Navier-Stokes/RANS fluid iteration." << endl;
       iteration = new CDiscAdjTNE2Iteration(config);
       break;
 

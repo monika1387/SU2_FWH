@@ -8567,10 +8567,10 @@ void CConfig::SetGlobalParam(unsigned short val_solver,
     break;
   case TNE2_RANS:
     if (val_system == RUNTIME_TNE2_SYS) {
-      SetKind_ConvNumScheme(Kind_ConvNumScheme_Flow, Kind_Centered_Flow,
-                            Kind_Upwind_Flow, Kind_SlopeLimit_Flow,
-                            MUSCL_Flow, NONE);
-      SetKind_TimeIntScheme(Kind_TimeIntScheme_Flow);
+      SetKind_ConvNumScheme(Kind_ConvNumScheme_TNE2, Kind_Centered_TNE2,
+                            Kind_Upwind_TNE2, Kind_SlopeLimit_TNE2,
+                            MUSCL_TNE2, NONE);
+      SetKind_TimeIntScheme(Kind_TimeIntScheme_TNE2);
     }
     if (val_system == RUNTIME_TURB_SYS) {
       SetKind_ConvNumScheme(Kind_ConvNumScheme_Turb, Kind_Centered_Turb,

@@ -1901,10 +1901,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
   turbulent, tne2_turbulent, adj_turb,
   fem_euler, fem_ns, fem_turbulent,
   spalart_allmaras, neg_spalart_allmaras, menter_sst,
-  fem,
-  heat_fvm,
-  transition,
-  template_solver;
+  fem, heat_fvm, transition, template_solver;
   bool e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
 
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
@@ -1948,12 +1945,12 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
 
   if (turbulent || fem_turbulent || tne2_turbulent)
     switch (config->GetKind_Turb_Model()) {
-      case SA:     spalart_allmaras = true;     break;
-      case SA_NEG: neg_spalart_allmaras = true; break;
-      case SA_E:   e_spalart_allmaras = true; break;
-      case SA_COMP:   comp_spalart_allmaras = true; break;
-      case SA_E_COMP:   e_comp_spalart_allmaras = true; break;
-      case SST:    menter_sst = true; constants = solver[MESH_0][TURB_SOL]->GetConstants(); break;
+      case SA:        spalart_allmaras        = true; break;
+      case SA_NEG:    neg_spalart_allmaras    = true; break;
+      case SA_E:      e_spalart_allmaras      = true; break;
+      case SA_COMP:   comp_spalart_allmaras   = true; break;
+      case SA_E_COMP: e_comp_spalart_allmaras = true; break;
+      case SST:       menter_sst = true; constants = solver[MESH_0][TURB_SOL]->GetConstants(); break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
 
@@ -2503,8 +2500,6 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
     /*--- Definition of the convective scheme for each equation and mesh level ---*/
 
     switch (config->GetKind_ConvNumScheme_Turb()) {
-      case NONE :
-        break;
       case SPACE_UPWIND :
         for (iMGlevel = 0; iMGlevel <= config->GetnMGLevels(); iMGlevel++) {
           if (spalart_allmaras || neg_spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras ) {

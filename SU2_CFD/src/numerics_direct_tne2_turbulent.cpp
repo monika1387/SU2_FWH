@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file numerics_direct_turbulent.cpp
  * \brief This file contains all the convective term discretization.
  * \author F. Palacios, A. Bueno
@@ -73,8 +73,8 @@ void CTNE2UpwScalar::ComputeResidual(su2double *val_residual,
 
   ExtraADPreaccIn();
 
-  Density_i = V_i[nDim+2];
-  Density_j = V_j[nDim+2];
+  Density_i = V_i[RHO_INDEX];
+  Density_j = V_j[RHO_INDEX];
 
   q_ij = 0.0;
   if (grid_movement) {
@@ -86,8 +86,8 @@ void CTNE2UpwScalar::ComputeResidual(su2double *val_residual,
   }
   else {
     for (iDim = 0; iDim < nDim; iDim++) {
-      Velocity_i[iDim] = V_i[iDim+1];
-      Velocity_j[iDim] = V_j[iDim+1];
+      Velocity_i[iDim] = V_i[VEL_INDEX+iDim];
+      Velocity_j[iDim] = V_j[VEL_INDEX+iDim];
       q_ij += 0.5*(Velocity_i[iDim]+Velocity_j[iDim])*Normal[iDim];
     }
   }
@@ -158,9 +158,9 @@ CAvgGrad_TNE2Scalar::~CAvgGrad_TNE2Scalar(void) {
 }
 
 void CAvgGrad_TNE2Scalar::ComputeResidual(su2double *val_residual,
-                                        su2double **Jacobian_i,
-                                        su2double **Jacobian_j,
-                                        CConfig *config) {
+                                          su2double **Jacobian_i,
+                                          su2double **Jacobian_j,
+                                          CConfig *config) {
 
   AD::StartPreacc();
   AD::SetPreaccIn(Coord_i, nDim); AD::SetPreaccIn(Coord_j, nDim);
@@ -172,20 +172,10 @@ void CAvgGrad_TNE2Scalar::ComputeResidual(su2double *val_residual,
   }
   ExtraADPreaccIn();
 
-  if (incompressible) {
-    AD::SetPreaccIn(V_i, nDim+6); AD::SetPreaccIn(V_j, nDim+6);
-
-    Density_i = V_i[nDim+2];            Density_j = V_j[nDim+2];
-    Laminar_Viscosity_i = V_i[nDim+4];  Laminar_Viscosity_j = V_j[nDim+4];
-    Eddy_Viscosity_i = V_i[nDim+5];     Eddy_Viscosity_j = V_j[nDim+5];
-  }
-  else {
-    AD::SetPreaccIn(V_i, nDim+7); AD::SetPreaccIn(V_j, nDim+7);
-
-    Density_i = V_i[nDim+2];            Density_j = V_j[nDim+2];
-    Laminar_Viscosity_i = V_i[nDim+5];  Laminar_Viscosity_j = V_j[nDim+5];
-    Eddy_Viscosity_i = V_i[nDim+6];     Eddy_Viscosity_j = V_j[nDim+6];
-  }
+  AD::SetPreaccIn(V_i, nDim+7); AD::SetPreaccIn(V_j, nDim+7);
+  Density_i = V_i[RHO_INDEX];            Density_j = V_j[RHO_INDEX];
+  Laminar_Viscosity_i = FluidModel->GetLaminarViscosity();  Laminar_Viscosity_j = FluidModel->GetLaminarViscosity();
+  //Eddy_Viscosity_i = GetEddyViscosity();     Eddy_Viscosity_j = GetEddyViscosity(); //DELETE ME, NOT IMPLEMENTED YET --> NEED FOR TURB
 
   /*--- Compute vector going from iPoint to jPoint ---*/
 

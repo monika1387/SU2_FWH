@@ -370,26 +370,26 @@ CNumerics::~CNumerics(void) {
       delete [] dJdr_j[iSpecies];
     delete [] dJdr_j;
   }
-  if (dFdVi != NULL) {
-    for (iVar = 0; iVar < nVar; iVar++)
-      delete [] dFdVi[iVar];
-    delete [] dFdVi;
-  }
-  if (dFdVj != NULL) {
-    for (iVar = 0; iVar < nVar; iVar++)
-      delete [] dFdVj[iVar];
-    delete [] dFdVj;
-  }
-  if (dVdUi != NULL) {
-    for (iVar = 0; iVar < nVar; iVar++)
-      delete [] dVdUi[iVar];
-    delete [] dVdUi;
-  }
-  if (dVdUj != NULL) {
-    for (iVar = 0; iVar < nVar; iVar++)
-      delete [] dVdUj[iVar];
-    delete [] dVdUj;
-  }
+//  if (dFdVi != NULL) {
+//    for (iVar = 0; iVar < nVar; iVar++)
+//      delete [] dFdVi[iVar];
+//    delete [] dFdVi;
+//  }
+//  if (dFdVj != NULL) {
+//    for (iVar = 0; iVar < nVar; iVar++)
+//      delete [] dFdVj[iVar];
+//    delete [] dFdVj;
+//  }
+//  if (dVdUi != NULL) {
+//    for (iVar = 0; iVar < nVar; iVar++)
+//      delete [] dVdUi[iVar];
+//    delete [] dVdUi;
+//  }
+//  if (dVdUj != NULL) {
+//    for (iVar = 0; iVar < nVar; iVar++)
+//      delete [] dVdUj[iVar];
+//    delete [] dVdUj;
+//  }
 
   if (Ys != NULL) delete [] Ys;
   if (dFdYi != NULL) {

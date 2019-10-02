@@ -3159,7 +3159,7 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
     //FluidModel = new CReactiveMutation(config->GetGasModel(), config->GetTransportModel());
     break;
   case TNE2_GAS_MODEL:
-    FluidModel = new CTNE2ModelGas(nSpecies, nDim, ionization);
+    FluidModel = new CMultiSpeciesGas(nSpecies, nDim, ionization);
     break;
   }
 

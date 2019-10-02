@@ -4574,27 +4574,28 @@ public:
  * \brief Class for computing viscous term using the average of gradients.
  * \ingroup ViscDiscr
  * \author S. Copeland, W. Maier
- * \version 6.1.0 "Falcon"
+ * \version 6.2.0 "Falcon"
  */
 class CAvgGradCorrected_TNE2 : public CNumerics {
 private:
-  unsigned short iDim, iVar, nPrimVar, nPrimVarGrad;		/*!< \brief Iterators in dimension an variable. */
+  unsigned short
+  iDim, iVar, nPrimVar, nPrimVarGrad;  /*!< \brief Iterators in dimension an variable. */
   su2double
-  *Mean_PrimVar,					/*!< \brief Mean primitive variables. */
-  *PrimVar_i, *PrimVar_j,				/*!< \brief Primitives variables at point i and 1. */
-  **Mean_GradPrimVar,						/*!< \brief Mean value of the gradient. */
-  *Mean_Eve,
-  *Mean_Cvve,
+  *Mean_PrimVar,					   /*!< \brief Mean primitive variables. */
+  *PrimVar_i, *PrimVar_j,              /*!< \brief Primitives variables at point i and 1. */
+  **Mean_GradPrimVar,                  /*!< \brief Mean value of the gradient. */
+  *Mean_Eve,                           /*!< \brief Mean value of electronic-vibe energy. */
+  *Mean_Cvve,                          /*!< \brief Mean value of Cv (vibe-elec) mode. */
   *Edge_Vector,
-  *Proj_Mean_GradPrimVar_Edge,  /*!< \brief Mean value of the gradient. */
-  *Mean_Diffusion_Coeff, /*!< \brief Mean value of the species diffusion coefficient. */
-  Mean_Laminar_Viscosity, /*!< \brief Mean value of the viscosity. */
-  Mean_Thermal_Conductivity, /*!< \brief Mean value of the thermal conductivity. */
-  Mean_Thermal_Conductivity_ve, /*!< \brief Mean value of the vib-el. thermal conductivity. */
+  *Proj_Mean_GradPrimVar_Edge,         /*!< \brief Mean value of the gradient. */
+  *Mean_Diffusion_Coeff,               /*!< \brief Mean value of the species diffusion coefficient. */
+  Mean_Laminar_Viscosity,              /*!< \brief Mean value of the viscosity. */
+  Mean_Thermal_Conductivity,           /*!< \brief Mean value of the thermal conductivity. */
+  Mean_Thermal_Conductivity_ve,        /*!< \brief Mean value of the vib-el. thermal conductivity. */
 
-  *ProjFlux,	/*!< \brief Projection of the viscous fluxes. */
-  dist_ij;						/*!< \brief Length of the edge and face. */
-  bool implicit; /*!< \brief Implicit calculus. */
+  *ProjFlux,	                       /*!< \brief Projection of the viscous fluxes. */
+  dist_ij;						       /*!< \brief Length of the edge and face. */
+  bool implicit;                       /*!< \brief Implicit calculus. */
 
 public:
 
@@ -4700,7 +4701,6 @@ private:
   su2double *dkf, *dkb, *dRfok, *dRbok, *A;
   su2double *Cvvs, *Cvvsst;
   su2double *Cves;
-  //  CVariable *var;
 
 public:
 

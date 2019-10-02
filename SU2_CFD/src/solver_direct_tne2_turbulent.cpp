@@ -111,8 +111,8 @@ void CTNE2TurbSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_cont
 
     /*--- Primitive variables w/o reconstruction ---*/
 
-    V_i = solver_container[TNE2_SOL]->node[iPoint]->GetPrimitive();
-    V_j = solver_container[TNE2_SOL]->node[jPoint]->GetPrimitive();
+    V_i = solver_container[TNE2_SOL]->node[iPoint]->GetPrimVar();
+    V_j = solver_container[TNE2_SOL]->node[jPoint]->GetPrimVar();
     numerics->SetPrimitive(V_i, V_j);
 
     /*--- Turbulent variables w/o reconstruction ---*/
@@ -226,8 +226,8 @@ void CTNE2TurbSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_con
 
     /*--- Conservative variables w/o reconstruction ---*/
 
-    numerics->SetPrimitive(solver_container[TNE2_SOL]->node[iPoint]->GetPrimitive(),
-                           solver_container[TNE2_SOL]->node[jPoint]->GetPrimitive());
+    numerics->SetPrimitive(solver_container[TNE2_SOL]->node[iPoint]->GetPrimVar(),
+                           solver_container[TNE2_SOL]->node[jPoint]->GetPrimVar());
 
     /*--- Turbulent variables w/o reconstruction, and its gradients ---*/
 
@@ -983,17 +983,6 @@ CTNE2TurbSASolver::CTNE2TurbSASolver(CGeometry *geometry, CConfig *config, unsig
   if (config->GetKind_Trans_Model() == BC) {
     nu_tilde_Inf  = 0.005*Factor_nu_Inf*Viscosity_Inf/Density_Inf;
   }
-
-  /*--- Factor_nu_Engine ---*/
-  Factor_nu_Engine = config->GetNuFactor_Engine();
-  nu_tilde_Engine  = Factor_nu_Engine*Viscosity_Inf/Density_Inf;
-  if (config->GetKind_Trans_Model() == BC) {
-    nu_tilde_Engine  = 0.005*Factor_nu_Engine*Viscosity_Inf/Density_Inf;
-  }
-
-  /*--- Factor_nu_ActDisk ---*/
-  Factor_nu_ActDisk = config->GetNuFactor_Engine();
-  nu_tilde_ActDisk  = Factor_nu_ActDisk*Viscosity_Inf/Density_Inf;
 
   /*--- Eddy viscosity at infinity ---*/
   su2double Ji, Ji_3, fv1, cv1_3 = 7.1*7.1*7.1;

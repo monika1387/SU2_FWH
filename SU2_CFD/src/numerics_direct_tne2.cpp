@@ -1964,6 +1964,18 @@ CAvgGrad_TNE2::CAvgGrad_TNE2(unsigned short val_nDim,
   Mean_GradPrimVar = new su2double* [nPrimVarGrad];
   for (iVar = 0; iVar < nPrimVarGrad; iVar++)
     Mean_GradPrimVar[iVar] = new su2double [nDim];
+
+  /*--- Other gradient arrays ---*/
+  dFdVi = new su2double*[nVar];
+  dFdVj = new su2double*[nVar];
+  dVdUi = new su2double*[nVar];
+  dVdUj = new su2double*[nVar];
+  for (unsigned short iVar = 0; iVar < nVar; iVar++) {
+    dFdVi[iVar] = new su2double[nVar];
+    dFdVj[iVar] = new su2double[nVar];
+    dVdUi[iVar] = new su2double[nVar];
+    dVdUj[iVar] = new su2double[nVar];
+  }
 }
 
 CAvgGrad_TNE2::~CAvgGrad_TNE2(void) {
@@ -1986,6 +1998,29 @@ CAvgGrad_TNE2::~CAvgGrad_TNE2(void) {
   for (iVar = 0; iVar < nPrimVarGrad; iVar++)
     delete [] Mean_GradPrimVar[iVar];
   delete [] Mean_GradPrimVar;
+
+  if (dFdVi != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dFdVi[iVar];
+    delete [] dFdVi;
+  }
+  if (dFdVj != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dFdVj[iVar];
+    delete [] dFdVj;
+  }
+
+  if (dVdUi != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dVdUi[iVar];
+    delete [] dVdUi;
+  }
+  if (dVdUj != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dVdUj[iVar];
+    delete [] dVdUj;
+  }
+
 }
 
 void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
@@ -2517,6 +2552,18 @@ CAvgGradCorrected_TNE2::CAvgGradCorrected_TNE2(unsigned short val_nDim,
 
   Proj_Mean_GradPrimVar_Edge = new su2double[nPrimVarGrad];
   Edge_Vector = new su2double[3];
+
+  /*--- Other vectors ---*/
+  dFdVi = new double*[nVar];
+  dFdVj = new double*[nVar];
+  dVdUi = new double*[nVar];
+  dVdUj = new double*[nVar];
+  for (unsigned short iVar = 0; iVar < nVar; iVar++) {
+    dFdVi[iVar] = new double[nVar];
+    dFdVj[iVar] = new double[nVar];
+    dVdUi[iVar] = new double[nVar];
+    dVdUj[iVar] = new double[nVar];
+  }
 }
 
 CAvgGradCorrected_TNE2::~CAvgGradCorrected_TNE2(void) {
@@ -2536,6 +2583,27 @@ CAvgGradCorrected_TNE2::~CAvgGradCorrected_TNE2(void) {
 
   delete [] Proj_Mean_GradPrimVar_Edge;
   delete [] Edge_Vector;
+
+  if (dFdVi != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dFdVi[iVar];
+    delete [] dFdVi;
+  }
+  if (dFdVj != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dFdVj[iVar];
+    delete [] dFdVj;
+  }
+  if (dVdUi != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dVdUi[iVar];
+    delete [] dVdUi;
+  }
+  if (dVdUj != NULL) {
+    for (iVar = 0; iVar < nVar; iVar++)
+      delete [] dVdUj[iVar];
+    delete [] dVdUj;
+  }
 }
 
 void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,

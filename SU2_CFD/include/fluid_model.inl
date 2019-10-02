@@ -38,6 +38,7 @@
 #pragma once
 
 inline void CFluidModel::SetCpModel(CConfig *config) { }
+
 inline su2double CFluidModel::GetPressure () { return Pressure; }
 inline su2double CFluidModel::GetSoundSpeed () { return sqrt(SoundSpeed2); }
 inline su2double CFluidModel::GetSoundSpeed2 () { return SoundSpeed2; }
@@ -107,3 +108,28 @@ inline su2double CFluidModel::CalcHs(CConfig *config, su2double val_T, su2double
 inline su2double CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { return 0.0; }
 inline void CFluidModel::CalcdTdU(su2double *V, CConfig *config, su2double *val_dTdU) { }
 inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dTvedU) {}
+
+
+//DELETE ME, ADDRESS THS
+//inline void CFluidModel::InitializeMixture(CConfig *config) {}
+//inline bool CFluidModel::Get_Ionization() { return ionization; }
+//inline vector<su2double> CFluidModel::Get_MolarMass(){ return Ms; }
+//inline vector<su2double> CFluidModel::Get_CvTraRotSpecies(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_CvVibElSpecies(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double  CFluidModel::Get_Gamma(su2double *cs, su2double rho, su2double T, su2double Tve){}
+//inline su2double  CFluidModel::Get_GammaFrozen(su2double *cs, su2double rho, su2double T, su2double Tve){}
+//inline su2double  CFluidModel::Get_GammaEquilibrium(su2double *cs, su2double rho, su2double T, su2double Tve){}
+//inline su2double  CFluidModel::Get_MixtureEnergy(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_MixtureEnergies(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_SpeciesEnergies(su2double* cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double* CFluidModel::Get_NetProductionRates(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_VTEnergysourceTerm(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double  CFluidModel::Get_ReferenceTemperature(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_EnthalpiesFormation(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double* CFluidModel::Get_Enthalpies(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double* CFluidModel::Get_DiffusionCoeff(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double  CFluidModel::Get_Viscosity(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_ThermalConductivity(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline vector<su2double> CFluidModel::Get_Temperatures(su2double *cs, su2double rho, su2double rhoE, su2double rhoEve) {}
+//inline su2double  CFluidModel::Get_SoundSpeedFrozen(su2double *cs, su2double rho, su2double T, su2double Tve) {}
+//inline su2double  CFluidModel::Get_Density(su2double T, su2double *Xs, su2double P){}

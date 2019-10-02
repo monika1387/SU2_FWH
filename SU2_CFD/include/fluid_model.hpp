@@ -54,6 +54,11 @@ using namespace std;
 
 #include "../include/transport_model.hpp"
 #include "../../Common/include/config_structure.hpp"
+#include "mutation.hpp"
+
+#ifdef HAVE_MUTATIONPP
+#include "mutation++.h"
+#endif
 
 /*!
  * \class CFluidModel
@@ -636,11 +641,11 @@ public:
 };
 
 /*!
- * \derived class CTNE2ModelGas
+ * \derived class CMultiSpeciesGas
  * \brief Child class for defining the two-temperature model.
  * \author: W. Maier
  */
-class CTNE2ModelGas : public CFluidModel {
+class CMultiSpeciesGas : public CFluidModel {
 
 protected:
 
@@ -655,12 +660,12 @@ public:
   /*!
    * \brief Constructor of the class.
    */
-  CTNE2ModelGas(unsigned short val_nSpecies, unsigned short val_nDim, bool val_ionization);
+  CMultiSpeciesGas(unsigned short val_nSpecies, unsigned short val_nDim, bool val_ionization);
 
   /*!
    * \brief Destructor of the class.
    */
-  virtual ~CTNE2ModelGas(void);
+  virtual ~CMultiSpeciesGas(void);
 
   /*!
    * \brief Calculate derivatve of Pressure wrt to Velocity
@@ -712,6 +717,90 @@ public:
    */
   void CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config,
                   su2double *val_dTvedU);
+};
+
+/*!
+ * \derived class CMultiSpeciesGas
+ * \brief Child class for defining the two-temperature model.
+ * \author: W. Maier
+ */
+class CMutationGas : public CMultiSpeciesGas {
+
+protected:
+
+  bool ionization;  /*!< \brief Presence of charged species in gas mixture. */
+  string MixtureFile; /*!< \brief Presence of charged species in gas mixture. */
+  unsigned short nSpecies, iSpecies; /*!< \brief Presence of charged species in gas mixture. */
+  CMutation *mutation; /*!< \brief Presence of charged species in gas mixture. */
+  su2double *comp, *Cp_ks,  *Cp_trs, *Cp_ves, E, gamma, gammaFrozen, gammaEquilibrium, *Ws, Tref, *hs; /*!< \brief Presence of charged species in gas mixture. */
+  su2double  mu, *Ds; /*!< \brief Presence of charged species in gas mixture. */
+  su2double  a, *Xs; /*!< \brief Presence of charged species in gas mixture. */
+  vector<su2double> Ms, Cv_trs, Cv_ks, Energies, OmegaVT, hf, Energies_Species,  Cv_ves, Temp, lambda; /*!< \brief Presence of charged species in gas mixture. */
+  //Mutation::MixtureOptions opt;, THIS DONT WORK, ASK CATARINA, DELETE ME
+
+private:
+
+public:
+
+  /*!
+   * \brief Constructor of the class.
+   */
+  CMutationGas(string MixFile, string Transport, unsigned short val_nSpecies,
+               unsigned short val_nDim, bool val_ionization);
+
+  /*!
+   * \brief Destructor of the class.
+   */
+  virtual ~CMutationGas(void);
+
+  void       InitializeMixture(CConfig *config);
+
+  bool       Calc_Ionization();
+
+  vector<su2double> Calc_MolarMass();
+
+  vector<su2double> Calc_CvTraRotSpecies(su2double* cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_CvVibElSpecies(su2double* cs, su2double rho, su2double T, su2double Tve);
+
+  su2double* Calc_CpTraRotSpecies(su2double* cs, su2double rho, su2double T, su2double Tve);
+
+  su2double* Calc_CpVibElSpecies(su2double* cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_Gamma(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_GammaFrozen(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_GammaEquilibrium(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_MixtureEnergy(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_MixtureEnergies(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_SpeciesEnergies(su2double* cs, su2double rho, su2double T, su2double Tve);
+
+  su2double* Calc_NetProductionRates(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_VTEnergysourceTerm(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_ReferenceTemperature(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_EnthalpiesFormation(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double* Calc_Enthalpies(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double* Calc_DiffusionCoeff(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_Viscosity(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_ThermalConductivity(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  vector<su2double> Calc_Temperatures(su2double *cs, su2double rho, su2double rhoE, su2double rhoEve);
+
+  su2double  Calc_SoundSpeedFrozen(su2double *cs, su2double rho, su2double T, su2double Tve);
+
+  su2double  Calc_Density(su2double T, su2double *Xs, su2double P);
+
 };
 
 /*!

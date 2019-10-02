@@ -1,7 +1,7 @@
 ﻿/*!
-* fluid_model_tne2.cpp
+* fluid_model_multi.cpp
 * \brief Source of the two-temperature model
-* \author W. Maier
+* \author W. Maier, C. Garbacz
 * \version 6.2.0 "Falcon"
 *
 * The current SU2 release has been coordinated by the
@@ -37,9 +37,9 @@
 
 #include "../include/fluid_model.hpp"
 
-CTNE2ModelGas::CTNE2ModelGas(unsigned short val_nSpecies,
-                             unsigned short val_nDim,
-                             bool val_ionization)  : CFluidModel() {
+CMultiSpeciesGas::CMultiSpeciesGas(unsigned short val_nSpecies,
+                                   unsigned short val_nDim,
+                                   bool val_ionization)  : CFluidModel() {
 
   nSpecies      = val_nSpecies;
   nDim          = val_nDim;
@@ -56,9 +56,230 @@ CTNE2ModelGas::CTNE2ModelGas(unsigned short val_nSpecies,
   RHOCVVE_INDEX = nSpecies+nDim+7;
 }
 
-CTNE2ModelGas::~CTNE2ModelGas(void) { }
+CMultiSpeciesGas::~CMultiSpeciesGas(void) { }
 
-void CTNE2ModelGas::CalcdPdU(su2double *V, su2double *val_eves,
+
+CMutationGas::CMutationGas(string Mixfile, string Transport, unsigned short val_nSpecies,
+                           unsigned short val_nDim, bool val_ionization) :
+                           CMultiSpeciesGas(val_nSpecies, val_nDim, val_ionization)//,
+                           /*opt(Mixfile)*/{
+
+  //opt.setMechanism(Mixfile);                //DELETE ME,THESE DONT WORK YET
+  //opt.setStateModel("ChemNonEqTTv");
+  //opt.setViscosityAlgorithm(Transport);
+  //opt.setThermalConductivityAlgorithm(Transport);
+}
+
+CMutationGas::~CMutationGas(void) {
+
+   delete [] mutation;
+   delete [] Ds;
+   delete [] hs;
+
+ }
+
+void CMutationGas::InitializeMixture(CConfig *config) {
+
+//  comp = new su2double[nSpecies];
+//  hs   = new su2double[nSpecies];
+//  Ds   = new su2double[nSpecies];
+
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    comp[iSpecies]=config->GetInitial_Gas_Composition(iSpecies);
+
+//  mutation = new CMutation(comp, nSpecies/*, opt*/); //DELETE ME, Opt Not working
+//  Ms       = mutation->Mutation_MolarMass();
+
+}
+
+vector<su2double> CMutationGas::Calc_CvTraRotSpecies(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  Cv_ks = mutation->Mutation_Get_CvModeSpecies(cs, rho, T, Tve);
+//  Cv_trs.resize(nSpecies);
+
+//  for(iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    Cv_trs[iSpecies] = Cv_ks[iSpecies];
+
+//  return Cv_trs;
+
+}
+
+vector<su2double> CMutationGas::Calc_CvVibElSpecies(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  Cv_ks = mutation->Mutation_Get_CvModeSpecies(cs, rho, T, Tve);
+//  Cv_ves.resize(nSpecies);
+
+//  for(iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    Cv_ves[iSpecies] = Cv_ks[nSpecies+iSpecies];
+
+//  return Cv_ves;
+
+}
+
+su2double* CMutationGas::Calc_CpTraRotSpecies(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  Cp_ks  = mutation->Mutation_Get_CpModeSpecies(cs, rho, T, Tve);
+//  Cp_trs = new su2double[nSpecies];
+
+//  for(iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    Cp_trs[iSpecies] = Cp_ks[iSpecies];
+
+//  return Cp_trs;
+
+}
+
+su2double* CMutationGas::Calc_CpVibElSpecies(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  Cp_ks = mutation->Mutation_Get_CpModeSpecies(cs, rho, T, Tve);
+//  Cp_ves = new su2double[nSpecies];
+
+//  for(iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    Cp_ves[iSpecies] = Cp_ks[nSpecies+iSpecies];
+
+//  return Cp_ves;
+
+}
+
+su2double CMutationGas::Calc_Gamma(su2double *cs, su2double rho, su2double T, su2double Tve){
+
+//  su2double Cp, Cv, *Cp_trs, *Cp_ves, Cvtr, Cvve, Cptr, Cpve;
+//  vector<su2double> Cv_trs, Cv_ves;
+
+//  Cp_trs = Calc_CpTraRotSpecies(cs, rho, T, Tve);
+//  Cp_ves = Calc_CpVibElSpecies(cs, rho, T, Tve);
+//  Cv_trs = Calc_CvTraRotSpecies(cs, rho, T, Tve);
+//  Cv_ves = Calc_CvVibElSpecies(cs, rho, T, Tve);
+
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    Cptr += cs[iSpecies] * Cp_trs[iSpecies];
+//    Cpve += cs[iSpecies] * Cp_ves[iSpecies];
+//    Cvtr += cs[iSpecies] * Cv_trs[iSpecies];
+//    Cvve += cs[iSpecies] * Cv_ves[iSpecies];
+//  }
+
+//  Cp = Cptr + Cpve;
+//  Cv = Cvtr + Cvve;
+
+//  gamma = 1.4; // WHY IS THIS SET TO 1.4 -> ASK CATARINA, DELETE ME
+
+//  return gamma;
+
+}
+
+su2double CMutationGas::Calc_GammaFrozen(su2double *cs, su2double rho, su2double T, su2double Tve){
+
+//  gammaFrozen = mutation->Mutation_Get_GammaFrozen(cs, rho, T, Tve);
+//  return gammaFrozen;
+
+}
+
+su2double CMutationGas::Calc_GammaEquilibrium(su2double *cs, su2double rho, su2double T, su2double Tve){
+
+//  gammaEquilibrium = mutation->Mutation_Get_GammaEquilibrium(cs, rho, T, Tve);
+//  return gammaEquilibrium;
+
+}
+
+su2double CMutationGas::Calc_MixtureEnergy(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  E = mutation->Mutation_Get_MixtureEnergy(cs, rho, T, Tve);
+//  return E;
+
+}
+
+vector<su2double> CMutationGas::Calc_MixtureEnergies(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  Energies = mutation->Mutation_Get_MixtureEnergies(cs, rho, T, Tve);
+//  return Energies;
+
+}
+
+vector<su2double> CMutationGas::Calc_SpeciesEnergies(su2double* cs, su2double rho, su2double T, su2double Tve) {
+
+//  Energies_Species = mutation->Mutation_Get_SpeciesEnergies(cs, rho, T, Tve);
+//  return Energies_Species;
+
+}
+
+su2double* CMutationGas::Calc_NetProductionRates(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//  Ws = new su2double[nSpecies];
+//  Ws = mutation->Mutation_Get_NetProductionRates(cs, rho, T, Tve);
+//  return Ws;
+
+}
+
+vector<su2double> CMutationGas::Calc_VTEnergysourceTerm(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//  OmegaVT = mutation->Mutation_Get_VTEnergysourceTerm(cs, rho, T, Tve);
+//  return OmegaVT;
+
+}
+
+su2double CMutationGas::Calc_ReferenceTemperature(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//  Tref = mutation->Mutation_Get_ReferenceTemperature(cs, rho, T, Tve);
+//  return Tref;
+
+}
+
+vector<su2double> CMutationGas::Calc_EnthalpiesFormation(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//  hf = mutation->Mutation_Get_EnthalpiesFormation(cs, rho, T, Tve);
+//  return hf;
+
+}
+
+su2double* CMutationGas::Calc_Enthalpies(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//  hs = mutation->Mutation_Get_Enthalpies(cs, rho, T, Tve);
+//  return hs;
+
+}
+
+su2double* CMutationGas::Calc_DiffusionCoeff(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//   Ds = mutation->Mutation_Get_DiffusionCoeff(cs, rho, T, Tve);
+//   return Ds;
+
+}
+
+su2double  CMutationGas::Calc_Viscosity(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//   mu = mutation->Mutation_Get_Viscosity(cs, rho, T, Tve);
+//   return mu;
+
+}
+
+vector<su2double> CMutationGas::Calc_ThermalConductivity(su2double *cs, su2double rho, su2double T, su2double Tve) {
+
+//   lambda = mutation->Mutation_Get_ThermalConductivity(cs, rho, T, Tve);
+//   return lambda;
+
+}
+
+vector<su2double> CMutationGas::Calc_Temperatures(su2double *cs, su2double rho, su2double rhoE, su2double rhoEve){
+
+//  Temp = mutation->Mutation_Get_Temperatures(cs, rho, rhoE, rhoEve);
+//  return Temp;
+
+}
+
+su2double CMutationGas::Calc_SoundSpeedFrozen(su2double *cs, su2double rho, su2double T, su2double Tve){
+
+//  a = mutation->Mutation_Get_SoundSpeedFrozen(cs, rho, T, Tve);
+//  return a;
+
+}
+
+su2double CMutationGas::Calc_Density(su2double T, su2double *Xs, su2double P){
+
+//  Density = mutation->Mutation_Get_Density(T, Xs, P);
+//  return Density;
+
+}
+
+void CMultiSpeciesGas::CalcdPdU(su2double *V, su2double *val_eves,
                              CConfig *config, su2double *val_dPdU) {
 
   // Note: Requires SetDensity(), SetTemperature(), SetPressure(), & SetGasProperties()
@@ -69,11 +290,6 @@ void CTNE2ModelGas::CalcdPdU(su2double *V, su2double *val_eves,
   su2double RuSI, Ru, RuBAR, CvtrBAR, rhoCvtr, rhoCvve, Cvtrs, rho_el, sqvel, conc;
   su2double rho, rhos, T, Tve, ef;
   su2double num, denom;
-
-  if (val_dPdU == NULL) {
-    cout << "ERROR: CalcdPdU - Array dPdU not allocated!" << endl;
-    exit(1);
-  }
 
   /*--- Determine the number of heavy species ---*/
   if (ionization) {
@@ -157,7 +373,7 @@ void CTNE2ModelGas::CalcdPdU(su2double *V, su2double *val_eves,
 
 }
 
-su2double CTNE2ModelGas::CalcEve(CConfig *config, su2double val_Tve,
+su2double CMultiSpeciesGas::CalcEve(CConfig *config, su2double val_Tve,
                             unsigned short val_Species) {
 
   unsigned short iEl, *nElStates;
@@ -217,7 +433,7 @@ su2double CTNE2ModelGas::CalcEve(CConfig *config, su2double val_Tve,
   return Ev + Eel;
 }
 
-su2double CTNE2ModelGas::CalcHs(CConfig *config, su2double val_T,
+su2double CMultiSpeciesGas::CalcHs(CConfig *config, su2double val_T,
                            su2double val_eves, unsigned short val_Species) {
 
   su2double RuSI, Ru, *xi, *Ms, *hf, *Tref, T, eve, ef, hs;
@@ -246,7 +462,7 @@ su2double CTNE2ModelGas::CalcHs(CConfig *config, su2double val_T,
   return hs;
 }
 
-su2double CTNE2ModelGas::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) {
+su2double CMultiSpeciesGas::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) {
 
   unsigned short iEl, *nElStates;
   su2double *Ms, *thetav, **thetae, **g, RuSI, Ru;
@@ -308,7 +524,7 @@ su2double CTNE2ModelGas::CalcCvve(su2double val_Tve, CConfig *config, unsigned s
   return Cvvs + Cves;
 }
 
-void CTNE2ModelGas::CalcdTdU(su2double *V, CConfig *config,
+void CMultiSpeciesGas::CalcdTdU(su2double *V, CConfig *config,
                              su2double *val_dTdU) {
 
   unsigned short iDim, iSpecies, nHeavy, nEl;
@@ -356,7 +572,7 @@ void CTNE2ModelGas::CalcdTdU(su2double *V, CConfig *config,
 
 }
 
-void CTNE2ModelGas::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config,
+void CMultiSpeciesGas::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config,
                                su2double *val_dTvedU) {
 
   unsigned short iDim, iSpecies;

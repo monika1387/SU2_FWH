@@ -220,6 +220,7 @@ AC_SUBST([su2_externals_INCLUDES])
 AC_SUBST([su2_externals_LIBS])
 AC_SUBST([su2_externals_LIBPTHREAD])
 
+su2_externals_INCLUDES="-I\$(top_srcdir)/externals/CLI11 $su2_externals_INCLUDES"
 
 ##########################
 
@@ -364,6 +365,10 @@ then
   build_SOL=no
   build_GEO=no
   build_PY=no
+fi
+
+if test $build_DIRECTDIFF == "yes"
+then
   build_PY_WRAPPER=no
 fi
 

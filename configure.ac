@@ -304,7 +304,7 @@ then
 	fi
 fi
 
-if test "$have_MKL" != "yes"
+if test "$have_MKL" == "no"
 then
 	have_libROM="no"
 	AC_MSG_ERROR([libROM requested but required MKL not included or found.])
@@ -326,9 +326,9 @@ if test "$have_libROM" != "no"
 then 
 	AM_CONDITIONAL(BUILD_LIBROM,true)
 	CPPFLAGS="-DHAVE_LIBROM $CPPFLAGS"
-	LDFLAGS="-L$with_libROM_lib -L$with_libROM_lib/ScalaWRAP -L$HDF5/lib"
+	LDFLAGS="-L$with_libROM_lib -L$HDF5/lib"
 	CXXFLAGS=" -I$with_libROM_lib -std=c++11 $CXXFLAGS"
-	LIBS="$ -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lhdf5 $with_libROM_lib/"$libROMlib" -"$libROMlibinc" -lscalawrap $LIBS"
+	LIBS="$ -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lhdf5 $with_libROM_lib/"$libROMlib" -"$libROMlibinc" $LIBS"
 else
 	AM_CONDITIONAL(BUILD_LIBROM,false)
 fi

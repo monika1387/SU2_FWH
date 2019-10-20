@@ -5167,17 +5167,17 @@ void CSolver::LoadInletProfile(CGeometry **geometry,
 #ifdef HAVE_LIBROM
 void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config, bool converged) {
    
-   bool dual_time = ((config->GetTime_Marching() == DT_STEPPING_1ST) ||
-                     (config->GetTime_Marching() == DT_STEPPING_2ND));
-   bool time_stepping = config->GetTime_Marching() == TIME_STEPPING;
+   bool unsteady = ((config->GetTime_Marching() == DT_STEPPING_1ST) ||
+                    (config->GetTime_Marching() == DT_STEPPING_2ND) ||
+                    (config->GetTime_Marching() == TIME_STEPPING));
    unsigned long iPoint, total_index;
    unsigned short iVar;
    string filename = config->GetlibROMbase_FileName();
    unsigned short pod_basis = config->GetKind_PODBasis();
 
-   unsigned long ExtIter = config->GetExtIter();
-   unsigned long nExtIter = config->GetnExtIter();
-   bool StopCalc = ((ExtIter+1) == nExtIter);
+   unsigned long TimeIter = config->GetTimeIter();
+   unsigned long nTimeIter = config->GetnTime_Iter();
+   bool StopCalc = ((TimeIter+1) == nTimeIter);
  
    su2double* Coord;
    if (!u_basis_generator) {
@@ -5216,12 +5216,12 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
       f.close();
    }
 
-   if (time_stepping or dual_time) {
+   if (unsteady) {
       double* u = new double[nPointDomain*nVar];
       for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
          for (iVar = 0; iVar < nVar; iVar++) {
             total_index = iPoint*nVar + iVar;
-            u[total_index] = node[iPoint]->GetSolution(iVar);
+            u[total_index] = base_nodes->GetSolution(iPoint,iVar);
          }
       }
       
@@ -5232,25 +5232,27 @@ void CSolver::SavelibROM(CSolver** solver, CGeometry *geometry, CConfig *config,
       u_basis_generator->takeSample(u, t, dt);
       // not implemented yet: u_basis_generator->computeNextSampleTime(u, rhs, t);
       // bool u_samples = u_basis_generator->isNextSample(t);
-      delete u;
+      delete[] u;
    }
    
    if (converged or StopCalc) {
 
-      if (!time_stepping && !dual_time) {
+      if (!unsteady) {
          double* u = new double[nPointDomain*nVar];
          for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
             for (iVar = 0; iVar < nVar; iVar++) {
                total_index = iPoint*nVar + iVar;
-               u[total_index] = node[iPoint]->GetSolution(iVar);
+               u[total_index] = base_nodes->GetSolution(iPoint, iVar);
             }
          }
          
          // dt is different for each node, so just use a placeholder dt for now
-         double dt = node[0]->GetDelta_Time();
-         double t = dt*ExtIter;
+         double dt = base_nodes->GetDelta_Time(0);
+         double t = dt*TimeIter;
          std::cout << "Taking sample" << std::endl;
          u_basis_generator->takeSample(u, t, dt);
+
+         delete[] u;
       }
       
       if (pod_basis == STATIC_POD) {

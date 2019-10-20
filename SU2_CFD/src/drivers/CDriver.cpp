@@ -4036,6 +4036,7 @@ void CFluidDriver::Run() {
   unsigned short iZone, jZone, checkConvergence;
   unsigned long IntIter, nIntIter;
   bool unsteady;
+  bool libROM = config_container[MESH_0]->GetSave_libROM();
 
   /*--- Run a single iteration of a multi-zone problem by looping over all
    zones and executing the iterations. Note that data transers between zones

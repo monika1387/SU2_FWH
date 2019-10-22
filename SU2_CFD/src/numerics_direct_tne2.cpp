@@ -127,10 +127,10 @@ void CUpwRoe_TNE2::ComputeResidual(su2double *val_residual,
     RoeV[iVar] = (R*V_j[iVar] + V_i[iVar])/(R+1);
 
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    RoeEve[iSpecies] = FluidModel->CalcEve(config, RoeV[TVE_INDEX], iSpecies);
+    RoeEve[iSpecies] = FluidModel->CalcEve(RoeV[TVE_INDEX], iSpecies);
 
   /*--- Calculate derivatives of pressure ---*/
-  FluidModel->CalcdPdU(RoeV, RoeEve, config, RoedPdU);
+  FluidModel->CalcdPdU(RoeV, RoeEve, RoedPdU);
 
   /*--- Calculate dual grid tangent vectors for P & invP ---*/
   CreateBasis(UnitNormal);
@@ -382,11 +382,11 @@ void CUpwMSW_TNE2::ComputeResidual(su2double *val_residual,
   ProjVelst_j = onemw*ProjVel_j + w*ProjVel_i;
 
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    Evest_i[iSpecies] = FluidModel->CalcEve(config, Vst_i[TVE_INDEX], iSpecies);
-    Evest_j[iSpecies] = FluidModel->CalcEve(config, Vst_j[TVE_INDEX], iSpecies);
+    Evest_i[iSpecies] = FluidModel->CalcEve( Vst_i[TVE_INDEX], iSpecies);
+    Evest_j[iSpecies] = FluidModel->CalcEve( Vst_j[TVE_INDEX], iSpecies);
   }
-  FluidModel->CalcdPdU(Vst_i, Evest_i, config, dPdUst_i);
-  FluidModel->CalcdPdU(Vst_j, Evest_j, config, dPdUst_j);
+  FluidModel->CalcdPdU(Vst_i, Evest_i, dPdUst_i);
+  FluidModel->CalcdPdU(Vst_j, Evest_j, dPdUst_j);
 
   /*--- Flow eigenvalues at i (Lambda+) ---*/
   for (iSpecies = 0; iSpecies < nSpecies+nDim-1; iSpecies++)
@@ -522,8 +522,8 @@ void CUpwAUSM_TNE2::ComputeResidual(su2double *val_residual,
     UnitNormal[iDim] = Normal[iDim]/Area;
 
   /*--- Read from config ---*/
-  Ms   = config->GetMolar_Mass();
-  xi   = config->GetRotationModes();
+  Ms   = FluidModel->GetMolar_Mass();
+  xi   = FluidModel->GetRotationModes();
   RuSI = UNIVERSAL_GAS_CONSTANT;
   Ru   = 1000.0*RuSI;
 
@@ -935,8 +935,8 @@ void CUpwAUSMPLUSUP2_TNE2::ComputeResidual(su2double *val_residual, su2double **
     UnitNormal[iDim] = Normal[iDim]/Area;
 
   /*--- Read from config ---*/
-  Ms    = config->GetMolar_Mass();
-  xi    = config->GetRotationModes();
+  Ms    = FluidModel->GetMolar_Mass();
+  xi    = FluidModel->GetRotationModes();
   RuSI  = UNIVERSAL_GAS_CONSTANT;
   Ru    = 1000.0*RuSI;
   Minf  = config->GetMach();
@@ -1392,8 +1392,8 @@ void CUpwAUSMPWplus_TNE2::ComputeResidual(su2double *val_residual,
     UnitNormal[iDim] = Normal[iDim]/Area;
 
   /*--- Read from config ---*/
-  Ms = config->GetMolar_Mass();
-  xi = config->GetRotationModes();
+  Ms = FluidModel->GetMolar_Mass();
+  xi = FluidModel->GetRotationModes();
   RuSI = UNIVERSAL_GAS_CONSTANT;
   Ru   = 1000.0*RuSI;
 
@@ -1849,9 +1849,9 @@ void CCentLax_TNE2::ComputeResidual(su2double *val_resconv,
   for (iVar = 0; iVar < nPrimVar; iVar++)
     MeanV[iVar] = 0.5*(V_i[iVar]+V_j[iVar]);
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    MeanEve[iSpecies] = FluidModel->CalcEve(config, MeanV[TVE_INDEX], iSpecies);
+    MeanEve[iSpecies] = FluidModel->CalcEve(MeanV[TVE_INDEX], iSpecies);
 
-  FluidModel->CalcdPdU(MeanV, MeanEve, config, MeandPdU);
+  FluidModel->CalcdPdU(MeanV, MeanEve, MeandPdU);
 
   /*--- Get projected flux tensor ---*/
   GetInviscidProjFlux(MeanU, MeanV, Normal, ProjFlux);
@@ -2157,7 +2157,7 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
   V   = val_primvar;
   GV  = val_gradprimvar;
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    hs[iSpecies]  = FluidModel->CalcHs(config, T, val_eve[iSpecies], iSpecies);
+    hs[iSpecies]  = FluidModel->Calc_Enthalpies(T, val_eve[iSpecies], iSpecies);
 
   /*--- Calculate the velocity divergence ---*/
   div_vel = 0.0;
@@ -2298,13 +2298,13 @@ void CAvgGrad_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
   kve = val_thermal_conductivity_ve;
   RuSI= UNIVERSAL_GAS_CONSTANT;
   Ru  = 1000.0*RuSI;
-  Ms  = config->GetMolar_Mass();
-  xi  = config->GetRotationModes();
+  Ms  = FluidModel->GetMolar_Mass();
+  xi  = FluidModel->GetRotationModes();
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
     Ys[iSpecies]   = val_Mean_PrimVar[RHOS_INDEX+iSpecies];
     Ys_i[iSpecies] = V_i[RHOS_INDEX+iSpecies]/V_i[RHO_INDEX];
     Ys_j[iSpecies] = V_j[RHOS_INDEX+iSpecies]/V_j[RHO_INDEX];
-    hs[iSpecies]   = FluidModel->CalcHs(config, T, val_Mean_Eve[iSpecies], iSpecies);
+    hs[iSpecies]   = FluidModel->Calc_Enthalpies( T, val_Mean_Eve[iSpecies], iSpecies);
     Cvtr[iSpecies] = (3.0/2.0 + xi[iSpecies]/2.0)*Ru/Ms[iSpecies];
   }
   for (iDim = 0; iDim < nDim; iDim++)
@@ -2652,7 +2652,7 @@ void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,
   V   = val_primvar;
   GV  = val_gradprimvar;
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    hs[iSpecies]  = FluidModel->CalcHs(config, T, val_eve[iSpecies], iSpecies);
+    hs[iSpecies]  = FluidModel->Calc_Enthalpies(T, val_eve[iSpecies], iSpecies);
 
   /*--- Calculate the velocity divergence ---*/
   div_vel = 0.0;
@@ -2793,14 +2793,14 @@ void CAvgGradCorrected_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
   kve = val_thermal_conductivity_ve;
   RuSI= UNIVERSAL_GAS_CONSTANT;
   Ru  = 1000.0*RuSI;
-  Ms  = config->GetMolar_Mass();
-  xi  = config->GetRotationModes();
+  Ms  = FluidModel->GetMolar_Mass();
+  xi  = FluidModel->GetRotationModes();
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
     Ys[iSpecies]   = val_Mean_PrimVar[RHOS_INDEX+iSpecies];
     Ys_i[iSpecies] = V_i[RHOS_INDEX+iSpecies]/V_i[RHO_INDEX];
     Ys_j[iSpecies] = V_j[RHOS_INDEX+iSpecies]/V_j[RHO_INDEX];
 
-    hs[iSpecies]   = FluidModel->CalcHs(config, T, val_Mean_Eve[iSpecies], iSpecies);
+    hs[iSpecies]   = FluidModel->Calc_Enthalpies(T, val_Mean_Eve[iSpecies], iSpecies);
     Cvtr[iSpecies] = (3.0/2.0 + xi[iSpecies]/2.0)*Ru/Ms[iSpecies];
   }
   for (iDim = 0; iDim < nDim; iDim++)
@@ -3223,8 +3223,8 @@ void CSource_TNE2::GetKeqConstants(su2double *A, unsigned short val_Reaction,
   su2double *Ms;
   su2double tmp1, tmp2;
   /*--- Acquire database constants from CConfig ---*/
-  Ms = config->GetMolar_Mass();
-  config->GetChemistryEquilConstants(RxnConstantTable, val_Reaction);
+  Ms = FluidModel->GetMolar_Mass();
+  FluidModel->GetChemistryEquilConstants(config, RxnConstantTable, val_Reaction);
 
   /*--- Calculate mixture number density ---*/
   N = 0.0;
@@ -3321,16 +3321,16 @@ void CSource_TNE2::ComputeChemistry(su2double *val_residual,
   rhoCvve = V_i[RHOCVVE_INDEX];
 
   /*--- Acquire parameters from the configuration file ---*/
-  nReactions = config->GetnReactions();
-  Ms         = config->GetMolar_Mass();
-  RxnMap     = config->GetReaction_Map();
-  hf         = config->GetEnthalpy_Formation();
-  xi         = config->GetRotationModes();
-  Tref       = config->GetRefTemperature();
-  Tcf_a      = config->GetRxnTcf_a();
-  Tcf_b      = config->GetRxnTcf_b();
-  Tcb_a      = config->GetRxnTcb_a();
-  Tcb_b      = config->GetRxnTcb_b();
+  nReactions = FluidModel->GetnReactions();
+  Ms         = FluidModel->GetMolar_Mass();
+  RxnMap     = FluidModel->GetReaction_Map();
+  hf         = FluidModel->GetEnthalpy_Formation();
+  xi         = FluidModel->GetRotationModes();
+  Tref       = FluidModel->GetRefTemperature();
+  Tcf_a      = FluidModel->GetRxnTcf_a();
+  Tcf_b      = FluidModel->GetRxnTcf_b();
+  Tcb_a      = FluidModel->GetRxnTcb_a();
+  Tcb_b      = FluidModel->GetRxnTcb_b();
 
   for (iReaction = 0; iReaction < nReactions; iReaction++) {
 
@@ -3348,9 +3348,9 @@ void CSource_TNE2::ComputeChemistry(su2double *val_residual,
 
     /*--- Get the Keq & Arrhenius coefficients ---*/
     GetKeqConstants(A, iReaction, config);
-    Cf    = config->GetArrheniusCoeff(iReaction);
-    eta   = config->GetArrheniusEta(iReaction);
-    theta = config->GetArrheniusTheta(iReaction);
+    Cf    = FluidModel->GetArrheniusCoeff(iReaction);
+    eta   = FluidModel->GetArrheniusEta(iReaction);
+    theta = FluidModel->GetArrheniusTheta(iReaction);
 
     /*--- Calculate Keq ---*/
     Keq = exp(  A[0]*(Thb/1E4) + A[1] + A[2]*log(1E4/Thb)
@@ -3561,8 +3561,8 @@ void CSource_TNE2::ComputeVibRelaxation(su2double *val_residual,
   nEv     = nSpecies+nDim+1;
 
   /*--- Read from CConfig ---*/
-  Ms        = config->GetMolar_Mass();
-  thetav    = config->GetCharVibTemp();
+  Ms        = FluidModel->GetMolar_Mass();
+  thetav    = FluidModel->GetCharVibTemp();
 
   /*--- Calculate mole fractions ---*/
   N    = 0.0;
@@ -3606,7 +3606,7 @@ void CSource_TNE2::ComputeVibRelaxation(su2double *val_residual,
     taus[iSpecies] = tauMW[iSpecies] + tauP[iSpecies];
 
     /*--- Calculate vib.-el. energies ---*/
-    estar[iSpecies] = FluidModel->CalcEve(config, T, iSpecies);
+    estar[iSpecies] = FluidModel->CalcEve(T, iSpecies);
 
     /*--- Add species contribution to residual ---*/
     val_residual[nEv] += rhos * (estar[iSpecies] -
@@ -3618,7 +3618,7 @@ void CSource_TNE2::ComputeVibRelaxation(su2double *val_residual,
 
       /*--- Rename ---*/
       rhos = V_i[RHOS_INDEX+iSpecies];
-      Cvvsst[iSpecies] = FluidModel->CalcCvve(T, config, iSpecies);
+      Cvvsst[iSpecies] = FluidModel->Calc_CvVibElSpecies(T, iSpecies);
 
       for (iVar = 0; iVar < nVar; iVar++) {
         val_Jacobian_i[nEv][iVar] += rhos/taus[iSpecies]*(Cvvsst[iSpecies]*dTdU_i[iVar] -

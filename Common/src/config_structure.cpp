@@ -3981,7 +3981,6 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
       ( Kind_Solver == TNE2_NAVIER_STOKES     ) ||
       ( Kind_Solver == TNE2_RANS              )) {
 
-    bool init_err;
     unsigned short iSpecies;
     su2double mf;
 
@@ -3991,33 +3990,27 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
     case N2:
 
       /*--- Check for errors in the initialization ---*/
-      init_err = false;
       if (nSpecies != 2) {
-        cout << "CONFIG ERROR: nSpecies mismatch between gas model & gas composition" << endl;
-        init_err = true;
+        SU2_MPI::Error("nSpecies mismatch between gas model & gas composition", CURRENT_FUNCTION);
       }
       mf = 0.0;
       for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
         mf += Gas_Composition[iSpecies];
       if (mf != 1.0) {
-        cout << "CONFIG ERROR: Intial gas mass fractions do not sum to 1!" << endl;
-        init_err = true;
+        SU2_MPI::Error("Intial gas mass fractions do not sum to 1!", CURRENT_FUNCTION);
       }
       break;
     case AIR5:
 
       /*--- Check for errors in the initialization ---*/
-      init_err = false;
       if (nSpecies != 5) {
-        cout << "CONFIG ERROR: nSpecies mismatch between gas model & gas composition" << endl;
-        init_err = true;
+        SU2_MPI::Error("nSpecies mismatch between gas model & gas composition", CURRENT_FUNCTION);
       }
       mf = 0.0;
       for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
         mf += Gas_Composition[iSpecies];
       if (mf != 1.0) {
-        cout << "CONFIG ERROR: Intial gas mass fractions do not sum to 1!" << endl;
-        init_err = true;
+        SU2_MPI::Error("Intial gas mass fractions do not sum to 1!", CURRENT_FUNCTION);
       }
       break;
     }

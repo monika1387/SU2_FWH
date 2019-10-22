@@ -44,11 +44,12 @@ CTNE2NSVariable::CTNE2NSVariable(unsigned short val_ndim,
                                  unsigned short val_nvar,
                                  unsigned short val_nprimvar,
                                  unsigned short val_nprimvargrad,
-                                 CConfig *config) : CTNE2EulerVariable(val_ndim,
+                                 CConfig *config, CFluidModel *FluidModel) :
+                                                    CTNE2EulerVariable(val_ndim,
                                                                        val_nvar,
                                                                        val_nprimvar,
                                                                        val_nprimvargrad,
-                                                                       config) {
+                                                                       config, FluidModel) {
 
   Temperature_Ref = config->GetTemperature_Ref();
   Viscosity_Ref   = config->GetViscosity_Ref();
@@ -67,7 +68,8 @@ CTNE2NSVariable::CTNE2NSVariable(su2double val_pressure, su2double *val_massfrac
                                  unsigned short val_nvar,
                                  unsigned short val_nvarprim,
                                  unsigned short val_nvarprimgrad,
-                                 CConfig *config) : CTNE2EulerVariable(val_pressure,
+                                 CConfig *config, CFluidModel *FluidModel) :
+                                                    CTNE2EulerVariable(val_pressure,
                                                                        val_massfrac,
                                                                        val_mach,
                                                                        val_temperature,
@@ -76,7 +78,7 @@ CTNE2NSVariable::CTNE2NSVariable(su2double val_pressure, su2double *val_massfrac
                                                                        val_nvar,
                                                                        val_nvarprim,
                                                                        val_nvarprimgrad,
-                                                                       config) {
+                                                                       config, FluidModel) {
 
   Temperature_Ref = config->GetTemperature_Ref();
   Viscosity_Ref   = config->GetViscosity_Ref();
@@ -92,12 +94,13 @@ CTNE2NSVariable::CTNE2NSVariable(su2double *val_solution, unsigned short val_ndi
                                  unsigned short val_nvar,
                                  unsigned short val_nprimvar,
                                  unsigned short val_nprimvargrad,
-                                 CConfig *config) : CTNE2EulerVariable(val_solution,
+                                 CConfig *config, CFluidModel *FluidModel) :
+                                                    CTNE2EulerVariable(val_solution,
                                                                        val_ndim,
                                                                        val_nvar,
                                                                        val_nprimvar,
                                                                        val_nprimvargrad,
-                                                                       config) {
+                                                                       config, FluidModel) {
   Temperature_Ref = config->GetTemperature_Ref();
   Viscosity_Ref   = config->GetViscosity_Ref();
   Viscosity_Inf   = config->GetViscosity_FreeStreamND();
@@ -115,7 +118,7 @@ CTNE2NSVariable::~CTNE2NSVariable(void) {
   delete [] Dij;
 }
 
-void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CConfig *config) {
+void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CFluidModel *FluidModel) {
 
   unsigned short iSpecies, jSpecies, nHeavy, nEl;
   su2double rho, T, Tve, P;
@@ -124,8 +127,8 @@ void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CConfig *config) {
   su2double ***Omega00, Omega_ij;
 
   /*--- Acquire gas parameters from CConfig ---*/
-  Omega00 = config->GetCollisionIntegral00();
-  Ms      = config->GetMolar_Mass();
+  Omega00 = FluidModel->GetCollisionIntegral00();
+  Ms      = FluidModel->GetMolar_Mass();
   if (ionization) {nHeavy = nSpecies-1;  nEl = 1;}
   else            {nHeavy = nSpecies;    nEl = 0;}
 
@@ -154,7 +157,7 @@ void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CConfig *config) {
     /*--- Calculate molar concentration ---*/
     Mi      = Ms[iSpecies];
     gam_i   = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-    Theta_v = config->GetCharVibTemp(iSpecies);
+    Theta_v = FluidModel->GetCharVibTemp(iSpecies);
 
     denom = 0.0;
     for (jSpecies = 0; jSpecies < nHeavy; jSpecies++) {
@@ -179,7 +182,7 @@ void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CConfig *config) {
 
     if (ionization) {
       jSpecies = nSpecies-1;
-      Mj       = config->GetMolar_Mass(jSpecies);
+      Mj       = FluidModel->GetMolar_Mass(jSpecies);
       gam_j    = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
 
       /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
@@ -207,7 +210,7 @@ void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CConfig *config) {
     denom = 0.0;
     for (jSpecies = 0; jSpecies < nHeavy; jSpecies++) {
       if (iSpecies != jSpecies) {
-        Mj    = config->GetMolar_Mass(jSpecies);
+        Mj    = FluidModel->GetMolar_Mass(jSpecies);
         gam_j = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
 
         /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
@@ -231,7 +234,7 @@ void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CConfig *config) {
   //    DiffusionCoeff[iSpecies] = 0.0;
 }
 
-void CTNE2NSVariable::SetLaminarViscosity_GuptaYos(CConfig *config) {
+void CTNE2NSVariable::SetLaminarViscosity_GuptaYos(CFluidModel *FluidModel) {
 
   unsigned short iSpecies, jSpecies, nHeavy, nEl;
   su2double rho, T, Tve;
@@ -239,8 +242,8 @@ void CTNE2NSVariable::SetLaminarViscosity_GuptaYos(CConfig *config) {
   su2double ***Omega11, Omega_ij, d2_ij;
 
   /*--- Acquire gas parameters from CConfig ---*/
-  Omega11 = config->GetCollisionIntegral11();
-  Ms      = config->GetMolar_Mass();
+  Omega11 = FluidModel->GetCollisionIntegral11();
+  Ms      = FluidModel->GetMolar_Mass();
   if (ionization) {nHeavy = nSpecies-1;  nEl = 1;}
   else            {nHeavy = nSpecies;    nEl = 0;}
 
@@ -319,7 +322,7 @@ void CTNE2NSVariable::SetLaminarViscosity_GuptaYos(CConfig *config) {
   }
 }
 
-void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CConfig *config) {
+void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CFluidModel *FluidModel) {
   unsigned short iSpecies, jSpecies, nHeavy, nEl;
   su2double rho, T, Tve, Cvve;
   su2double *xi, *Ms, Mi, Mj, mi, mj, pi, R, RuSI, Ru, Na, kb, gam_i, gam_j, Theta_v;
@@ -332,10 +335,10 @@ void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CConfig *config) {
   }
 
   /*--- Acquire gas parameters from CConfig ---*/
-  Omega00 = config->GetCollisionIntegral00();
-  Omega11 = config->GetCollisionIntegral11();
-  Ms      = config->GetMolar_Mass();
-  xi      = config->GetRotationModes();
+  Omega00 = FluidModel->GetCollisionIntegral00();
+  Omega11 = FluidModel->GetCollisionIntegral11();
+  Ms      = FluidModel->GetMolar_Mass();
+  xi      = FluidModel->GetRotationModes();
   if (ionization) {nHeavy = nSpecies-1;  nEl = 1;}
   else            {nHeavy = nSpecies;    nEl = 0;}
 
@@ -365,12 +368,12 @@ void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CConfig *config) {
     Mi      = Ms[iSpecies];
     mi      = Mi/Na;
     gam_i   = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-    Theta_v = config->GetCharVibTemp(iSpecies);
+    Theta_v = FluidModel->GetCharVibTemp(iSpecies);
 
     denom_t = 0.0;
     denom_r = 0.0;
     for (jSpecies = 0; jSpecies < nSpecies; jSpecies++) {
-      Mj    = config->GetMolar_Mass(jSpecies);
+      Mj    = FluidModel->GetMolar_Mass(jSpecies);
       mj    = Mj/Na;
       gam_j = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
 
@@ -410,7 +413,7 @@ void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CConfig *config) {
   }
 }
 
-void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config) {
+void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel) {
 
   unsigned short iSpecies, jSpecies;
   su2double *Ms, Mi, Mj, M;
@@ -426,13 +429,13 @@ void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config) {
   rho  = Primitive[RHO_INDEX];
   T    = Primitive[T_INDEX];
   Tve  = Primitive[TVE_INDEX];
-  Ms   = config->GetMolar_Mass();
-  xi   = config->GetRotationModes();
+  Ms   = FluidModel->GetMolar_Mass();
+  xi   = FluidModel->GetRotationModes();
   RuSI = UNIVERSAL_GAS_CONSTANT;
   Ru   = 1000.0*RuSI;
 
   /*--- Acquire collision integral information ---*/
-  Omega00 = config->GetCollisionIntegral00();
+  Omega00 = FluidModel->GetCollisionIntegral00();
 
   /*--- Calculate species mole fraction ---*/
   conc = 0.0;
@@ -574,12 +577,12 @@ bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *Flui
 
   switch (config->GetKind_TransCoeffModel()) {
   case WILKE:
-    SetTransportCoefficients_WBE(config);
+    SetTransportCoefficients_WBE(config, FluidModel);
     break;
   case GUPTAYOS:
-    SetDiffusionCoeff_GuptaYos(config);
-    SetLaminarViscosity_GuptaYos(config);              // Requires temperature computation.
-    SetThermalConductivity_GuptaYos(config);
+    SetDiffusionCoeff_GuptaYos(FluidModel);
+    SetLaminarViscosity_GuptaYos(FluidModel);              // Requires temperature computation.
+    SetThermalConductivity_GuptaYos(FluidModel);
     break;
   }
 

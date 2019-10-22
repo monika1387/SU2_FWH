@@ -76,7 +76,7 @@ public:
    */
   CTNE2NSVariable(unsigned short val_nDim, unsigned short val_nVar,
                     unsigned short val_nPrimVar, unsigned short val_nPrimVarGrad,
-                    CConfig *config);
+                    CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \overload
@@ -94,7 +94,7 @@ public:
   CTNE2NSVariable(su2double val_density, su2double *val_massfrac, su2double *val_velocity,
                   su2double val_temperature, su2double val_temperature_ve, unsigned short val_nDim,
                   unsigned short val_nVar, unsigned short val_nPrimVar,
-                  unsigned short val_nPrimVarGrad, CConfig *config);
+                  unsigned short val_nPrimVarGrad, CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \overload
@@ -107,7 +107,7 @@ public:
    */
   CTNE2NSVariable(su2double *val_solution, unsigned short val_nDim, unsigned short val_nVar,
                   unsigned short val_nPrimVar, unsigned short val_nPrimVarGrad,
-                  CConfig *config);
+                  CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \brief Destructor of the class.
@@ -117,18 +117,18 @@ public:
   /*!
    * \brief Set the laminar viscosity.
    */
-  void SetDiffusionCoeff_GuptaYos(CConfig *config);
+  void SetDiffusionCoeff_GuptaYos(CFluidModel *FluidModel);
 
   /*!
    * \brief Set the laminar viscosity.
    */
-  void SetLaminarViscosity_GuptaYos(CConfig *config);
+  void SetLaminarViscosity_GuptaYos(CFluidModel *FluidModel);
 
   /*!
    * \brief Get the laminar viscosity of the flow.
    * \return Value of the laminar viscosity of the flow.
    */
-  void SetThermalConductivity_GuptaYos(CConfig *config);
+  void SetThermalConductivity_GuptaYos(CFluidModel *FluidModel);
 
   /*!
    * \brief Set the vorticity value.
@@ -138,7 +138,7 @@ public:
   /*!
    * \brief Set the transport coefficients for the Wilke/Blottner/Eucken model
    */
-  void SetTransportCoefficients_WBE(CConfig *config);
+  void SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \brief Get the species diffusion coefficient.

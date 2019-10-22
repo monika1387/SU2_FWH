@@ -335,7 +335,7 @@ private:
   su2double *Load_Dir_Value;    /*!< \brief Specified force for load boundaries defined in cartesian coordinates. */
   su2double *Load_Dir_Multiplier;    /*!< \brief Specified multiplier for load boundaries defined in cartesian coordinates. */
   su2double *Disp_Dir_Value;    /*!< \brief Specified force for load boundaries defined in cartesian coordinates. */
-   su2double *Disp_Dir_Multiplier;    /*!< \brief Specified multiplier for load boundaries defined in cartesian coordinates. */
+  su2double *Disp_Dir_Multiplier;    /*!< \brief Specified multiplier for load boundaries defined in cartesian coordinates. */
   su2double **Load_Dir;  /*!< \brief Specified flow direction vector (unit vector) for inlet boundaries. */
   su2double **Disp_Dir;  /*!< \brief Specified structural displacement direction (unit vector). */
   su2double *Load_Sine_Amplitude;    /*!< \brief Specified amplitude for a sine-wave load. */
@@ -551,6 +551,7 @@ private:
   Kind_Solver_Struc_FSI,		/*!< \brief Kind of solver for the structure in FSI applications. */
   Kind_BGS_RelaxMethod;				/*!< \brief Kind of relaxation method for Block Gauss Seidel method in FSI problems. */
   bool Energy_Equation;         /*!< \brief Solve the energy equation for incompressible flows. */
+  bool MUTATION_PP;  /*!< \brief Mutation++ Library */
   bool MUSCL,		/*!< \brief MUSCL scheme .*/
   MUSCL_Flow,		/*!< \brief MUSCL scheme for the flow equations.*/
   MUSCL_TNE2,    /*!< \brief MUSCL scheme for the TNE2 equations. */
@@ -625,7 +626,8 @@ private:
   Kappa_4th_Heat,     /*!< \brief 4th order dissipation coefficient for heat equation. */
   Cent_Jac_Fix_Factor;/*!< \brief Multiply the dissipation contribution to the Jacobian of central schemes by this factor to make the global matrix more diagonal dominant. */
   su2double Geo_Waterline_Location; /*!< \brief Location of the waterline. */
-  
+  string GasModel;                    /*!< \brief Gas model string for Mutation++. */
+
   su2double Min_Beta_RoeTurkel,		/*!< \brief Minimum value of Beta for the Roe-Turkel low Mach preconditioner. */
   Max_Beta_RoeTurkel;		/*!< \brief Maximum value of Beta for the Roe-Turkel low Mach preconditioner. */
   unsigned long GridDef_Nonlinear_Iter, /*!< \brief Number of nonlinear increments for grid deformation. */
@@ -1699,24 +1701,6 @@ public:
   su2double GetSection_Location(unsigned short val_var);
 
   /*!
-   * \brief Get the array that maps chemical consituents to each chemical reaction.
-   * \return Memory location of the triple pointer to the 3-D reaction map array.
-   */
-  int ***GetReaction_Map(void);
-
-  /*!
-   * \brief Get the array containing the curve fit coefficients for the Omega(0,0) collision integrals.
-   * \return Memory location of the triple pointer to the 3-D collision integral array.
-   */
-  su2double ***GetCollisionIntegral00(void);
-
-  /*!
-   * \brief Get the array containing the curve fit coefficients for the Omega(1,1) collision integrals.
-   * \return Memory location of the triple pointer to the 3-D collision integral array.
-   */
-  su2double ***GetCollisionIntegral11(void);
-
-  /*!
    * \brief Get the values of the CFL adapation.
    * \return Value of CFL adapation
    */
@@ -2126,12 +2110,6 @@ public:
    * \return Ratio of turbulent to laminar viscosity ratio.
    */
   su2double GetTurb2LamViscRatio_FreeStream(void);
-  
-  /*!
-   * \brief Get the vector of free stream mass fraction values.
-   * \return Ratio of species mass to mixture mass.
-   */
-  su2double* GetMassFrac_FreeStream(void);
   
   /*!
    * \brief Get the value of the Reynolds length.
@@ -3833,6 +3811,18 @@ public:
   unsigned short GetKind_GasModel(void);
 
   /*!
+   * \brief Gas model being used (mutation++)
+   * \return Gas model
+   */
+  string GetGasModel(void);
+
+  /*!
+   * \brief Using Mutation++?
+   * \return mutation bool
+   */
+  bool GetMUTATION_PP(void);
+
+  /*!
    * \brief Get the transport coefficient model.
    * \return Index of transport coefficient model.
    */
@@ -5371,6 +5361,11 @@ public:
   unsigned short GetUnsteady_Simulation(void);
 
   /*!
+   * \brief Indicates whether electron gas is present in the gas mixture.
+   */
+  bool GetIonization(void);
+
+  /*!
    * \brief Get if the cold flow simulation is required.
    * \note This is the information that the code will use, the method will
    *       change in runtime depending if cold flow is desired.
@@ -5397,122 +5392,7 @@ public:
    * \return: The number of species present in the plasma, read from input file
    */
   unsigned short GetnSpecies(void);
-  
-  /*!
-   * \brief Provides the number of chemical reactions in the chemistry model
-   * \return: The number of chemical reactions, read from input file
-   */
-  unsigned short GetnReactions(void);
-  
-  /*!
-   * \brief Provides the number of chemical reactions in the chemistry model
-   * \return: The number of chemical reactions, read from input file
-   */
-  su2double GetArrheniusCoeff(unsigned short iReaction);
-  
-  /*!
-   * \brief Provides the number of chemical reactions in the chemistry model
-   * \return: The number of chemical reactions, read from input file
-   */
-  su2double GetArrheniusEta(unsigned short iReaction);
-  
-  /*!
-   * \brief Provides the number of chemical reactions in the chemistry model
-   * \return: The number of chemical reactions, read from input file
-   */
-  su2double GetArrheniusTheta(unsigned short iReaction);
-  
-  /*!
-   * \brief Provides the rate controlling temperature exponents for chemistry.
-   * \return: Rate controlling temperature exponents.
-   */
-  su2double* GetRxnTcf_a(void);
-  
-  /*!
-   * \brief Provides the rate controlling temperature exponents for chemistry.
-   * \return: Rate controlling temperature exponents.
-   */
-  su2double* GetRxnTcf_b(void);
-  
-  /*!
-   * \brief Provides the rate controlling temperature exponents for chemistry.
-   * \return: Rate controlling temperature exponents.
-   */
-  su2double* GetRxnTcb_a(void);
-  
-  /*!
-   * \brief Provides the rate controlling temperature exponents for chemistry.
-   * \return: Rate controlling temperature exponents.
-   */
-  su2double* GetRxnTcb_b(void);
-  
-  /*!
-   * \brief Dissociation potential of species.
-   * \return: Dissociation potential.
-   */
-  su2double* GetDissociationPot(void);
-  
-  /*!
-   * \brief Provides the number of rotational modes of energy storage
-   * \return: Vector of rotational mode count
-   */
-  su2double* GetRotationModes(void);
-  
-  /*!
-   * \brief Provides the characteristic vibrational temperature for calculating e_vib
-   * \return: Vector of characteristic vibrational temperatures [K]
-   */
-  su2double* GetCharVibTemp(void);
-  
-  /*!
-   * \brief Provides the characteristic electronic temperature for calculating e_el
-   * \return: Vector of characteristic vibrational temperatures [K]
-   */
-  su2double** GetCharElTemp(void);
-  
-  /*!
-   * \brief Provides the degeneracy of electron states for calculating e_el
-   * \return: Vector of characteristic vibrational temperatures [K]
-   */
-  su2double** GetElDegeneracy(void);
-  
-  /*!
-   * \brief Provides number electron states for calculating e_el
-   * \return: Vector of number of electron states for each species
-   */
-  unsigned short* GetnElStates(void);
-  
-  
-  /*!
-   * \brief Provides the thermodynamic reference temperatures from the JANAF tables
-   * \return: Vector of reference temperatures [K]
-   */
-  su2double* GetRefTemperature(void);
-  
-  /*!
-   * \brief Provides the characteristic vibrational temperature for calculating e_vib
-   * \return: The number of chemical reactions, read from input file
-   */
-  su2double GetCharVibTemp(unsigned short iSpecies);
 
-  /*!
-   * \brief Provides a table of equilibrium constants for a particular chemical reaction for a supplied gas model.
-   * \return: Matrix of reaction constants
-   */
-  void GetChemistryEquilConstants(su2double **RxnConstantTable, unsigned short iReaction);
-
-  /*!
-   * \brief Provides the molar mass of each species present in multi species fluid
-   * \return: Vector of molar mass of each species in kg/kmol
-   */
-  su2double* GetMolar_Mass(void);
-  
-  /*!
-   * \brief Provides the molar mass of each species present in multi species fluid
-   * \return: Mass of each species in Kg
-   */
-  su2double GetMolar_Mass(unsigned short iSpecies);
-  
   /*!
    * \brief Retrieves the number of monatomic species in the multicomponent gas.
    * \return: Number of monatomic species.
@@ -5526,24 +5406,12 @@ public:
   unsigned short GetnDiatomics(void);
   
   /*!
-   * \brief Provides the molar mass of each species present in multi species fluid
-   * \return: Molar mass of the specified gas consituent [kg/kmol]
+   * \brief Provides the gas mass fractions of the flow
+   * \return: Gas Mass fractions
    */
-  su2double GetInitial_Gas_Composition(unsigned short iSpecies);
-  
-  /*!
-   * \brief Provides the formation enthalpy of the specified species at standard conditions
-   * \return: Enthalpy of formation
-   */
-  su2double* GetEnthalpy_Formation(void);
-  
-  /*!
-   * \brief Provides the formation enthalpy of the specified species at standard conditions
-   * \return: Enthalpy of formation
-   */
-  su2double GetEnthalpy_Formation(unsigned short iSpecies);
-  
-  /*!
+  su2double *GetGas_Composition(void);
+
+    /*!
    * \brief Provides the restart information.
    * \return Restart information, if <code>TRUE</code> then the code will use the solution as restart.
    */
@@ -5587,12 +5455,7 @@ public:
   
   bool GetRestart_Flow(void);
   
-  /*!
-   * \brief Indicates whether electron gas is present in the gas mixture.
-   */
-  bool GetIonization(void);
-  
-  /*!
+   /*!
    * \brief Information about computing and plotting the equivalent area distribution.
    * \return <code>TRUE</code> or <code>FALSE</code>  depending if we are computing the equivalent area.
    */
@@ -7080,12 +6943,6 @@ public:
    * \return The heat flux.
    */
   su2double GetWall_HeatFlux(string val_index);
-
-  /*!
-   * \brief Get the wall heat flux on a constant heat flux boundary.
-   * \return The heat flux.
-   */
-  su2double *GetWall_Catalycity(void);
 
   /*!
    * \brief Get the wall function treatment for the given boundary marker.

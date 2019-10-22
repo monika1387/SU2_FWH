@@ -39,23 +39,23 @@
 
 inline void CFluidModel::SetCpModel(CConfig *config) { }
 
-inline su2double CFluidModel::GetPressure () { return Pressure; }
-inline su2double CFluidModel::GetSoundSpeed () { return sqrt(SoundSpeed2); }
-inline su2double CFluidModel::GetSoundSpeed2 () { return SoundSpeed2; }
-inline su2double CFluidModel::GetDensity () { return Density; }
-inline su2double CFluidModel::GetEntropy () { return Entropy; }
+inline su2double CFluidModel::GetPressure ()     { return Pressure; }
+inline su2double CFluidModel::GetSoundSpeed ()   { return sqrt(SoundSpeed2); }
+inline su2double CFluidModel::GetSoundSpeed2 ()  { return SoundSpeed2; }
+inline su2double CFluidModel::GetDensity ()      { return Density; }
+inline su2double CFluidModel::GetEntropy ()      { return Entropy; }
 inline su2double CFluidModel::GetStaticEnergy () { return StaticEnergy; }
-inline su2double CFluidModel::GetTemperature () { return Temperature; }
-inline su2double CFluidModel::GetCp () { return Cp; }
-inline su2double CFluidModel::GetCv () { return Cv; }
+inline su2double CFluidModel::GetTemperature ()  { return Temperature; }
+inline su2double CFluidModel::GetCp ()           { return Cp; }
+inline su2double CFluidModel::GetCv ()           { return Cv; }
 inline su2double CFluidModel::GetdPdrho_e () { return dPdrho_e; }
 inline su2double CFluidModel::GetdPde_rho () { return dPde_rho; }
 inline su2double CFluidModel::GetdTdrho_e () { return dTdrho_e; }
 inline su2double CFluidModel::GetdTde_rho () { return dTde_rho; }
-inline su2double CFluidModel::Getdhdrho_P () {return dhdrho_P;}
-inline su2double CFluidModel::GetdhdP_rho () {return dhdP_rho;}
-inline su2double CFluidModel::Getdsdrho_P () {return dsdrho_P;}
-inline su2double CFluidModel::GetdsdP_rho () {return dsdP_rho;}
+inline su2double CFluidModel::Getdhdrho_P () { return dhdrho_P; }
+inline su2double CFluidModel::GetdhdP_rho () { return dhdP_rho; }
+inline su2double CFluidModel::Getdsdrho_P () { return dsdrho_P; }
+inline su2double CFluidModel::GetdsdP_rho () { return dsdP_rho; }
 
 inline su2double CFluidModel::GetLaminarViscosity () {
         LaminarViscosity->SetViscosity(Temperature, Density);
@@ -65,6 +65,8 @@ inline su2double CFluidModel::GetLaminarViscosity () {
         dmudT_rho= LaminarViscosity->GetdmudT_rho();
         return Mu;
 }
+
+inline void CFluidModel::Calc_TransportCoeff(CConfig *config, su2double *V) {}
 
 inline su2double CFluidModel::Getdmudrho_T () {
         return LaminarViscosity->Getdmudrho_T();
@@ -101,14 +103,58 @@ inline void CFluidModel::SetTDState_Ps (su2double P, su2double s ) { }
 inline void CFluidModel::ComputeDerivativeNRBC_Prho (su2double P, su2double rho ){ }
 inline void CFluidModel::SetTDState_T (su2double val_Temperature) { }
 inline void CFluidModel::SetEddyViscosity (su2double val_Mu_Turb) { Mu_Turb = val_Mu_Turb; }
+inline void CFluidModel::InitializeMixture(CConfig *config) { cout << "You aint initializing nothing pal" << endl;}
+inline su2double* CFluidModel::GetMassFrac_FreeStream(void) {}
 
-inline void CFluidModel::CalcdPdU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dPdU) { }
-inline su2double CFluidModel::CalcEve(CConfig *config, su2double val_Tve, unsigned short val_Species) { return 0.0; }
-inline su2double CFluidModel::CalcHs(CConfig *config, su2double val_T, su2double val_eves, unsigned short val_Species) { return 0.0; }
-inline su2double CFluidModel::CalcCvve(su2double val_Tve, CConfig *config, unsigned short val_Species) { return 0.0; }
-inline void CFluidModel::CalcdTdU(su2double *V, CConfig *config, su2double *val_dTdU) { }
-inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, CConfig *config, su2double *val_dTvedU) {}
+inline unsigned short CFluidModel::GetnReactions(void) { }
+inline int ***CFluidModel::GetReaction_Map(void) { }
+inline su2double ***CFluidModel::GetCollisionIntegral00(void) {  }
+inline su2double ***CFluidModel::GetCollisionIntegral11(void) {  }
+inline su2double **CFluidModel::GetBlottnerCoeff(void) {  }
+inline bool CFluidModel::GetIonization (){}
+inline su2double CFluidModel::GetArrheniusCoeff(unsigned short iReaction) { }
+inline su2double CFluidModel::GetArrheniusEta(unsigned short iReaction) { }
+inline su2double CFluidModel::GetArrheniusTheta(unsigned short iReaction) {}
+inline su2double* CFluidModel::GetRxnTcf_a(void) { }
+inline su2double* CFluidModel::GetRxnTcf_b(void) { }
+inline su2double* CFluidModel::GetRxnTcb_a(void) { }
+inline su2double* CFluidModel::GetRxnTcb_b(void) { }
+inline su2double* CFluidModel::GetDissociationPot(void) { }
+inline su2double CFluidModel::GetCharVibTemp(unsigned short iSpecies) { }
+inline su2double* CFluidModel::GetCharVibTemp() { }
+inline su2double** CFluidModel::GetCharElTemp() { }
+inline unsigned short* CFluidModel::GetnElStates() { }
+inline su2double** CFluidModel::GetElDegeneracy() { }
+inline su2double* CFluidModel::GetRotationModes() {  }
+inline su2double* CFluidModel::GetRefTemperature() { }
+inline su2double* CFluidModel::GetWall_Catalycity() { }
+inline su2double* CFluidModel::GetMolar_Mass() { }
+inline su2double CFluidModel::GetMolar_Mass(unsigned short iSpecies) { }
+inline su2double* CFluidModel::GetEnthalpy_Formation(void) {  }
+inline su2double CFluidModel::GetEnthalpy_Formation(unsigned short iSpecies) { }
+inline void CFluidModel::GetChemistryEquilConstants(CConfig *config, su2double **RxnConstantTable, unsigned short iReaction){}
+inline su2double CFluidModel::CalcEve(su2double val_Tve, unsigned short val_Species) { return 0.0; }
 
+inline su2double CFluidModel::Calc_CvVibElSpecies(su2double val_Tve, unsigned short val_Species){return 0.0;}
+
+inline su2double CFluidModel::Calc_CvTraRotSpecies(su2double *Ms, su2double Ru, unsigned short val_Species) { return 0.0; }
+
+inline su2double CFluidModel::Calc_MixtureEnergy(su2double* cs, su2double sqvel,
+                                    su2double rho,
+                                    su2double T, su2double Tve) { return 0.0; }
+
+inline su2double CFluidModel::Calc_SoundSpeed(su2double *cs, su2double rhoCvtr,
+                                              su2double rho, su2double P) { return 0.0; }
+
+inline su2double CFluidModel::Calc_Enthalpies(su2double val_T, su2double val_eves,
+                                              unsigned short val_Species) { return 0.0; }
+
+inline su2double CFluidModel::Calc_Density(su2double *MassFrac,
+                                           su2double T, su2double Tve, su2double P) { return 0.0; }
+
+inline void CFluidModel::CalcdPdU(su2double *V, su2double *val_eves, su2double *val_dPdU) { }
+inline void CFluidModel::CalcdTdU(su2double *V, su2double *val_dTdU) { }
+inline void CFluidModel::CalcdTvedU(su2double *V, su2double *val_eves, su2double *val_dTvedU) {}
 
 //DELETE ME, ADDRESS THS
 //inline void CFluidModel::InitializeMixture(CConfig *config) {}

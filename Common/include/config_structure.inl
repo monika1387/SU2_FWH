@@ -449,12 +449,6 @@ inline su2double CConfig::GetStations_Bounds(unsigned short val_var) { return St
 
 inline su2double CConfig::GetFFD_Axis(unsigned short val_var) { return FFD_Axis[val_var]; }
 
-inline int ***CConfig::GetReaction_Map(void) { return Reactions; }
-
-inline su2double ***CConfig::GetCollisionIntegral00(void) { return Omega00; }
-
-inline su2double ***CConfig::GetCollisionIntegral11(void) { return Omega11; }
-
 inline su2double CConfig::GetBulk_Modulus(void) { return Bulk_Modulus; }
 
 inline su2double CConfig::GetBeta_Factor(void) { return Beta_Factor; }
@@ -592,8 +586,6 @@ inline su2double CConfig::GetIntermittency_FreeStream(void) { return Intermitten
 inline su2double CConfig::GetTurbulenceIntensity_FreeStream(void) { return TurbulenceIntensity_FreeStream; }
 
 inline su2double CConfig::GetTurb2LamViscRatio_FreeStream(void) { return Turb2LamViscRatio_FreeStream;}
-
-inline su2double* CConfig::GetMassFrac_FreeStream(void) { return MassFrac_FreeStream; }
 
 inline su2double CConfig::GetLength_Reynolds(void) { return Length_Reynolds; }
 
@@ -871,6 +863,10 @@ inline unsigned short CConfig::GetSystemMeasurements(void) { return SystemMeasur
 
 inline unsigned short CConfig::GetKind_GasModel(void) { return Kind_GasModel; }
 
+inline string CConfig::GetGasModel(void) { return GasModel; }
+
+inline bool CConfig::GetMUTATION_PP(void) { return MUTATION_PP;}
+
 inline unsigned short CConfig::GetKind_TransCoeffModel(void) {return Kind_TransCoeffModel; }
 
 inline unsigned short CConfig::GetKind_FluidModel(void) { return Kind_FluidModel; }
@@ -1063,55 +1059,13 @@ inline unsigned short CConfig::GetKind_Deform_Linear_Solver_Prec(void) { return 
 
 inline unsigned short CConfig::GetnSpecies(void) {return nSpecies; }
 
-inline unsigned short CConfig::GetnReactions(void) {return nReactions; }
+inline su2double* CConfig::GetGas_Composition(void) {return Gas_Composition; }
 
 inline bool CConfig::GetCOLD_FLOW(void) { return COLD_FLOW; }
 
 inline void CConfig::SetCOLD_FLOW(bool coldflow) { COLD_FLOW = coldflow; }
 
 inline su2double CConfig::GetCold_Flow_Options(unsigned short opt) {return Cold_Flow_Options[opt]; }
-
-inline su2double CConfig::GetArrheniusCoeff(unsigned short iReaction) { return ArrheniusCoefficient[iReaction]; }
-
-inline su2double CConfig::GetArrheniusEta(unsigned short iReaction) { return ArrheniusEta[iReaction]; }
-
-inline su2double CConfig::GetArrheniusTheta(unsigned short iReaction) { return ArrheniusTheta[iReaction]; }
-
-inline su2double* CConfig::GetRxnTcf_a(void) { return Tcf_a; }
-
-inline su2double* CConfig::GetRxnTcf_b(void) { return Tcf_b; }
-
-inline su2double* CConfig::GetRxnTcb_a(void) { return Tcb_a; }
-
-inline su2double* CConfig::GetRxnTcb_b(void) { return Tcb_b; }
-
-inline su2double* CConfig::GetDissociationPot(void) { return Diss; }
-
-inline su2double CConfig::GetCharVibTemp(unsigned short iSpecies) {return CharVibTemp[iSpecies]; }
-
-inline su2double* CConfig::GetCharVibTemp() {return CharVibTemp; }
-
-inline su2double** CConfig::GetCharElTemp() {return CharElTemp; }
-
-inline unsigned short* CConfig::GetnElStates() {return nElStates; }
-
-inline su2double** CConfig::GetElDegeneracy() {return degen; }
-
-inline su2double* CConfig::GetRotationModes() { return RotationModes; }
-
-inline su2double* CConfig::GetRefTemperature() { return Ref_Temperature; }
-
-inline su2double* CConfig::GetWall_Catalycity() { return Wall_Catalycity; }
-
-inline su2double* CConfig::GetMolar_Mass() { return Molar_Mass; }
-
-inline su2double CConfig::GetMolar_Mass(unsigned short iSpecies) { return Molar_Mass[iSpecies]; }
-
-inline su2double CConfig::GetInitial_Gas_Composition(unsigned short iSpecies) { return Gas_Composition[iSpecies]; }
-
-inline su2double* CConfig::GetEnthalpy_Formation(void) { return Enthalpy_Formation; }
-
-inline su2double CConfig::GetEnthalpy_Formation(unsigned short iSpecies) { return Enthalpy_Formation[iSpecies]; }
 
 inline void CConfig::SetKind_AdjTurb_Linear_Prec(unsigned short val_kind_prec) { Kind_AdjTurb_Linear_Prec = val_kind_prec; }
 

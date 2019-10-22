@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * transport_model.cpp
  * \brief Source of the main transport properties subroutines of the SU2 solvers.
  * \author S. Vitale, M. Pini, G. Gori, A. Guardone, P. Colonna, T. Economon
@@ -37,6 +37,10 @@
 
 #include "../include/transport_model.hpp"
 
+/*-------------------------------------------------*/
+/*--------------- Viscosity Models ----------------*/
+/*-------------------------------------------------*/
+
 CViscosityModel::CViscosityModel(void) {
 
   /*--- Attributes initialization ---*/
@@ -48,7 +52,6 @@ CViscosityModel::CViscosityModel(void) {
 }
 
 CViscosityModel::~CViscosityModel(void) { }
-
 
 CConstantViscosity::CConstantViscosity(void) : CViscosityModel() { }
 
@@ -63,9 +66,6 @@ CConstantViscosity::CConstantViscosity(su2double mu_const) : CViscosityModel() {
 }
 
 CConstantViscosity::~CConstantViscosity(void) { }
-
-
-
 
 CSutherland::CSutherland(void) : CViscosityModel() {
   Mu_ref = 0.0;
@@ -82,7 +82,6 @@ CSutherland::CSutherland(su2double mu_ref, su2double t_ref, su2double s) : CVisc
 }
 
 CSutherland::~CSutherland(void) { }
-
 
 void CSutherland::SetViscosity(su2double T, su2double rho) {
 
@@ -150,7 +149,6 @@ CConductivityModel::CConductivityModel(void) {
 }
 
 CConductivityModel::~CConductivityModel(void) { }
-
 
 CConstantConductivity::CConstantConductivity(void) : CConductivityModel() { }
 
@@ -293,4 +291,156 @@ void CPolynomialConductivityRANS::SetConductivity(su2double T, su2double rho, su
   Kt += cp*mu_turb/Prandtl_Turb;
   
 }
+
+/*-------------------------------------------------*/
+/*--------- MultiSpecies Transport Models ---------*/
+/*-------------------------------------------------*/
+//CTransportModel::CTransportModel(){}
+
+//CTransportModel::~CTransportModel(void){}
+
+//CWilkeBlottEucken::CWilkeBlottEucken(): CTransportModel() {
+
+//  unsigned short iSpecies, jSpecies;
+//  su2double *Ms, Mi, Mj, M;
+//  su2double rho, T, Tve, RuSI, Ru, *xi;
+//  su2double Xs[nSpecies], conc;
+//  su2double Cves;
+//  su2double phis[nSpecies], mus[nSpecies], ks[nSpecies], kves[nSpecies];
+//  su2double denom, tmp1, tmp2;
+//  su2double **Blottner;
+//  su2double ***Omega00, Omega_ij;
+
+//  /*--- Rename for convenience ---*/
+//  rho  = Primitive[RHO_INDEX];
+//  T    = Primitive[T_INDEX];
+//  Tve  = Primitive[TVE_INDEX];
+//  Ms   = FluidModel->GetMolar_Mass();
+//  xi   = FluidModel->GetRotationModes();
+//  RuSI = UNIVERSAL_GAS_CONSTANT;
+//  Ru   = 1000.0*RuSI;
+
+//  /*--- Acquire collision integral information ---*/
+//  Omega00 = FluidModel->GetCollisionIntegral00();
+
+//  /*--- Calculate species mole fraction ---*/
+//  conc = 0.0;
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    Xs[iSpecies] = Primitive[RHOS_INDEX+iSpecies]/Ms[iSpecies];
+//    conc        += Xs[iSpecies];
+//  }
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    Xs[iSpecies] = Xs[iSpecies]/conc;
+
+//  /*--- Calculate mixture molar mass (kg/mol) ---*/
+//  // Note: Species molar masses stored as kg/kmol, need 1E-3 conversion
+//  M = 0.0;
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    M += Ms[iSpecies]*Xs[iSpecies];
+//  M = M*1E-3;
+
+
+//  /*---+++                  +++---*/
+//  /*--- Diffusion coefficients ---*/
+//  /*---+++                  +++---*/
+
+//  /*--- Solve for binary diffusion coefficients ---*/
+//  // Note: Dij = Dji, so only loop through req'd indices
+//  // Note: Correlation requires kg/mol, hence 1E-3 conversion from kg/kmol
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    Mi = Ms[iSpecies]*1E-3;
+//    for (jSpecies = iSpecies; jSpecies < nSpecies; jSpecies++) {
+//      Mj = Ms[jSpecies]*1E-3;
+
+//      /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
+//      Omega_ij = 1E-20/PI_NUMBER * Omega00[iSpecies][jSpecies][3]
+//          * pow(T, Omega00[iSpecies][jSpecies][0]*log(T)*log(T)
+//          +  Omega00[iSpecies][jSpecies][1]*log(T)
+//          +  Omega00[iSpecies][jSpecies][2]);
+
+//      Dij[iSpecies][jSpecies] = 7.1613E-25*M*sqrt(T*(1/Mi+1/Mj))/(rho*Omega_ij);
+//      Dij[jSpecies][iSpecies] = 7.1613E-25*M*sqrt(T*(1/Mi+1/Mj))/(rho*Omega_ij);
+//    }
+//  }
+
+//  /*--- Calculate species-mixture diffusion coefficient --*/
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    denom = 0.0;
+//    for (jSpecies = 0; jSpecies < nSpecies; jSpecies++) {
+//      if (jSpecies != iSpecies) {
+//        denom += Xs[jSpecies]/Dij[iSpecies][jSpecies];
+//      }
+//    }
+//    DiffusionCoeff[iSpecies] = (1-Xs[iSpecies])/denom;
+//    //    DiffusionCoeff[iSpecies] = 0.0;
+//  }
+
+
+//  /*---+++             +++---*/
+//  /*--- Laminar viscosity ---*/
+//  /*---+++             +++---*/
+
+//  /*--- Get Blottner coefficients ---*/
+//  Blottner = FluidModel->GetBlottnerCoeff();
+
+//  /*--- Use Blottner's curve fits for species viscosity ---*/
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    mus[iSpecies] = 0.1*exp((Blottner[iSpecies][0]*log(T)  +
+//                            Blottner[iSpecies][1])*log(T) +
+//        Blottner[iSpecies][2]);
+
+//  /*--- Determine species 'phi' value for Blottner model ---*/
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    phis[iSpecies] = 0.0;
+//    for (jSpecies = 0; jSpecies < nSpecies; jSpecies++) {
+//      tmp1 = 1.0 + sqrt(mus[iSpecies]/mus[jSpecies])*pow(Ms[jSpecies]/Ms[iSpecies], 0.25);
+//      tmp2 = sqrt(8.0*(1.0+Ms[iSpecies]/Ms[jSpecies]));
+//      phis[iSpecies] += Xs[jSpecies]*tmp1*tmp1/tmp2;
+//    }
+//  }
+
+//  /*--- Calculate mixture laminar viscosity ---*/
+//  LaminarViscosity = 0.0;
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+//    LaminarViscosity += Xs[iSpecies]*mus[iSpecies]/phis[iSpecies];
+
+
+//  /*---+++                +++---*/
+//  /*--- Thermal conductivity ---*/
+//  /*---+++                +++---*/
+
+//  /*--- Determine species tr & ve conductivities ---*/
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    Cves = CalcCvve(Tve, config, iSpecies);
+//    ks[iSpecies] = mus[iSpecies]*(15.0/4.0 + xi[iSpecies]/2.0)*Ru/Ms[iSpecies];
+//    kves[iSpecies] = mus[iSpecies]*Cves;
+//  }
+
+//  /*--- Calculate mixture tr & ve conductivities ---*/
+//  ThermalCond    = 0.0;
+//  ThermalCond_ve = 0.0;
+//  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+//    ThermalCond    += Xs[iSpecies]*ks[iSpecies]/phis[iSpecies];
+//    ThermalCond_ve += Xs[iSpecies]*kves[iSpecies]/phis[iSpecies];
+//  }
+//}
+
+//CGuptaYos::CGuptaYos(void): CTransportModel() {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

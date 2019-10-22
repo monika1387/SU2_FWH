@@ -80,7 +80,8 @@ protected:
   /*--- Index Definition ---*/
 
   unsigned short RHOS_INDEX, T_INDEX, TVE_INDEX, VEL_INDEX, P_INDEX,
-  RHO_INDEX, H_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX;
+  RHO_INDEX, H_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX,
+  LAM_VISC_INDEX, EDDY_VISC_INDEX, DIFF_COEFF_INDEX, K_INDEX, KVE_INDEX;
 
 public:
 
@@ -100,7 +101,7 @@ public:
   CTNE2EulerVariable(unsigned short val_nDim, unsigned short val_nVar,
                      unsigned short val_nPrimVar,
                      unsigned short val_nPrimVarGrad,
-                     CConfig *config);
+                     CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \overload
@@ -119,7 +120,8 @@ public:
                      su2double *val_mach, su2double val_temperature,
                      su2double val_temperature_ve, unsigned short val_nDim,
                      unsigned short val_nVar, unsigned short val_nVarPrim,
-                     unsigned short val_nVarPrimGrad, CConfig *config);
+                     unsigned short val_nVarPrimGrad, CConfig *config,
+                     CFluidModel *FluidModel);
 
   /*!
    * \overload
@@ -132,7 +134,8 @@ public:
    */
   CTNE2EulerVariable(su2double *val_solution, unsigned short val_nDim,
                      unsigned short val_nVar, unsigned short val_nVarPrim,
-                     unsigned short val_nVarPrimGrad, CConfig *config);
+                     unsigned short val_nVarPrimGrad, CConfig *config,
+                     CFluidModel *FluidModel);
 
   /*!
    * \brief Destructor of the class.
@@ -257,7 +260,7 @@ public:
   /*!
    * \brief Set all the primitive variables for compressible flows.
    */
-  void SetPrimVar_Gradient(CConfig *config);
+  void SetPrimVar_Gradient(CConfig *config, CFluidModel *FluidModel);
 
   /*!
    * \brief Set all the conserved variables.
@@ -270,13 +273,13 @@ public:
   /*!
    * \brief Set Gradient of the primitive variables from
    */
-  bool GradCons2GradPrimVar(CConfig *config, su2double *U, su2double *V,
+  bool GradCons2GradPrimVar(CConfig *config, CFluidModel *FluidModel, su2double *U, su2double *V,
                             su2double **GradU, su2double **GradV);
 
   /*!
    * \brief Set all the conserved variables.
    */
-  void Prim2ConsVar(CConfig *config, su2double *V, su2double *U);
+  void Prim2ConsVar(CFluidModel *FluidModel, su2double *V, su2double *U);
 
   /*!
    * \brief Get the primitive variables.
@@ -493,5 +496,30 @@ public:
    * \brief Retrieves the value of the RhoCvve in the primitive variable vector.
    */
   inline unsigned short GetRhoCvveIndex(void) { return RHOCVVE_INDEX; }
+
+  /*!
+   * \brief Retrieves the value of the laminar viscosity in the primitive variable vector.
+   */
+  inline unsigned short GetLamViscIndex(void) { return LAM_VISC_INDEX; }
+
+  /*!
+   * \brief Retrieves the value of the eddy viscosity in the primitive variable vector.
+   */
+  inline unsigned short GetEddyViscIndex(void) { return EDDY_VISC_INDEX; }
+
+  /*!
+   * \brief Retrieves the value of the diffusion coefficients in the primitive variable vector.
+   */
+  inline unsigned short GetDiffCoeffIndex(void) { return DIFF_COEFF_INDEX; }
+
+  /*!
+   * \brief Retrieves the value of the thermal conductivity in the primitive variable vector.
+   */
+  inline unsigned short GetKIndex(void) { return K_INDEX; }
+
+  /*!
+   * \brief Retrieves the value of the thermal conducitivity of ve mode in the primitive variable vector.
+   */
+  inline unsigned short GetKveIndex(void) { return KVE_INDEX; }
 
 };

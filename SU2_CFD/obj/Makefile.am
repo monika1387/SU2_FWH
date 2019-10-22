@@ -64,7 +64,7 @@ libSU2Core_sources =  ../src/definition_structure.cpp \
   ../src/fluid_model_pvdw.cpp \
   ../src/fluid_model_ppr.cpp \
   ../src/fluid_model_inc.cpp \
-  ../src/fluid_model_tne2.cpp \ 
+  ../src/fluid_model_multi.cpp \ 
   ../src/integration_structure.cpp \
   ../src/integration_time.cpp \
   ../src/drivers/CMultizoneDriver.cpp \

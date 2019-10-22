@@ -1464,30 +1464,6 @@ public:
 
   /*!
    * \brief A virtual member.
-   * \param[in] V
-   * \param[in] config - Configuration settings
-   * \param[in] dPdU
-   */
-  inline virtual void CalcdPdU(su2double *V, su2double *val_eves, CConfig *config, su2double *dPdU) {}
-
-  /*!
-   * \brief Set partial derivative of temperature w.r.t. density \f$\frac{\partial P}{\partial \rho_s}\f$
-   * \param[in] V
-   * \param[in] config - Configuration settings
-   * \param[in] dTdU
-   */
-  inline virtual void CalcdTdU(su2double *V, CConfig *config, su2double *dTdU) {}
-
-  /*!
-   * \brief Set partial derivative of temperature w.r.t. density \f$\frac{\partial P}{\partial \rho_s}\f$
-   * \param[in] V
-   * \param[in] config - Configuration settings
-   * \param[in] dTdU
-   */
-  inline virtual void CalcdTvedU(su2double *V, CConfig *config, su2double *dTdU) {}
-
-  /*!
-   * \brief A virtual member.
    */
   inline virtual su2double *GetdPdU(void) { return NULL; }
 
@@ -1557,6 +1533,31 @@ public:
    * \brief Retrieves the value of the RhoCvve in the primitive variable vector.
    */
   inline virtual unsigned short GetRhoCvveIndex(void) { return 0; }
+
+  /*!
+   * \brief Retrieves the value of the laminar viscosity in the primitive variable vector.
+   */
+  inline virtual unsigned short GetLamViscIndex(void) { return 0; }
+
+  /*!
+   * \brief Retrieves the value of the eddy visc in the primitive variable vector.
+   */
+  inline virtual unsigned short GetEddyViscIndex(void) { return 0; }
+
+  /*!
+   * \brief Retrieves the value of the diffusion coeff in the primitive variable vector.
+   */
+  inline virtual unsigned short GetDiffCoeffIndex(void) { return 0; }
+
+  /*!
+   * \brief Retrieves the value of the thermal conductivity in the primitive variable vector.
+   */
+  inline virtual unsigned short GetKIndex(void) { return 0; }
+
+  /*!
+   * \brief Retrieves the value of the thermal cond ve in the primitive variable vector.
+   */
+  inline virtual unsigned short GetKveIndex(void) { return 0; }
 
   /*!
    * \brief A virtual member.

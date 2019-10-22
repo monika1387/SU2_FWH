@@ -15816,7 +15816,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
   nSpecies = config->GetnSpecies();
   nVar_Par += nVar_Consv_Par;
 
-  // need to generalize
+  // need to generalize, DELETE ME
   if (config->GetKind_GasModel() == N2){
       Variable_Names.push_back("Density[N2]");
       Variable_Names.push_back("Density[N]");
@@ -15922,8 +15922,9 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
     nVar_Par += 1;
     Variable_Names.push_back("Pressure");
 
-    nVar_Par += 2;
+    nVar_Par += 3;
     Variable_Names.push_back("Temperature");
+    Variable_Names.push_back("Temperature_VE");
     Variable_Names.push_back("Mach");
 
     nVar_Par += 1;
@@ -15967,7 +15968,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
 
     /*--- Add Eddy Viscosity. ---*/
 
-    if (Kind_Solver == RANS) {
+    if (Kind_Solver == TNE2_RANS) {
       nVar_Par += 2;
       if ((config->GetOutput_FileFormat() == PARAVIEW) ||
           (config->GetOutput_FileFormat() == PARAVIEW_BINARY)){
@@ -16016,7 +16017,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
 
   /*--- Auxiliary vectors for variables defined on surfaces only. ---*/
 
-  if ((Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == RANS)) {
+  if ((Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == TNE2_RANS)) {
     Aux_Frict_x = new su2double[geometry->GetnPoint()];
     Aux_Frict_y = new su2double[geometry->GetnPoint()];
     Aux_Frict_z = new su2double[geometry->GetnPoint()];
@@ -16190,10 +16191,11 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
         Local_Data[jPoint][iVar] = solver[TNE2_SOL]->node[iPoint]->GetDensity(); iVar++;
         Local_Data[jPoint][iVar] = solver[TNE2_SOL]->node[iPoint]->GetPressure(); iVar++;
         Local_Data[jPoint][iVar] = solver[TNE2_SOL]->node[iPoint]->GetTemperature(); iVar++;
+        Local_Data[jPoint][iVar] = solver[TNE2_SOL]->node[iPoint]->GetTemperature_ve(); iVar++;
         Local_Data[jPoint][iVar] = sqrt(solver[TNE2_SOL]->node[iPoint]->GetVelocity2())/solver[TNE2_SOL]->node[iPoint]->GetSoundSpeed(); iVar++;
         Local_Data[jPoint][iVar] = (solver[TNE2_SOL]->node[iPoint]->GetPressure() - RefPressure)*factor*RefArea; iVar++;
 
-        if ((Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == RANS)) {
+        if ((Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == TNE2_RANS)) {
 
           /*--- Load data for the laminar viscosity. ---*/
 
@@ -16217,7 +16219,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
 
         /*--- Load data for the Eddy viscosity for RANS. ---*/
 
-        if (Kind_Solver == RANS) {
+        if (Kind_Solver == TNE2_RANS) {
           Local_Data[jPoint][iVar] = Aux_yPlus[iPoint]; iVar++;
           Local_Data[jPoint][iVar] = solver[TNE2_SOL]->node[iPoint]->GetEddyViscosity(); iVar++;
         }
@@ -16258,7 +16260,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
 
   /*--- Free memory for auxiliary vectors. ---*/
 
-  if ((Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == RANS)) {
+  if ((Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == TNE2_RANS)) {
     delete [] Aux_Frict_x;
     delete [] Aux_Frict_y;
     delete [] Aux_Frict_z;
@@ -16368,7 +16370,7 @@ void COutput::LoadLocalData_AdjTNE2(CConfig *config, CGeometry *geometry, CSolve
    in each coordinate direction. ---*/
   if ((Kind_Solver == DISC_ADJ_TNE2_EULER)         ||
       (Kind_Solver == DISC_ADJ_TNE2_NAVIER_STOKES) ||
-      (Kind_Solver == DISC_ADJ_RANS)) {
+      (Kind_Solver == DISC_ADJ_TNE2_RANS)) {
     nVar_Par += nDim;
     Variable_Names.push_back("Sensitivity_x");
     Variable_Names.push_back("Sensitivity_y");
@@ -16553,7 +16555,7 @@ void COutput::LoadLocalData_AdjTNE2(CConfig *config, CGeometry *geometry, CSolve
       /*--- Load data for the discrete sensitivities. ---*/
       if ((Kind_Solver == DISC_ADJ_TNE2_EULER)         ||
           (Kind_Solver == DISC_ADJ_TNE2_NAVIER_STOKES) ||
-          (Kind_Solver == DISC_ADJ_RANS)) {
+          (Kind_Solver == DISC_ADJ_TNE2_RANS)) {
         Local_Data[jPoint][iVar] = solver[ADJTNE2_SOL]->node[iPoint]->GetSensitivity(0); iVar++;
         Local_Data[jPoint][iVar] = solver[ADJTNE2_SOL]->node[iPoint]->GetSensitivity(1); iVar++;
         if (geometry->GetnDim()== 3) {

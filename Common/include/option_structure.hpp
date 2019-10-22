@@ -376,7 +376,6 @@ static const map<string, ENUM_RADIALBASIS> RadialBasisFunction_Map = CCreateMap<
 /*!
  * \brief types of (coupling) transfers between distinct physical zones
  */
-
 enum ENUM_TRANSFER {
   ZONES_ARE_EQUAL                   = 0,    /*!< \brief Zones are equal - no transfer. */
   NO_COMMON_INTERFACE               = 1,    /*!< \brief No common interface between the zones (geometrical). */
@@ -406,6 +405,7 @@ static const map<string, ENUM_TRANSFER> Transfer_Map = CCreateMap<string, ENUM_T
 ("CONJUGATE_HEAT_WEAKLY_FS", CONJUGATE_HEAT_WEAKLY_FS)
 ("CONJUGATE_HEAT_SF", CONJUGATE_HEAT_SF)
 ("CONJUGATE_HEAT_WEAKLY_SF", CONJUGATE_HEAT_WEAKLY_SF);
+
 /*!
  * \brief different regime modes
  */
@@ -609,7 +609,6 @@ enum ENUM_DENSITYMODEL {
   BOUSSINESQ = 1,
   VARIABLE = 2
 };
-
 static const map<string, ENUM_DENSITYMODEL> DensityModel_Map = CCreateMap<string, ENUM_DENSITYMODEL>
 ("CONSTANT", CONSTANT)
 ("BOUSSINESQ", BOUSSINESQ)
@@ -618,13 +617,10 @@ static const map<string, ENUM_DENSITYMODEL> DensityModel_Map = CCreateMap<string
 /*!
  * \brief types of initialization option
  */
-
 enum ENUM_INIT_OPTION {
   REYNOLDS = 0, /*!< \brief _____. */
   TD_CONDITIONS = 1
-
 };
-
 static const map<string, ENUM_INIT_OPTION> InitOption_Map = CCreateMap<string, ENUM_INIT_OPTION>
 ("REYNOLDS", REYNOLDS)
 ("TD_CONDITIONS", TD_CONDITIONS);
@@ -632,13 +628,10 @@ static const map<string, ENUM_INIT_OPTION> InitOption_Map = CCreateMap<string, E
 /*!
  * \brief types of initialization option
  */
-
 enum ENUM_FREESTREAM_OPTION {
   TEMPERATURE_FS = 0, /*!< \brief _____. */
   DENSITY_FS = 1
-
 };
-
 static const map<string, ENUM_FREESTREAM_OPTION> FreeStreamOption_Map = CCreateMap<string, ENUM_FREESTREAM_OPTION>
 ("TEMPERATURE_FS", TEMPERATURE_FS)
 ("DENSITY_FS", DENSITY_FS);
@@ -651,7 +644,6 @@ enum ENUM_VISCOSITYMODEL {
   SUTHERLAND = 1,
   POLYNOMIAL_VISCOSITY = 2
 };
-
 static const map<string, ENUM_VISCOSITYMODEL> ViscosityModel_Map = CCreateMap<string, ENUM_VISCOSITYMODEL>
 ("CONSTANT_VISCOSITY", CONSTANT_VISCOSITY)
 ("SUTHERLAND", SUTHERLAND)

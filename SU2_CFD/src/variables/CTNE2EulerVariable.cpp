@@ -66,16 +66,16 @@ CTNE2EulerVariable::CTNE2EulerVariable(void) : CVariable() {
   A_INDEX       = nSpecies+nDim+5;
   RHOCVTR_INDEX = nSpecies+nDim+6;
   RHOCVVE_INDEX = nSpecies+nDim+7;
-
 }
 
 CTNE2EulerVariable::CTNE2EulerVariable(unsigned short val_ndim,
                                        unsigned short val_nvar,
                                        unsigned short val_nprimvar,
                                        unsigned short val_nprimvargrad,
-                                       CConfig *config) : CVariable(val_ndim,
-                                                                    val_nvar,
-                                                                    config) {
+                                       CConfig *config,
+                                       CFluidModel *FluidModel) : CVariable(val_ndim,
+                                                                            val_nvar,
+                                                                            config) {
 
   nDim         = val_ndim;
   nVar         = val_nvar;
@@ -121,9 +121,10 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double val_pressure,
                                        unsigned short val_nvar,
                                        unsigned short val_nvarprim,
                                        unsigned short val_nvarprimgrad,
-                                       CConfig *config) : CVariable(val_ndim,
-                                                                    val_nvar,
-                                                                    config   ) {
+                                       CConfig *config,
+                                       CFluidModel *FluidModel) : CVariable(val_ndim,
+                                                                            val_nvar,
+                                                                            config ) {
 
   unsigned short iEl, iMesh, iDim, iSpecies, iVar, nDim, nEl, nHeavy, nMGSmooth;
   unsigned short *nElStates;
@@ -131,7 +132,7 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double val_pressure,
   su2double rhoE, rhoEve, Ev, Ee, Ef, T, Tve, rho, rhoCvtr, rhos;
   su2double RuSI, Ru, sqvel, num, denom, conc, soundspeed;
 
-  /*--- Get Mutation++ mixture ---*/
+  /*--- Define var counters ---*/
   nSpecies     = config->GetnSpecies();
   nDim         = val_ndim;
   nPrimVar     = val_nvarprim;
@@ -220,14 +221,14 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double val_pressure,
   else            { nHeavy = nSpecies;   nEl = 0; }
 
   /*--- Load variables from the config class --*/
-  xi        = config->GetRotationModes();      // Rotational modes of energy storage
-  Ms        = config->GetMolar_Mass();         // Species molar mass
-  thetav    = config->GetCharVibTemp();        // Species characteristic vib. temperature [K]
-  thetae    = config->GetCharElTemp();         // Characteristic electron temperature [K]
-  g         = config->GetElDegeneracy();       // Degeneracy of electron states
-  nElStates = config->GetnElStates();          // Number of electron states
-  Tref      = config->GetRefTemperature();     // Thermodynamic reference temperature [K]
-  hf        = config->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
+  xi        = FluidModel->GetRotationModes();      // Rotational modes of energy storage
+  Ms        = FluidModel->GetMolar_Mass();         // Species molar mass
+  thetav    = FluidModel->GetCharVibTemp();        // Species characteristic vib. temperature [K]
+  thetae    = FluidModel->GetCharElTemp();         // Characteristic electron temperature [K]
+  g         = FluidModel->GetElDegeneracy();       // Degeneracy of electron states
+  nElStates = FluidModel->GetnElStates();          // Number of electron states
+  Tref      = FluidModel->GetRefTemperature();     // Thermodynamic reference temperature [K]
+  hf        = FluidModel->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
 
   /*--- Rename & initialize for convenience ---*/
   RuSI      = UNIVERSAL_GAS_CONSTANT;          // Universal gas constant [J/(mol*K)]
@@ -328,9 +329,10 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double *val_solution,
                                        unsigned short val_nvar,
                                        unsigned short val_nvarprim,
                                        unsigned short val_nvarprimgrad,
-                                       CConfig *config) : CVariable(val_ndim,
-                                                                    val_nvar,
-                                                                    config) {
+                                       CConfig *config,
+                                       CFluidModel *FluidModel) : CVariable(val_ndim,
+                                                                            val_nvar,
+                                                                            config) {
 
   unsigned short iVar, iDim, iMesh, nMGSmooth;
 
@@ -537,11 +539,11 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   scale    = 0.5;       // Scaling factor for Newton-Raphson step
 
   /*--- Read parameters from config ---*/
-  xi         = config->GetRotationModes();      // Rotational modes of energy storage
-  Ms         = config->GetMolar_Mass();         // Species molar mass
-  Tref       = config->GetRefTemperature();     // Thermodynamic reference temperature [K]
-  hf         = config->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
-  ionization = config->GetIonization();         // Molecule Ionization
+  xi         = FluidModel->GetRotationModes();      // Rotational modes of energy storage
+  Ms         = FluidModel->GetMolar_Mass();         // Species molar mass
+  Tref       = FluidModel->GetRefTemperature();     // Thermodynamic reference temperature [K]
+  hf         = FluidModel->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
+  ionization = FluidModel->GetIonization();         // Molecule Ionization
 
   /*--- Rename variables for convenience ---*/
   RuSI   = UNIVERSAL_GAS_CONSTANT;    // Universal gas constant [J/(mol*K)]
@@ -564,7 +566,7 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
       nonPhys                = true;
     } else
       V[RHOS_INDEX+iSpecies] = U[iSpecies];
-    V[RHO_INDEX]            += U[iSpecies];
+      V[RHO_INDEX]          += U[iSpecies];
   }
 
   /*--- Assign mixture velocity ---*/
@@ -611,8 +613,8 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   rhoEve_min = 0.0;
   rhoEve_max = 0.0;
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    rhoEve_min += U[iSpecies]*FluidModel->CalcEve(config, Tvemin, iSpecies);
-    rhoEve_max += U[iSpecies]*FluidModel->CalcEve(config, Tvemax, iSpecies);
+    rhoEve_min += U[iSpecies]*FluidModel->CalcEve(Tvemin, iSpecies);
+    rhoEve_max += U[iSpecies]*FluidModel->CalcEve(Tvemax, iSpecies);
   }
   if (rhoEve < rhoEve_min) {
     errTve       = true;
@@ -634,8 +636,8 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
     //      rhoEve_t = 0.0;
     //      rhoCvve  = 0.0;
     //      for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    //        val_eves[iSpecies]  = CalcEve(config, Tve, iSpecies);
-    //        val_Cvves[iSpecies] = CalcCvve(Tve, config, iSpecies);
+    //        val_eves[iSpecies]  = CalcEve( Tve, iSpecies);
+    //        val_Cvves[iSpecies] = CalcCvve(Tve, iSpecies);
     //        rhoEve_t += U[iSpecies]*val_eves[iSpecies];
     //        rhoCvve  += U[iSpecies]*val_Cvves[iSpecies];
     //      }
@@ -678,14 +680,14 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
         Tve      = (Tve_o+Tve2)/2.0;
         rhoEve_t = 0.0;
         for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-          val_eves[iSpecies] = FluidModel->CalcEve(config, Tve, iSpecies);
+          val_eves[iSpecies] = FluidModel->CalcEve(Tve, iSpecies);
           rhoEve_t          += U[iSpecies] * val_eves[iSpecies];
         }
 
         if (fabs(rhoEve_t - U[nSpecies+nDim+1]) < Btol) {
           V[TVE_INDEX] = Tve;
           for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-            val_Cvves[iSpecies] = FluidModel -> CalcCvve(Tve, config, iSpecies);
+            val_Cvves[iSpecies] = FluidModel -> Calc_CvVibElSpecies(Tve, iSpecies);
           Bconvg = true;
           break;
         } else {
@@ -698,8 +700,8 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
       if (!Bconvg) {
         V[TVE_INDEX] = V[T_INDEX];
         for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-          val_eves[iSpecies]  = CalcEve(config, V[TVE_INDEX], iSpecies);
-          val_Cvves[iSpecies] = CalcCvve(V[TVE_INDEX], config, iSpecies);
+          val_eves[iSpecies]  = FluidModel->CalcEve(V[TVE_INDEX], iSpecies);
+          val_Cvves[iSpecies] = FluidModel->Calc_CvVibElSpecies(V[TVE_INDEX], iSpecies);
         }
       }
     }
@@ -735,10 +737,9 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   }
 
   /*--- Partial derivatives of pressure and temperature ---*/
-  FluidModel -> CalcdPdU(  V, val_eves, config, val_dPdU  );
-  FluidModel -> CalcdTdU(  V, config, val_dTdU  );
-  FluidModel -> CalcdTvedU(V, val_eves, config, val_dTvedU);
-
+  FluidModel -> CalcdPdU(  V, val_eves, val_dPdU  );
+  FluidModel -> CalcdTdU(  V, val_dTdU  );
+  FluidModel -> CalcdTvedU(V, val_eves, val_dTvedU);
 
   /*--- Sound speed ---*/
   radical2 = 0.0;
@@ -762,7 +763,7 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   return nonPhys;
 }
 
-void CTNE2EulerVariable::Prim2ConsVar(CConfig *config, su2double *V, su2double *U) {
+void CTNE2EulerVariable::Prim2ConsVar(CFluidModel *FluidModel, su2double *V, su2double *U) {
   unsigned short iDim, iEl, iSpecies, nEl, nHeavy;
   unsigned short *nElStates;
   su2double Ru, RuSI, Tve, T, sqvel, rhoE, rhoEve, Ef, Ev, Ee, rhos, rhoCvtr, num, denom;
@@ -770,19 +771,19 @@ void CTNE2EulerVariable::Prim2ConsVar(CConfig *config, su2double *V, su2double *
   su2double **thetae, **g;
 
   /*--- Determine the number of heavy species ---*/
-  ionization = config->GetIonization();
+  ionization = FluidModel->GetIonization();
   if (ionization) { nHeavy = nSpecies-1; nEl = 1; }
   else            { nHeavy = nSpecies;   nEl = 0; }
 
   /*--- Load variables from the config class --*/
-  xi        = config->GetRotationModes();      // Rotational modes of energy storage
-  Ms        = config->GetMolar_Mass();         // Species molar mass
-  thetav    = config->GetCharVibTemp();        // Species characteristic vib. temperature [K]
-  thetae    = config->GetCharElTemp();         // Characteristic electron temperature [K]
-  g         = config->GetElDegeneracy();       // Degeneracy of electron states
-  nElStates = config->GetnElStates();          // Number of electron states
-  Tref      = config->GetRefTemperature();     // Thermodynamic reference temperature [K]
-  hf        = config->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
+  xi        = FluidModel->GetRotationModes();      // Rotational modes of energy storage
+  Ms        = FluidModel->GetMolar_Mass();         // Species molar mass
+  thetav    = FluidModel->GetCharVibTemp();        // Species characteristic vib. temperature [K]
+  thetae    = FluidModel->GetCharElTemp();         // Characteristic electron temperature [K]
+  g         = FluidModel->GetElDegeneracy();       // Degeneracy of electron states
+  nElStates = FluidModel->GetnElStates();          // Number of electron states
+  Tref      = FluidModel->GetRefTemperature();     // Thermodynamic reference temperature [K]
+  hf        = FluidModel->GetEnthalpy_Formation(); // Formation enthalpy [J/kg]
 
   /*--- Rename & initialize for convenience ---*/
   RuSI    = UNIVERSAL_GAS_CONSTANT;         // Universal gas constant [J/(mol*K)] (SI units)
@@ -850,7 +851,7 @@ void CTNE2EulerVariable::Prim2ConsVar(CConfig *config, su2double *V, su2double *
   return;
 }
 
-bool CTNE2EulerVariable::GradCons2GradPrimVar(CConfig *config, su2double *U,
+bool CTNE2EulerVariable::GradCons2GradPrimVar(CConfig *config, CFluidModel *FluidModel, su2double *U,
                                               su2double *V, su2double **GradU,
                                               su2double **GradV) {
 
@@ -872,25 +873,25 @@ bool CTNE2EulerVariable::GradCons2GradPrimVar(CConfig *config, su2double *U,
   rhou   = new su2double[nDim];
 
   /*--- Determine number of heavy-particle species ---*/
-  if (config->GetIonization()) nHeavy = nSpecies-1;
-  else                         nHeavy = nSpecies;
+  if (config->GetIonization()) { nHeavy = nSpecies-1; }
+  else                         { nHeavy = nSpecies;   }
 
   /*--- Rename for convenience ---*/
-  rho     = V[RHO_INDEX];
-  rhoCvtr = V[RHOCVTR_INDEX];
-  rhoCvve = V[RHOCVVE_INDEX];
-  T       = V[T_INDEX];
-  Tve     = V[TVE_INDEX];
-  xi      = config->GetRotationModes();
-  Ms      = config->GetMolar_Mass();
-  Tref    = config->GetRefTemperature();
-  hf      = config->GetEnthalpy_Formation();
-  RuSI    = UNIVERSAL_GAS_CONSTANT;
-  Ru      = 1000.0*RuSI;
-  thetav  = config->GetCharVibTemp();
-  g       = config->GetElDegeneracy();
-  thetae  = config->GetCharElTemp();
-  nElStates = config->GetnElStates();
+  rho       = V[RHO_INDEX];
+  rhoCvtr   = V[RHOCVTR_INDEX];
+  rhoCvve   = V[RHOCVVE_INDEX];
+  T         = V[T_INDEX];
+  Tve       = V[TVE_INDEX];
+  xi        = FluidModel->GetRotationModes();
+  Ms        = FluidModel->GetMolar_Mass();
+  Tref      = FluidModel->GetRefTemperature();
+  hf        = FluidModel->GetEnthalpy_Formation();
+  RuSI      = UNIVERSAL_GAS_CONSTANT;
+  Ru        = 1000.0*RuSI;
+  thetav    = FluidModel->GetCharVibTemp();
+  g         = FluidModel->GetElDegeneracy();
+  thetae    = FluidModel->GetCharElTemp();
+  nElStates = FluidModel->GetnElStates();
 
   for (iDim = 0; iDim < nDim; iDim++)
     for (iVar = 0; iVar < nPrimVarGrad; iVar++)
@@ -1006,10 +1007,10 @@ bool CTNE2EulerVariable::GradCons2GradPrimVar(CConfig *config, su2double *U,
   return false;
 }
 
-void CTNE2EulerVariable::SetPrimVar_Gradient(CConfig *config) {
+void CTNE2EulerVariable::SetPrimVar_Gradient(CConfig *config, CFluidModel *FluidModel) {
 
   /*--- Use built-in method on TNE2 variable global types ---*/
-  GradCons2GradPrimVar(config, Solution, Primitive,
+  GradCons2GradPrimVar(config, FluidModel, Solution, Primitive,
                        Gradient, Gradient_Primitive);
 
 }

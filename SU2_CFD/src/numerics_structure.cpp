@@ -235,8 +235,6 @@ CNumerics::CNumerics(unsigned short val_nDim, unsigned short val_nVar,
 
     Diffusion_Coeff_i = new su2double[nSpecies];
     Diffusion_Coeff_j = new su2double[nSpecies];
-    unsigned short nPrimVar     = nSpecies+nDim+8;
-    unsigned short nPrimVarGrad = nSpecies+nDim+8;
   }
 
   /* --- Initializing variables for the UQ methodology --- */

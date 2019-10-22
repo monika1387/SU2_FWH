@@ -228,6 +228,16 @@ inline void CNumerics::SetRhoCvtrIndex(unsigned short val_Index) { RHOCVTR_INDEX
 
 inline void CNumerics::SetRhoCvveIndex(unsigned short val_Index) { RHOCVVE_INDEX = val_Index; }
 
+inline void CNumerics::SetLamViscIndex(unsigned short val_Index) { LAM_VISC_INDEX = val_Index; }
+
+inline void CNumerics::SetEddyViscIndex(unsigned short val_Index) { EDDY_VISC_INDEX = val_Index; }
+
+inline void CNumerics::SetDiffCoeffIndex(unsigned short val_Index) { DIFF_COEFF_INDEX = val_Index; }
+
+inline void CNumerics::SetKIndex(unsigned short val_Index) { K_INDEX = val_Index; }
+
+inline void CNumerics::SetKveIndex(unsigned short val_Index) { KVE_INDEX = val_Index; }
+
 inline void CNumerics::SetdPdU(su2double *val_dPdU_i, su2double *val_dPdU_j) { dPdU_i = val_dPdU_i; dPdU_j = val_dPdU_j; }
 
 inline void CNumerics::SetdTdU(su2double *val_dTdU_i, su2double *val_dTdU_j) { dTdU_i = val_dTdU_i; dTdU_j = val_dTdU_j; }

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file transport_model.hpp
  * \brief Headers of the main transport properties subroutines of the SU2 solvers.
  * \author S. Vitale, M. Pini, G. Gori, A. Guardone, P. Colonna
@@ -55,6 +55,9 @@
 
 using namespace std;
 
+/*-------------------------*/
+/*--- Viscosity Models ----*/
+/*-------------------------*/
 
 /*!
  * \class CViscosityModel
@@ -65,45 +68,45 @@ using namespace std;
  */
 class CViscosityModel {
 protected:
-su2double      Mu,      /*!< \brief Dynamic viscosity. */
-       dmudrho_T,   /*!< \brief DmuDrho_T. */
-       dmudT_rho;   /*!< \brief DmuDT_rho. */
+  su2double Mu,  /*!< \brief Dynamic viscosity. */
+  dmudrho_T,     /*!< \brief DmuDrho_T. */
+  dmudT_rho;     /*!< \brief DmuDT_rho. */
 public:
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-    CViscosityModel(void);
+  CViscosityModel(void);
 
-    /*!
+  /*!
      * \brief Destructor of the class.
      */
-    virtual ~CViscosityModel(void);
+  virtual ~CViscosityModel(void);
 
-    /*!
+  /*!
      * \brief return viscosity value.
      */
-    su2double GetViscosity(void);
+  su2double GetViscosity(void);
 
-    /*!
+  /*!
      * \brief return viscosity partial derivative value.
      */
-    su2double Getdmudrho_T(void);
+  su2double Getdmudrho_T(void);
 
-    /*!
+  /*!
      * \brief return viscosity partial derivative value.
      */
-    su2double GetdmudT_rho(void);
+  su2double GetdmudT_rho(void);
 
-    /*!
+  /*!
      * \brief Set Viscosity.
      */
-    virtual   void SetViscosity(su2double T, su2double rho);
+  virtual   void SetViscosity(su2double T, su2double rho);
 
-    /*!
+  /*!
      * \brief Set Viscosity Derivatives.
      */
-    virtual   void SetDerViscosity(su2double T, su2double rho);
+  virtual   void SetDerViscosity(su2double T, su2double rho);
 
 };
 
@@ -212,6 +215,10 @@ public:
   
 };
 
+/*-------------------------*/
+/*--- Viscosity Models ----*/
+/*-------------------------*/
+
 /*!
  * \class CThermalConductivityModel
  * \brief Main class for defining the Transport-Physical Model
@@ -221,45 +228,45 @@ public:
  */
 class CConductivityModel {
 protected:
-su2double      Kt,      /*!< \brief Thermal conductivity. */
-       dktdrho_T,   /*!< \brief DktDrho_T. */
-       dktdT_rho;   /*!< \brief DktDT_rho. */
+  su2double Kt,  /*!< \brief Thermal conductivity. */
+  dktdrho_T,     /*!< \brief DktDrho_T. */
+  dktdT_rho;     /*!< \brief DktDT_rho. */
 public:
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-    CConductivityModel(void);
+  CConductivityModel(void);
 
-    /*!
+  /*!
      * \brief Destructor of the class.
      */
-    virtual ~CConductivityModel(void);
+  virtual ~CConductivityModel(void);
 
-    /*!
+  /*!
      * \brief return viscosity value.
      */
-    su2double GetConductivity(void);
+  su2double GetConductivity(void);
 
-    /*!
+  /*!
      * \brief return viscosity partial derivative value.
      */
-    su2double Getdktdrho_T(void);
+  su2double Getdktdrho_T(void);
 
-    /*!
+  /*!
      * \brief return viscosity partial derivative value.
      */
-    su2double GetdktdT_rho(void);
+  su2double GetdktdT_rho(void);
 
-    /*!
+  /*!
      * \brief Set Thermal conductivity.
      */
-    virtual void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
+  virtual void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
 
-    /*!
+  /*!
      * \brief Set Thermal conductivity derivatives.
      */
-    virtual void SetDerConductivity(su2double T, su2double rho, su2double dmudrho_T, su2double dmudT_rho, su2double cp);
+  virtual void SetDerConductivity(su2double T, su2double rho, su2double dmudrho_T, su2double dmudT_rho, su2double cp);
 
 };
 
@@ -273,20 +280,20 @@ class CConstantConductivity : public CConductivityModel {
 
 public:
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-      CConstantConductivity(void);
+  CConstantConductivity(void);
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-      CConstantConductivity(su2double kt_const);
+  CConstantConductivity(su2double kt_const);
 
-    /*!
+  /*!
      * \brief Destructor of the class.
      */
-    virtual ~CConstantConductivity(void);
+  virtual ~CConstantConductivity(void);
 
 };
 
@@ -338,32 +345,32 @@ protected:
 
 public:
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-      CConstantPrandtl(void);
+  CConstantPrandtl(void);
 
-    /*!
+  /*!
      * \brief Destructor of the class.
      */
-    virtual ~CConstantPrandtl(void);
+  virtual ~CConstantPrandtl(void);
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-      CConstantPrandtl(su2double pr_const);
+  CConstantPrandtl(su2double pr_const);
 
-    /*!
+  /*!
      * \brief Set Thermal conductivity.
      * \brief par1 -> Cp.
      * \brief par2 -> Mu.
      */
-    void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
+  void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
 
-    /*!
+  /*!
      * \brief Set Thermal conductivity derivatives.
      */
-    void SetDerConductivity(su2double T, su2double rho, su2double dmudrho_T, su2double dmudT_rho, su2double cp);
+  void SetDerConductivity(su2double T, su2double rho, su2double dmudrho_T, su2double dmudT_rho, su2double cp);
 
 };
 
@@ -381,25 +388,25 @@ protected:
 
 public:
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-    CConstantPrandtlRANS(void);
+  CConstantPrandtlRANS(void);
 
-    /*!
+  /*!
      * \brief Destructor of the class.
      */
-    virtual ~CConstantPrandtlRANS(void);
+  virtual ~CConstantPrandtlRANS(void);
 
-    /*!
+  /*!
      * \brief Constructor of the class.
      */
-    CConstantPrandtlRANS(su2double pr_lam, su2double pr_turb);
+  CConstantPrandtlRANS(su2double pr_lam, su2double pr_turb);
 
-    /*!
+  /*!
      * \brief Set effective thermal conductivity.
      */
-    void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
+  void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
 
 };
 
@@ -471,5 +478,154 @@ public:
   void SetConductivity(su2double T, su2double rho, su2double mu_lam, su2double mu_turb, su2double cp);
   
 };
+
+/*---------------------------------*/
+/*--- General Transport Models ----*/
+/*---------------------------------*/
+// THIS IS UNUSED AT THE MOMENT, TAKE A BETTER LOOK LATER, DELETE M
+///*!
+// * \class CTransportModel
+// * \brief Main class for defining the Transport-Physical Model
+// * for use in MultiSpecies experiments
+// * \author W. Maier, S.R. Copeland
+// */
+//class CTransportModel: public CViscosityModel, public CConductivityModel {
+//protected:
+
+//public:
+
+//  /*!
+//     * \brief Constructor of the class.
+//     */
+//  CTransportModel(void);
+
+//  /*!
+//     * \brief Destructor of the class.
+//     */
+//  virtual ~CTransportModel(void);
+
+//  /*!
+//     * \brief return viscosity value.
+//     */
+//  su2double GetViscosity(void);
+
+//  /*!
+//     * \brief return viscosity partial derivative value.
+//     */
+//  su2double Getdmudrho_T(void);
+
+//  /*!
+//     * \brief return viscosity partial derivative value.
+//     */
+//  su2double GetdmudT_rho(void);
+
+//  /*!
+//     * \brief Set Viscosity.
+//     */
+//  virtual void SetViscosity(su2double T, su2double rho);
+
+//  /*!
+//     * \brief Set Viscosity Derivatives.
+//     */
+//  virtual void SetDerViscosity(su2double T, su2double rho);
+
+//};
+
+///*!
+// * \class CWilkeBlottEucken
+// * \brief Class for defining the Transport-Physical Model
+// * using Wilke-Blottner-Eucken formulation.
+// * \author W. Maier, S.R. Copeland
+// */
+//class CWilkeBlottEucken: public CTransportModel {
+//protected:
+
+//public:
+
+//  /*!
+//   * \brief Constructor of the class.
+//   */
+//  CWilkeBlottEucken(void);
+
+//  /*!
+//     * \brief Destructor of the class.
+//     */
+//  virtual ~CWilkeBlottEucken(void);
+
+//  /*!
+//     * \brief return viscosity value.
+//     */
+//  su2double GetViscosity(void);
+
+//  /*!
+//     * \brief return viscosity partial derivative value.
+//     */
+//  su2double Getdmudrho_T(void);
+
+//  /*!
+//     * \brief return viscosity partial derivative value.
+//     */
+//  su2double GetdmudT_rho(void);
+
+//  /*!
+//     * \brief Set Viscosity.
+//     */
+//  virtual void SetViscosity(su2double T, su2double rho);
+
+//  /*!
+//     * \brief Set Viscosity Derivatives.
+//     */
+//  virtual void SetDerViscosity(su2double T, su2double rho);
+
+//};
+
+///*!
+// * \class CGuptaYos
+// * \brief Class for defining the Transport-Physical Model
+// * using Gupta-Yos formulation.
+// * \author W. Maier, S.R. Copeland
+// */
+//class CGuptaYos: public CTransportModel {
+//protected:
+
+//public:
+
+//  /*!
+//     * \brief Constructor of the class.
+//     */
+//  CGuptaYos(void);
+
+//  /*!
+//     * \brief Destructor of the class.
+//     */
+//  virtual ~CGuptaYos(void);
+
+//  /*!
+//     * \brief return viscosity value.
+//     */
+//  su2double GetViscosity(void);
+
+//  /*!
+//     * \brief return viscosity partial derivative value.
+//     */
+//  su2double Getdmudrho_T(void);
+
+//  /*!
+//     * \brief return viscosity partial derivative value.
+//     */
+//  su2double GetdmudT_rho(void);
+
+//  /*!
+//     * \brief Set Viscosity.
+//     */
+//  virtual void SetViscosity(su2double T, su2double rho);
+
+//  /*!
+//     * \brief Set Viscosity Derivatives.
+//     */
+//  virtual void SetDerViscosity(su2double T, su2double rho);
+
+//};
+
 
 #include "transport_model.inl"

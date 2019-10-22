@@ -237,8 +237,10 @@ public:
 
   su2double *Ys, **dFdVi, **dFdVj, **dFdYj, **dFdYi, **dVdUi, **dVdUj,
   *sumdFdYih, *sumdFdYjh, *sumdFdYieve, *sumdFdYjeve;
+
   unsigned short RHOS_INDEX, T_INDEX, TVE_INDEX, VEL_INDEX, P_INDEX,
- 	RHO_INDEX, H_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX;
+    RHO_INDEX, H_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX,
+    LAM_VISC_INDEX, EDDY_VISC_INDEX, DIFF_COEFF_INDEX,K_INDEX, KVE_INDEX;
   
   CFluidModel* FluidModel;
 
@@ -745,6 +747,36 @@ public:
    * \param[in] iRho_s
    */
   void SetRhoCvveIndex(unsigned short val_Index);
+
+  /*!
+   * \brief Retrieves the value of the laminar viscosity index in the primitive variable vector.
+   * \param[in] val_Index
+   */
+  void SetLamViscIndex(unsigned short val_Index);
+
+  /*!
+   * \brief Retrieves the value of the eddy viscosity in the primitive variable vector.
+   * \param[in] val_Index
+   */
+  void SetEddyViscIndex(unsigned short val_Index);
+
+  /*!
+   * \brief Retrieves the value of the diffusion coeff in the primitive variable vector.
+   * \param[in] val_Index
+   */
+  void SetDiffCoeffIndex(unsigned short val_Index);
+
+  /*!
+   * \brief Retrieves the value of the thermal conductivity in the primitive variable vector.
+   * \param[in] val_Index
+   */
+  void SetKIndex(unsigned short val_Index);
+
+  /*!
+   * \brief Retrieves the value of the thermal conductivity ve in the primitive variable vector.
+   * \param[in] val_Index
+   */
+  void SetKveIndex(unsigned short val_Index);
 
   /*!
    * \brief Sets the value of the derivative of pressure w.r.t. species density.

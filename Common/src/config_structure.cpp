@@ -1583,11 +1583,14 @@ void CConfig::SetConfig_Options() {
    * DESCRIPTION: Slope limiter for the direct solution. \n OPTIONS: See \link Limiter_Map \endlink \n DEFAULT VENKATAKRISHNAN \ingroup Config*/
   addEnumOption("SLOPE_LIMITER_TNE2", Kind_SlopeLimit_TNE2, Limiter_Map, VENKATAKRISHNAN);
   default_jst_coeff[0] = 0.5; default_jst_coeff[1] = 0.02;
+  /*!\brief IONIZATION \n DESCRIPTION: Check if ionization is to be used \ingroup Config*/
+  addBoolOption("IONIZATION", ionization, false);
   /*!\brief COLD_FLOW \n DESCRIPTION: Check if Cold Flow should be used in scheme. */
   addBoolOption("COLD_FLOW",COLD_FLOW, false);
   /*!\brief COLD_FLOW_OPTIONS \n DESCRIPTION: Iterations, Residual, Resdiual Reduction*/
   default_cold_flow[0] = 0.0; default_cold_flow[1] = 0.0; default_cold_flow[2] = 0.0;
   addDoubleArrayOption("COLD_FLOW_OPTIONS", 3, Cold_Flow_Options, default_cold_flow);
+
 
   /*!\brief CONV_NUM_METHOD_ADJFLOW
    *  \n DESCRIPTION: Convective numerical method for the adjoint solver.

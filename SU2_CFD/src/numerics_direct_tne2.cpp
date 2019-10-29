@@ -2039,17 +2039,6 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
   for (iDim = 0; iDim < nDim; iDim++)
     UnitNormal[iDim] = Normal[iDim]/Area;
 
-  /*--- Mean transport coefficients ---*/
-  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    Mean_Diffusion_Coeff[iSpecies] = 0.5*(Diffusion_Coeff_i[iSpecies] +
-                                          Diffusion_Coeff_j[iSpecies]);
-  Mean_Laminar_Viscosity = 0.5*(Laminar_Viscosity_i +
-                                Laminar_Viscosity_j);
-  Mean_Thermal_Conductivity = 0.5*(Thermal_Conductivity_i +
-                                   Thermal_Conductivity_j);
-  Mean_Thermal_Conductivity_ve = 0.5*(Thermal_Conductivity_ve_i +
-                                      Thermal_Conductivity_ve_j);
-
   /*--- Mean gradient approximation ---*/
   // Mass fraction
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
@@ -2074,6 +2063,14 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
     PrimVar_j[iVar] = V_j[iVar];
     Mean_PrimVar[iVar] = 0.5*(PrimVar_i[iVar]+PrimVar_j[iVar]);
   }
+
+  /*--- Mean transport coefficients ---*/
+  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+    Mean_Diffusion_Coeff[iSpecies] = Mean_PrimVar[DIFF_COEFF_INDEX+iSpecies];
+  Mean_Laminar_Viscosity           = Mean_PrimVar[LAM_VISC_INDEX];
+  Mean_Thermal_Conductivity        = Mean_PrimVar[K_INDEX];
+  Mean_Thermal_Conductivity_ve     = Mean_PrimVar[KVE_INDEX];
+
   for (iVar = nSpecies; iVar < nPrimVarGrad; iVar++) {
     for (iDim = 0; iDim < nDim; iDim++) {
       Mean_GradPrimVar[iVar][iDim] = 0.5*(PrimVar_Grad_i[iVar][iDim] +
@@ -3077,15 +3074,10 @@ void CAvgGradCorrected_TNE2::ComputeResidual(su2double *val_residual,
 
   /*--- Mean transport coefficients ---*/
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    Mean_Diffusion_Coeff[iSpecies] = 0.5*(Diffusion_Coeff_i[iSpecies] +
-                                          Diffusion_Coeff_j[iSpecies]);
-  Mean_Laminar_Viscosity           = 0.5*(Laminar_Viscosity_i +
-                                          Laminar_Viscosity_j);
-  Mean_Thermal_Conductivity        = 0.5*(Thermal_Conductivity_i +
-                                          Thermal_Conductivity_j);
-  Mean_Thermal_Conductivity_ve     = 0.5*(Thermal_Conductivity_ve_i +
-                                          Thermal_Conductivity_ve_j);
-
+    Mean_Diffusion_Coeff[iSpecies] = Mean_PrimVar[DIFF_COEFF_INDEX+iSpecies];
+  Mean_Laminar_Viscosity           = Mean_PrimVar[LAM_VISC_INDEX];
+  Mean_Thermal_Conductivity        = Mean_PrimVar[K_INDEX];
+  Mean_Thermal_Conductivity_ve     = Mean_PrimVar[KVE_INDEX];
 
   /*--- Projection of the mean gradient in the direction of the edge ---*/
   for (iVar = 0; iVar < nPrimVarGrad; iVar++) {

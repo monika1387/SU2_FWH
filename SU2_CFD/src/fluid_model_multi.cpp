@@ -98,7 +98,7 @@ CTNE2Gas::~CTNE2Gas(void) { }
 void CTNE2Gas::InitializeMixture(CConfig *config) {
 
   unsigned short maxEl = 0;
-  unsigned short iSpecies, jSpecies, iEl;
+  unsigned short iEl;
   su2double *Gas_Composition;
 
   Gas_Composition = config->GetGas_Composition();
@@ -1271,7 +1271,7 @@ void CTNE2Gas::Calc_Viscosity_WBE(su2double *V, su2double *Xs) {
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
     mus[iSpecies] = 0.1*exp((Blottner[iSpecies][0]*log(T)  +
                              Blottner[iSpecies][1])*log(T) +
-        Blottner[iSpecies][2]);
+                             Blottner[iSpecies][2]);
 
   /*--- Determine species 'phi' value for Blottner model ---*/
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
@@ -1493,9 +1493,9 @@ void CTNE2Gas::Calc_Viscosity_GY(su2double *V) {
 
       /*--- Calculate "delta" quantities ---*/
       Omega_ij = 1E-20 * Omega11[iSpecies][jSpecies][3]
-          * pow(T, Omega11[iSpecies][jSpecies][0]*log(T)*log(T)
-          + Omega11[iSpecies][jSpecies][1]*log(T)
-          + Omega11[iSpecies][jSpecies][2]);
+                       * pow(T, Omega11[iSpecies][jSpecies][0]*log(T)*log(T)
+                       + Omega11[iSpecies][jSpecies][1]*log(T)
+                       + Omega11[iSpecies][jSpecies][2]);
       d2_ij = 16.0/5.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*T*(Mi+Mj))) * Omega_ij;
 
       /*--- Add to denominator of viscosity ---*/
@@ -1543,6 +1543,8 @@ void CTNE2Gas::Calc_Viscosity_GY(su2double *V) {
     }
     LamVisc += (Mi/Na * gam_i) / denom;
   }
+
+  V[LAM_VISC_INDEX] = LamVisc;
 }
 
 void CTNE2Gas::Calc_ThermalConductivity_GY(su2double *V) {

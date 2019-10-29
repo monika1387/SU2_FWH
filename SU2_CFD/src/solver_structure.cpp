@@ -2122,7 +2122,7 @@ void CSolver::CompleteComms(CGeometry *geometry,
                 node[iPoint]->SetGradient(iVar, iDim, bufDRecv[buf_offset+iVar*nDim+iDim]);
             break;
           case PRIMITIVE:
-            for (iVar = 0; iVar < nPrimVarGrad; iVar++)
+            for (iVar = 0; iVar < nPrimVar; iVar++)
               node[iPoint]->SetPrimitive(iVar, bufDRecv[buf_offset+iVar]);
              break;
           case PRIMITIVE_GRADIENT:

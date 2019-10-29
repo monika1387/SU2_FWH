@@ -194,8 +194,6 @@ CNumerics::CNumerics(unsigned short val_nDim, unsigned short val_nVar,
 
     hs     = new su2double[nSpecies];
     Cvtr   = new su2double[nSpecies];
-    eve_i  = new su2double[nSpecies];  eve_j  = new su2double[nSpecies];
-    Cvve_i = new su2double[nSpecies];  Cvve_j = new su2double[nSpecies];
     Ys_i   = new su2double[nSpecies];  Ys_j   = new su2double[nSpecies];
     In     = new su2double[nSpecies];
     dYdr_i = new su2double*[nSpecies]; dYdr_j = new su2double*[nSpecies];

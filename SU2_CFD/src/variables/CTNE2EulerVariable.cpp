@@ -66,6 +66,11 @@ CTNE2EulerVariable::CTNE2EulerVariable(void) : CVariable() {
   A_INDEX       = nSpecies+nDim+5;
   RHOCVTR_INDEX = nSpecies+nDim+6;
   RHOCVVE_INDEX = nSpecies+nDim+7;
+  LAM_VISC_INDEX = nSpecies+nDim+8;
+  EDDY_VISC_INDEX  = nSpecies+nDim+9;
+  DIFF_COEFF_INDEX = nSpecies+nDim+10;
+  K_INDEX          = 2*nSpecies+nDim+10;
+  KVE_INDEX        = 2*nSpecies+nDim+11;
 }
 
 CTNE2EulerVariable::CTNE2EulerVariable(unsigned short val_ndim,
@@ -109,6 +114,12 @@ CTNE2EulerVariable::CTNE2EulerVariable(unsigned short val_ndim,
   A_INDEX       = nSpecies+nDim+5;
   RHOCVTR_INDEX = nSpecies+nDim+6;
   RHOCVVE_INDEX = nSpecies+nDim+7;
+  LAM_VISC_INDEX = nSpecies+nDim+8;
+  EDDY_VISC_INDEX  = nSpecies+nDim+9;
+  DIFF_COEFF_INDEX = nSpecies+nDim+10;
+  K_INDEX          = 2*nSpecies+nDim+10;
+  KVE_INDEX        = 2*nSpecies+nDim+11;
+
 
 }
 
@@ -152,6 +163,12 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double val_pressure,
   A_INDEX       = nSpecies+nDim+5;
   RHOCVTR_INDEX = nSpecies+nDim+6;
   RHOCVVE_INDEX = nSpecies+nDim+7;
+  LAM_VISC_INDEX = nSpecies+nDim+8;
+  EDDY_VISC_INDEX  = nSpecies+nDim+9;
+  DIFF_COEFF_INDEX = nSpecies+nDim+10;
+  K_INDEX          = 2*nSpecies+nDim+10;
+  KVE_INDEX        = 2*nSpecies+nDim+11;
+
 
   /*--- Array initialization ---*/
   Primitive          = NULL;
@@ -191,9 +208,21 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double val_pressure,
     Solution_Min[iVar] = 0.0;
   }
 
-  /*--- Incompressible flow, primitive variables ---*/
+  /*--- Initialize primitive variables ---*/
   Primitive = new su2double [nPrimVar];
   for (iVar = 0; iVar < nPrimVar; iVar++) Primitive[iVar] = 0.0;
+
+  /*--- Initialize solution vectors ---*/
+  for (iVar = 0; iVar < nVar; iVar++) {
+    Solution[iVar]     = 0.0;
+    Solution_Old[iVar] = 0.0;
+  }
+
+  /*--- Allocate and initialize solution for dual time strategy ---*/
+//  for (iVar = 0; iVar < nVar; iVar++) {
+//    Solution_time_n[iVar] = 0.0;
+//    Solution_time_n1[iVar] = 0.0;
+//  }
 
   //Secondary = new su2double [nSecondaryVar];
   //for (iVar = 0; iVar < nSecondaryVar; iVar++) Secondary[iVar] = 0.0;
@@ -355,7 +384,11 @@ CTNE2EulerVariable::CTNE2EulerVariable(su2double *val_solution,
   A_INDEX       = nSpecies+nDim+5;
   RHOCVTR_INDEX = nSpecies+nDim+6;
   RHOCVVE_INDEX = nSpecies+nDim+7;
-
+  LAM_VISC_INDEX = nSpecies+nDim+8;
+  EDDY_VISC_INDEX  = nSpecies+nDim+9;
+  DIFF_COEFF_INDEX = nSpecies+nDim+10;
+  K_INDEX          = 2*nSpecies+nDim+10;
+  KVE_INDEX        = 2*nSpecies+nDim+11;
   /*--- Array initialization ---*/
   Primitive          = NULL;
   Gradient_Primitive = NULL;
@@ -517,6 +550,7 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   su2double Tmin, Tmax, Tvemin, Tvemax;
   su2double radical2;
   su2double *xi, *Ms, *hf, *Tref;
+  unsigned short iVar;
 
   /*--- Conserved & primitive vector layout ---*/
   // U:  [rho1, ..., rhoNs, rhou, rhov, rhow, rhoe, rhoeve]^T
@@ -538,6 +572,10 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   maxBIter = 32;        // Maximum Bisection method iterations
   scale    = 0.5;       // Scaling factor for Newton-Raphson step
 
+  /*--- Initialize primitive vector ---*/
+  for (iVar = 0; iVar < nPrimVar; iVar++)
+    V[iVar] = 0.0;
+
   /*--- Read parameters from config ---*/
   xi         = FluidModel->GetRotationModes();      // Rotational modes of energy storage
   Ms         = FluidModel->GetMolar_Mass();         // Species molar mass
@@ -558,11 +596,11 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
   /*--- Assign species & mixture density ---*/
   // Note: if any species densities are < 0, these values are re-assigned
   //       in the primitive AND conserved vectors to ensure positive density
-  V[RHO_INDEX] = 0.0;
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
     if (U[iSpecies] < 0.0) {
       V[RHOS_INDEX+iSpecies] = 1E-20;
       U[iSpecies]            = 1E-20;
+      V[RHO_INDEX]           = 1E-20;
       nonPhys                = true;
     } else
       V[RHOS_INDEX+iSpecies] = U[iSpecies];
@@ -605,7 +643,6 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
     nonPhys = true;
     errT    = true;
   }
-
 
   /*--- Vibrational-Electronic Temperature ---*/
 
@@ -755,7 +792,6 @@ bool CTNE2EulerVariable::Cons2PrimVar(CConfig *config, CFluidModel *FluidModel,
     nonPhys = true;
     V[A_INDEX] = EPS;
   }
-
 
   /*--- Enthalpy ---*/
   V[H_INDEX] = (U[nSpecies+nDim] + V[P_INDEX])/V[RHO_INDEX];

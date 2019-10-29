@@ -48,15 +48,15 @@
  */
 class CTNE2EulerVariable : public CVariable {
 protected:
-  bool ionization;          /*!< \brief Presence of charged species in gas mixture. */
-  unsigned short nSpecies;  /*!< \brief Number of species in the gas mixture. */
+  bool ionization;            /*!< \brief Presence of charged species in gas mixture. */
+  unsigned short nSpecies;    /*!< \brief Number of species in the gas mixture. */
   su2double Velocity2;		  /*!< \brief Square of the velocity vector. */
   su2double Precond_Beta;	  /*!< \brief Low Mach number preconditioner value, Beta. */
 
   /*--- Primitive variable definition ---*/
 
   su2double *Primitive;	            /*!< \brief Primitive variables (T,vx,vy,vz,P,rho,h,c) in compressible flows. */
-  su2double **Gradient_Primitive;	  /*!< \brief Gradient of the primitive variables (T,vx,vy,vz,P,rho). */
+  su2double **Gradient_Primitive;	/*!< \brief Gradient of the primitive variables (T,vx,vy,vz,P,rho). */
   su2double *Limiter_Primitive;     /*!< \brief Limiter of the primitive variables (T,vx,vy,vz,P,rho). */
 
   /*--- Secondary variable definition ---*/

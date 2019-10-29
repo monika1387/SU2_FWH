@@ -138,7 +138,7 @@ public:
   /*!
    * \brief Set the transport coefficients for the Wilke/Blottner/Eucken model
    */
-  void SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel);
+  void SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel, su2double *V);
 
   /*!
    * \brief Get the species diffusion coefficient.
@@ -150,7 +150,8 @@ public:
    * \brief Get the laminar viscosity of the flow.
    * \return Value of the laminar viscosity of the flow.
    */
-  inline su2double GetLaminarViscosity(void) { return LaminarViscosity; }
+  //inline su2double GetLaminarViscosity(void) { return LaminarViscosity; }
+  //delete me
 
   /*!
    * \brief Get the thermal conductivity of the flow.

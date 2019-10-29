@@ -2064,8 +2064,7 @@ private:
     su2double ProjVelocity, ProjVelocity_i, ProjVelocity_j;
     su2double Proj_ModJac_Tensor_ij, R;
     su2double *RoedPdU;
-    unsigned short nSpecies, nPrimVar, nPrimVarGrad, nVar, nDim;
-    //  CVariable *var;
+    unsigned short nPrimVar, nPrimVarGrad;
 
 public:
 

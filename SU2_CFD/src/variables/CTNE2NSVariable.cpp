@@ -112,7 +112,7 @@ CTNE2NSVariable::CTNE2NSVariable(su2double *val_solution, unsigned short val_ndi
 }
 
 CTNE2NSVariable::~CTNE2NSVariable(void) {
-  // This cause invalid free delete [] DiffusionCoeff;
+  // This cause invalid free (delete me) delete [] DiffusionCoeff;
   for (unsigned short iSpecies = 0; iSpecies < nSpecies; iSpecies++)
     delete [] Dij[iSpecies];
   delete [] Dij;
@@ -318,7 +318,7 @@ void CTNE2NSVariable::SetLaminarViscosity_GuptaYos(CFluidModel *FluidModel) {
       /*--- Add to denominator of viscosity ---*/
       denom += gam_j*d2_ij;
     }
-    LaminarViscosity += (Mi/Na * gam_i) / denom;
+  LaminarViscosity += (Mi/Na * gam_i) / denom;
   }
 }
 
@@ -413,7 +413,7 @@ void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CFluidModel *FluidModel) 
   }
 }
 
-void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel) {
+void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel, su2double *Primitive) {
 
   unsigned short iSpecies, jSpecies;
   su2double *Ms, Mi, Mj, M;
@@ -495,13 +495,13 @@ void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config, CFluidModel 
   /*---+++             +++---*/
 
   /*--- Get Blottner coefficients ---*/
-  Blottner = config->GetBlottnerCoeff();
+  Blottner = FluidModel->GetBlottnerCoeff();
 
   /*--- Use Blottner's curve fits for species viscosity ---*/
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
     mus[iSpecies] = 0.1*exp((Blottner[iSpecies][0]*log(T)  +
-                            Blottner[iSpecies][1])*log(T) +
-        Blottner[iSpecies][2]);
+                             Blottner[iSpecies][1])*log(T) +
+                             Blottner[iSpecies][2]);
 
   /*--- Determine species 'phi' value for Blottner model ---*/
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
@@ -514,9 +514,10 @@ void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config, CFluidModel 
   }
 
   /*--- Calculate mixture laminar viscosity ---*/
-  LaminarViscosity = 0.0;
-  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-    LaminarViscosity += Xs[iSpecies]*mus[iSpecies]/phis[iSpecies];
+  //delete me
+  //LaminarViscosity = 0.0;
+  //for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
+  //  LaminarViscosity += Xs[iSpecies]*mus[iSpecies]/phis[iSpecies];
 
 
   /*---+++                +++---*/
@@ -525,7 +526,7 @@ void CTNE2NSVariable::SetTransportCoefficients_WBE(CConfig *config, CFluidModel 
 
   /*--- Determine species tr & ve conductivities ---*/
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    Cves = CalcCvve(Tve, config, iSpecies);
+    Cves = FluidModel->Calc_CvVibElSpecies(Tve, iSpecies);
     ks[iSpecies] = mus[iSpecies]*(15.0/4.0 + xi[iSpecies]/2.0)*Ru/Ms[iSpecies];
     kves[iSpecies] = mus[iSpecies]*Cves;
   }
@@ -575,16 +576,7 @@ bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *Flui
 
   SetVelocity2();
 
-  switch (config->GetKind_TransCoeffModel()) {
-  case WILKE:
-    SetTransportCoefficients_WBE(config, FluidModel);
-    break;
-  case GUPTAYOS:
-    SetDiffusionCoeff_GuptaYos(FluidModel);
-    SetLaminarViscosity_GuptaYos(FluidModel);              // Requires temperature computation.
-    SetThermalConductivity_GuptaYos(FluidModel);
-    break;
-  }
+  FluidModel->Calc_TransportCoeff(config, Primitive);
 
   return nonPhys;
 }

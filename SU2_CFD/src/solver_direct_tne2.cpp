@@ -3121,7 +3121,7 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
   bool viscous            = config->GetViscous();
   bool grid_movement      = config->GetGrid_Movement();
   bool gravity            = config->GetGravityForce();
-  bool turbulent          = (config->GetKind_Solver() == RANS) || (config->GetKind_Solver() == DISC_ADJ_RANS);
+  bool turbulent          = (config->GetKind_Solver() == TNE2_RANS) || (config->GetKind_Solver() == DISC_ADJ_TNE2_RANS);
   bool tkeNeeded          = ((turbulent) && (config->GetKind_Turb_Model() == SST));
   bool reynolds_init      = (config->GetKind_InitOption() == REYNOLDS);
   bool ionization         = config->GetIonization();
@@ -3241,15 +3241,8 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
             that is found from the Reynolds number. The viscosity is computed
             from the dimensional version of Sutherland's law or the constant
             viscosity, depending on the input option.---*/
-      unsigned short ii;
-      for (ii=0; ii<24; ii++){
-        if (TempV[ii] != TempV[ii]) {
-          cout << "delete me tempv ii: " << ii << endl;
-        }
-      }
 
       FluidModel->Calc_TransportCoeff(config, TempV);
-
       Viscosity_FreeStream = FluidModel->GetLaminarViscosity();
       Density_FreeStream   = Reynolds*Viscosity_FreeStream/(Velocity_Reynolds* config->GetLength_Reynolds());
       Pressure_FreeStream  = Density_FreeStream*GasConstant_Inf*Temperature_FreeStream;
@@ -3426,20 +3419,12 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
         NonDimTable << "Viscosity" << config->GetMu_Constant() << config->GetMu_Constant()/config->GetMu_ConstantND() << Unit.str() << config->GetMu_ConstantND();
         Unit.str("");
         NonDimTable.PrintFooter();
-        Unit << "N.s/m^2";
-        NonDimTable << "Conductivity" << FluidModel->GetThermalConductivity() << FluidModel->GetThermalConductivity()/config->GetMu_ConstantND() << Unit.str() << config->GetMu_ConstantND();
-        Unit.str("");
-        NonDimTable.PrintFooter();
         break;
       case GUPTAYOS:
         ModelTable << "GuptaYos";
         if      (config->GetSystemMeasurements() == SI) Unit << "N.s/m^2";
         else if (config->GetSystemMeasurements() == US) Unit << "lbf.s/ft^2";
         NonDimTable << "Viscosity" << config->GetMu_Constant() << config->GetMu_Constant()/config->GetMu_ConstantND() << Unit.str() << config->GetMu_ConstantND();
-        Unit.str("");
-        NonDimTable.PrintFooter();
-        Unit << "N.s/m^2";
-        NonDimTable << "Conductivity" << config->GetMu_Constant() << config->GetMu_Constant()/config->GetMu_ConstantND() << Unit.str() << config->GetMu_ConstantND();
         Unit.str("");
         NonDimTable.PrintFooter();
         break;
@@ -3830,7 +3815,7 @@ void CTNE2EulerSolver::BC_Euler_Wall(CGeometry *geometry, CSolver **solver_conta
 
         /*--- If free electrons are present, retrieve the electron gas density ---*/
         if (FluidModel->GetIonization()) rho_el = node[iPoint]->GetMassFraction(nSpecies-1) * rho;
-        else                         rho_el = 0.0;
+        else                             rho_el = 0.0;
 
         conc = 0.0;
         for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
@@ -3994,6 +3979,25 @@ void CTNE2EulerSolver::BC_Far_Field(CGeometry *geometry, CSolver **solution_cont
         visc_numerics->SetdPdU(node[iPoint]->GetdPdU(), node_infty->GetdPdU());
         visc_numerics->SetdTdU(node[iPoint]->GetdTdU(), node_infty->GetdTdU());
         visc_numerics->SetdTvedU(node[iPoint]->GetdTvedU(), node_infty->GetdTvedU());
+        visc_numerics->SetCvve(node[iPoint]->GetCvve(), node_infty->GetCvve());
+        visc_numerics->SetEve(node[iPoint]->GetEve(), node_infty->GetEve());
+
+        /*--- Species diffusion coefficients ---*/
+        //visc_numerics->SetDiffusionCoeff(node[iPoint]->GetDiffusionCoeff(),
+        //                                 node_infty->GetDiffusionCoeff() );
+
+        /*--- Laminar viscosity ---*/
+        //visc_numerics->SetLaminarViscosity(node[iPoint]->GetLaminarViscosity(),
+        //                                   node_infty->GetLaminarViscosity() );
+
+        /*--- Thermal conductivity ---*/
+        //visc_numerics->SetThermalConductivity(node[iPoint]->GetThermalConductivity(),
+        //                                      node_infty->GetThermalConductivity());
+
+        /*--- Vib-el. thermal conductivity ---*/
+        //visc_numerics->SetThermalConductivity_ve(node[iPoint]->GetThermalConductivity_ve(),
+        //                                         node_infty->GetThermalConductivity_ve() );
+
 
         /*--- Compute and update residual ---*/
         visc_numerics->ComputeResidual(Res_Visc, Jacobian_i, Jacobian_j, config);
@@ -4264,7 +4268,7 @@ void CTNE2EulerSolver::BC_Inlet(CGeometry *geometry, CSolver **solution_containe
         visc_numerics->SetPrimVarGradient(node[iPoint]->GetGradient_Primitive(), node[iPoint]->GetGradient_Primitive());
 
         /*--- Laminar viscosity ---*/
-        visc_numerics->SetLaminarViscosity(node[iPoint]->GetLaminarViscosity(), node[iPoint]->GetLaminarViscosity());
+        //visc_numerics->SetLaminarViscosity(node[iPoint]->GetLaminarViscosity(), node[iPoint]->GetLaminarViscosity());
 
         /*--- Compute and update residual ---*/
         visc_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
@@ -4332,6 +4336,7 @@ void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution,
   visc_numerics->SetAIndex      ( node[0]->GetAIndex()       );
   visc_numerics->SetRhoCvtrIndex( node[0]->GetRhoCvtrIndex() );
   visc_numerics->SetRhoCvveIndex( node[0]->GetRhoCvveIndex() );
+  visc_numerics->SetLamViscIndex( node[0]->GetLamViscIndex() );
 
   unsigned short T_INDEX       = node[0]->GetTIndex();
   unsigned short TVE_INDEX     = node[0]->GetTveIndex();
@@ -4847,7 +4852,7 @@ void CTNE2EulerSolver::BC_Supersonic_Inlet(CGeometry *geometry, CSolver **soluti
         visc_numerics->SetPrimVarGradient(node[iPoint]->GetGradient_Primitive(), node[iPoint]->GetGradient_Primitive());
 
         /*--- Laminar viscosity ---*/
-        visc_numerics->SetLaminarViscosity(node[iPoint]->GetLaminarViscosity(), node[iPoint]->GetLaminarViscosity());
+        //visc_numerics->SetLaminarViscosity(node[iPoint]->GetLaminarViscosity(), node[iPoint]->GetLaminarViscosity());
 
         /*--- Compute and update residual ---*/
         visc_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
@@ -5450,9 +5455,8 @@ CTNE2NSSolver::CTNE2NSSolver(void) : CTNE2EulerSolver() {
 CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
                              unsigned short iMesh) : CTNE2EulerSolver() {
 
-  unsigned long iPoint, index, counter_local = 0, counter_global = 0, iVertex;
+  unsigned long iPoint, counter_local = 0, counter_global = 0, iVertex;
   unsigned short iVar, iDim, iSpecies, iMarker, nLineLets;
-  su2double Density, Velocity2, Pressure, Temperature, StaticEnergy;
   ifstream restart_file;
   unsigned short nZone = geometry->GetnZone();
   bool restart    = (config->GetRestart() || config->GetRestart_Flow());
@@ -5462,17 +5466,14 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
   bool time_stepping = config->GetUnsteady_Simulation() == TIME_STEPPING;
 
-  bool low_mach_prec = config->Low_Mach_Preconditioning();
-
   bool adjoint = (config->GetDiscrete_Adjoint());
   string filename_ = config->GetSolution_FlowFileName();
 
   unsigned short direct_diff = config->GetDirectDiff();
   bool rans = ((config->GetKind_Solver() == RANS )|| (config->GetKind_Solver() == DISC_ADJ_RANS));
-  bool multizone = config->GetMultizone_Problem();
 
   bool check_infty, check;
-  su2double *Mvec_Inf, Alpha, Beta, dull_val;
+  su2double *Mvec_Inf, Alpha, Beta;
 
   /*--- Check for a restart file to evaluate if there is a change in the angle of attack
      before computing all the non-dimesional quantities. ---*/
@@ -5599,6 +5600,11 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
   Solution   = new su2double[nVar]; for (iVar = 0; iVar < nVar; iVar++) Solution[iVar]   = 0.0;
   Solution_i = new su2double[nVar]; for (iVar = 0; iVar < nVar; iVar++) Solution_i[iVar] = 0.0;
   Solution_j = new su2double[nVar]; for (iVar = 0; iVar < nVar; iVar++) Solution_j[iVar] = 0.0;
+
+  /*--- Define some auxiliary vectors related to the primitive solution ---*/
+  Primitive   = new su2double[nPrimVar]; for (iVar = 0; iVar < nPrimVar; iVar++) Primitive[iVar]   = 0.0;
+  Primitive_i = new su2double[nPrimVar]; for (iVar = 0; iVar < nPrimVar; iVar++) Primitive_i[iVar] = 0.0;
+  Primitive_j = new su2double[nPrimVar]; for (iVar = 0; iVar < nPrimVar; iVar++) Primitive_j[iVar] = 0.0;
 
   /*--- Define some auxiliary vectors related to the geometry ---*/
   Vector   = new su2double[nDim]; for (iDim = 0; iDim < nDim; iDim++) Vector[iDim]   = 0.0;
@@ -5955,7 +5961,7 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
 
   /*--- Read farfield conditions from config ---*/
   Density_Inf        = config->GetDensity_FreeStreamND();
-  Pressure_Inf       = config->GetPressure_FreeStream();
+  Pressure_Inf       = config->GetPressure_FreeStreamND();
   Temperature_Inf    = config->GetTemperature_FreeStream();
   Temperature_ve_Inf = config->GetTemperature_ve_FreeStream();
   MassFrac_Inf       = FluidModel->GetMassFrac_FreeStream();
@@ -6028,6 +6034,7 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
     check = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
 
     if (check) {
+      cout << "delete me...can update this" << endl;
       bool ionization;
       unsigned short iEl, nHeavy, nEl, *nElStates;
       su2double RuSI, Ru, T, Tve, rhoCvtr, sqvel, rhoE, rhoEve, num, denom, conc;
@@ -6266,7 +6273,6 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
   for (iPoint = 0; iPoint < nPoint; iPoint ++) {
     /*--- Set the primitive variables incompressible (dens, vx, vy, vz, beta)
           and compressible (temp, vx, vy, vz, press, dens, enthal, sos)---*/
-    cout << "delete me npoints: " << nPoint << endl;
     nonPhys = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
     if (nonPhys) {
       ErrorCounter++;
@@ -6353,7 +6359,7 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
                                  unsigned long Iteration) {
 
   unsigned short iDim, iMarker, iSpecies;
-  unsigned short VEL_INDEX, RHO_INDEX, RHOS_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX;
+  unsigned short VEL_INDEX, RHO_INDEX, RHOS_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX, LAM_VISC_INDEX, K_INDEX, KVE_INDEX;
   unsigned long iEdge, iVertex, iPoint, jPoint;
   su2double *Normal, Area, Vol;
   su2double Mean_SoundSpeed, Mean_ProjVel;
@@ -6386,6 +6392,9 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
   RHOS_INDEX = node_infty->GetRhosIndex();
   RHOCVTR_INDEX = node_infty->GetRhoCvtrIndex();
   RHOCVVE_INDEX = node_infty->GetRhoCvveIndex();
+  LAM_VISC_INDEX = node_infty->GetLamViscIndex();
+  K_INDEX = node_infty->GetKIndex();
+  KVE_INDEX = node_infty->GetKveIndex();
 
   X = new su2double[nSpecies];
 
@@ -6423,10 +6432,6 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
           +V_j[VEL_INDEX+iDim] )*UnitNormal[iDim];
     Mean_SoundSpeed     = 0.5*(V_i[A_INDEX]   + V_j[A_INDEX]);
     Mean_Density        = 0.5*(V_i[RHO_INDEX] + V_j[RHO_INDEX]);
-    Mean_ThermalCond    = 0.5*(node[iPoint]->GetThermalConductivity() +
-                               node[jPoint]->GetThermalConductivity()  );
-    Mean_ThermalCond_ve = 0.5*(node[iPoint]->GetThermalConductivity_ve() +
-                               node[jPoint]->GetThermalConductivity_ve()  );
 
     /*--- Calculate the maximum spectral radius from convection ---*/
     Lambda = (fabs(Mean_ProjVel) + Mean_SoundSpeed)*Area;
@@ -6436,14 +6441,10 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
       node[jPoint]->AddMax_Lambda_Inv(Lambda);
 
     /*--- Calculate mean viscous quantities ---*/
-    Mean_LaminarVisc    = 0.5*(node[iPoint]->GetLaminarViscosity() +
-                               node[jPoint]->GetLaminarViscosity()  );
-    Mean_ThermalCond    = 0.5*(node[iPoint]->GetThermalConductivity() +
-                               node[jPoint]->GetThermalConductivity()  );
-    Mean_ThermalCond_ve = 0.5*(node[iPoint]->GetThermalConductivity_ve() +
-                               node[jPoint]->GetThermalConductivity_ve()  );
-    Mean_Density        = 0.5*(node[iPoint]->GetDensity() +
-                               node[jPoint]->GetDensity()  );
+    Mean_LaminarVisc    = 0.5*(V_i[LAM_VISC_INDEX] + V_j[LAM_VISC_INDEX]);
+    Mean_ThermalCond    = 0.5*(V_i[K_INDEX] + V_j[K_INDEX]);
+    Mean_ThermalCond_ve = 0.5*(V_i[KVE_INDEX] + V_j[KVE_INDEX]);
+
     cv = 0.5*(node[iPoint]->GetRhoCv_tr() + node[iPoint]->GetRhoCv_ve() +
               node[jPoint]->GetRhoCv_tr() + node[jPoint]->GetRhoCv_ve()  )/ Mean_Density;
 
@@ -6479,8 +6480,6 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
         Mean_ProjVel      = V_i[VEL_INDEX+iDim]*UnitNormal[iDim];
       Mean_SoundSpeed     = V_i[A_INDEX];
       Mean_Density        = V_i[RHO_INDEX];
-      Mean_ThermalCond    = node[iPoint]->GetThermalConductivity();
-      Mean_ThermalCond_ve = node[iPoint]->GetThermalConductivity_ve();
 
       /*--- Calculate the maximum spectral radius from convection ---*/
       Lambda = (fabs(Mean_ProjVel) + Mean_SoundSpeed)*Area;
@@ -6488,9 +6487,9 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
         node[iPoint]->AddMax_Lambda_Inv(Lambda);
 
       /*--- Calculate viscous mean quantities ---*/
-      Mean_LaminarVisc    = node[iPoint]->GetLaminarViscosity();
-      Mean_ThermalCond    = node[iPoint]->GetThermalConductivity();
-      Mean_ThermalCond_ve = node[iPoint]->GetThermalConductivity_ve();
+      Mean_LaminarVisc    = V_i[LAM_VISC_INDEX];
+      Mean_ThermalCond    = V_i[K_INDEX];
+      Mean_ThermalCond_ve = V_i[KVE_INDEX];
       Mean_Density        = node[iPoint]->GetDensity();
       cv = (node[iPoint]->GetRhoCv_tr() +
             node[iPoint]->GetRhoCv_ve()  ) / Mean_Density;
@@ -6609,7 +6608,10 @@ void CTNE2NSSolver::Viscous_Residual(CGeometry *geometry,
   numerics->SetAIndex      ( node[0]->GetAIndex()       );
   numerics->SetRhoCvtrIndex( node[0]->GetRhoCvtrIndex() );
   numerics->SetRhoCvveIndex( node[0]->GetRhoCvveIndex() );
-
+  numerics->SetLamViscIndex( node[0]->GetLamViscIndex() );
+  numerics->SetDiffCoeffIndex( node[0]->GetDiffCoeffIndex() );
+  numerics->SetKIndex( node[0]->GetKIndex() );
+  numerics->SetKveIndex( node[0]->GetKveIndex() );
 
   for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
 
@@ -6637,22 +6639,6 @@ void CTNE2NSSolver::Viscous_Residual(CGeometry *geometry,
     numerics->SetdTvedU(node[iPoint]->GetdTvedU(), node[jPoint]->GetdTvedU());
     numerics->SetEve   (node[iPoint]->GetEve(),    node[jPoint]->GetEve());
     numerics->SetCvve  (node[iPoint]->GetCvve(),   node[jPoint]->GetCvve());
-
-//    /*--- Species diffusion coefficients ---*/
-//    numerics->SetDiffusionCoeff(node[iPoint]->GetDiffusionCoeff(),
-//                                node[jPoint]->GetDiffusionCoeff() );
-
-//    /*--- Laminar viscosity ---*/
-//    numerics->SetLaminarViscosity(node[iPoint]->GetLaminarViscosity(),
-//                                  node[jPoint]->GetLaminarViscosity() );
-
-//    /*--- Thermal conductivity ---*/
-//    numerics->SetThermalConductivity(node[iPoint]->GetThermalConductivity(),
-//                                     node[jPoint]->GetThermalConductivity());
-
-//    /*--- Vib-el. thermal conductivity ---*/
-//    numerics->SetThermalConductivity_ve(node[iPoint]->GetThermalConductivity_ve(),
-//                                        node[jPoint]->GetThermalConductivity_ve() );
 
     /*--- Compute and update residual ---*/
     numerics->ComputeResidual(Res_Visc, Jacobian_i, Jacobian_j, config);
@@ -7187,6 +7173,7 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
 
         HeatFlux[iMarker][iVertex] = ThermalCond*dTn + ThermalCond_ve*dTven;
         HF_Visc[iMarker] += HeatFlux[iMarker][iVertex]*Area;
+        //MaxHF_Visc[iMarker] += pow(2.0, 2)*Area;
         MaxHF_Visc[iMarker] += pow(HeatFlux[iMarker][iVertex], pnorm)*Area;
 
         /*--- Compute viscous forces, and moment using the stress tensor ---*/

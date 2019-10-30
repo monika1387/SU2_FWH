@@ -475,8 +475,6 @@ inline su2double CConfig::GetThermal_Expansion_CoeffND(void) { return Thermal_Ex
 
 inline su2double **CConfig::GetBlottnerCoeff(void) {return Blottner; }
 
-inline su2double CConfig::GetPnormHeat(void) { return pnorm_heat; }
-
 inline su2double CConfig::GetInc_Density_Ref(void) { return Inc_Density_Ref; }
 
 inline su2double CConfig::GetInc_Velocity_Ref(void) { return Inc_Velocity_Ref; }

@@ -748,7 +748,7 @@ CTNE2EulerSolver::~CTNE2EulerSolver(void) {
 
   if (HeatFlux != NULL) {
     for (iMarker = 0; iMarker < nMarker; iMarker++) {
-      delete HeatFlux[iMarker];
+      delete [] HeatFlux[iMarker];
     }
     delete [] HeatFlux;
   }
@@ -6158,7 +6158,6 @@ CTNE2NSSolver::CTNE2NSSolver(CGeometry *geometry, CConfig *config,
     for (iDim = 0; iDim < nDim; iDim++) Point_Max_Coord_BGS[iVar][iDim] = 0.0;
   }
 
-
   /*--- Define solver parameters needed for execution of destructor ---*/
   if (config->GetKind_ConvNumScheme_Flow() == SPACE_CENTERED) space_centered = true;
   else space_centered = false;
@@ -6978,9 +6977,9 @@ void CTNE2NSSolver::Source_Residual(CGeometry *geometry,
 void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
 
   unsigned short Boundary, Monitoring, iMarker, iMarker_Monitoring, iDim, jDim;
-  unsigned short VEL_INDEX, T_INDEX, TVE_INDEX;
+  unsigned short VEL_INDEX, T_INDEX, TVE_INDEX, LAM_VISC_INDEX, K_INDEX, KVE_INDEX;
   unsigned long iVertex, iPoint, iPointNormal;
-  su2double **Grad_PrimVar;
+  su2double **Grad_PrimVar, *PrimVar;
   su2double Delta, Viscosity, ThermalCond, ThermalCond_ve;
   su2double TauNormal;
   su2double FrictionVel;
@@ -7013,9 +7012,9 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
   VEL_INDEX = node[0]->GetVelIndex();
   T_INDEX   = node[0]->GetTIndex();
   TVE_INDEX = node[0]->GetTveIndex();
-
-  /*--- Retrieve data from CConfig ---*/
-  pnorm = config->GetPnormHeat();
+  LAM_VISC_INDEX = node[0]->GetLamViscIndex();
+  K_INDEX   = node[0]->GetKIndex();
+  KVE_INDEX = node[0]->GetKveIndex();
 
   /*--- Calculate angle of attack & sideslip ---*/
   Alpha = config->GetAoA()*PI_NUMBER/180.0;
@@ -7111,11 +7110,12 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
         }
 
         /*--- Get vertex flow parameters ---*/
+        PrimVar        = node[iPoint]->GetPrimVar();
         Grad_PrimVar   = node[iPoint]->GetGradient_Primitive();
-        Viscosity      = node[iPoint]->GetLaminarViscosity();
-        ThermalCond    = node[iPoint]->GetThermalConductivity();
-        ThermalCond_ve = node[iPoint]->GetThermalConductivity_ve();
         Density        = node[iPoint]->GetDensity();
+        Viscosity      = PrimVar[LAM_VISC_INDEX];
+        ThermalCond    = PrimVar[K_INDEX];
+        ThermalCond_ve = PrimVar[KVE_INDEX];
 
         /*--- Calculate the viscous stress tensor ---*/
         div_vel = 0.0;
@@ -7173,8 +7173,7 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
 
         HeatFlux[iMarker][iVertex] = ThermalCond*dTn + ThermalCond_ve*dTven;
         HF_Visc[iMarker] += HeatFlux[iMarker][iVertex]*Area;
-        //MaxHF_Visc[iMarker] += pow(2.0, 2)*Area;
-        MaxHF_Visc[iMarker] += pow(HeatFlux[iMarker][iVertex], pnorm)*Area;
+        MaxHF_Visc[iMarker] += pow(HeatFlux[iMarker][iVertex], MaxNorm)*Area;
 
         /*--- Compute viscous forces, and moment using the stress tensor ---*/
         if ((geometry->node[iPoint]->GetDomain()) && (Monitoring == YES)) {

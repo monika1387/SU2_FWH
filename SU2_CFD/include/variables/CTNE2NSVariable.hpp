@@ -136,36 +136,6 @@ public:
   bool SetVorticity(void);
 
   /*!
-   * \brief Set the transport coefficients for the Wilke/Blottner/Eucken model
-   */
-  void SetTransportCoefficients_WBE(CConfig *config, CFluidModel *FluidModel, su2double *V);
-
-  /*!
-   * \brief Get the species diffusion coefficient.
-   * \return Value of the species diffusion coefficient.
-   */
-  inline su2double* GetDiffusionCoeff(void) { return DiffusionCoeff; }
-
-  /*!
-   * \brief Get the laminar viscosity of the flow.
-   * \return Value of the laminar viscosity of the flow.
-   */
-  //inline su2double GetLaminarViscosity(void) { return LaminarViscosity; }
-  //delete me
-
-  /*!
-   * \brief Get the thermal conductivity of the flow.
-   * \return Value of the laminar viscosity of the flow.
-   */
-  inline su2double GetThermalConductivity(void) { return ThermalCond; }
-
-  /*!
-   * \brief Get the vib-el. thermal conductivity of the flow.
-   * \return Value of the laminar viscosity of the flow.
-   */
-  inline su2double GetThermalConductivity_ve(void) { return ThermalCond_ve; }
-
-  /*!
    * \brief Set the temperature at the wall
    */
   inline void SetWallTemperature(su2double Temperature_Wall) { Primitive[T_INDEX] = Temperature_Wall; }

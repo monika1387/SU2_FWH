@@ -9958,6 +9958,31 @@ public:
    */
   su2double GetYPlus(unsigned short val_marker, unsigned short val_vertex);
 
+  /*!
+   * \brief Get the max Omega.
+   * \return Value of the max Omega.
+   */
+  su2double GetOmega_Max(void);
+
+  /*!
+   * \brief Get the max Strain rate magnitude.
+   * \return Value of the max Strain rate magnitude.
+   */
+  su2double GetStrainMag_Max(void);
+
+  /*!
+   * \brief A virtual member.
+   * \return Value of the StrainMag_Max
+   */
+  void SetStrainMag_Max(su2double val_strainmag_max);
+
+  /*!
+   * \brief A virtual member.
+   * \return Value of the Omega_Max
+   */
+  void SetOmega_Max(su2double val_omega_max);
+
+
 };
 
 /*!

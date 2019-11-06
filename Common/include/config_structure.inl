@@ -877,6 +877,8 @@ inline bool CConfig::GetEnergy_Equation(void) { return Energy_Equation; }
 
 inline bool CConfig::GetIonization(void) {return ionization; }
 
+inline bool CConfig::GetBaldwinLomax(void) {return baldwinlomax; }
+
 inline unsigned short CConfig::GetKind_InitOption(void) { return Kind_InitOption; }
 
 inline su2double CConfig::GetPressure_Critical(void) { return Pressure_Critical; }

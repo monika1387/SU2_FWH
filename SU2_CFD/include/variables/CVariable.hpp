@@ -1615,6 +1615,11 @@ public:
   inline virtual bool SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel) { return true; }
 
   /*!
+   * \brief Set Eddy Viscosity using Baldwin Lomax Model
+   */
+  inline virtual void CalcEddyVisc_BL(su2double y_max){}
+
+  /*!
    * \brief A virtual member.
    * \param[in] Temperature_Wall - Value of the Temperature at the wall
    */

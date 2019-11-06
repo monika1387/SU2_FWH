@@ -57,7 +57,8 @@ private:
   su2double LaminarViscosity;  /*!< \brief Viscosity of the fluid. */
   su2double ThermalCond;       /*!< \brief T-R thermal conductivity of the gas mixture. */
   su2double ThermalCond_ve;    /*!< \brief V-E thermal conductivity of the gas mixture. */
-  su2double Vorticity[3];	   /*!< \brief Vorticity of the fluid. */
+  su2double Vorticity[3];      /*!< \brief Vorticity of the fluid. */
+  su2double StrainMag;         /*!< \brief Magnitude of rate of strain tensor. */
 
 public:
 
@@ -115,25 +116,14 @@ public:
   ~CTNE2NSVariable(void);
 
   /*!
-   * \brief Set the laminar viscosity.
-   */
-  void SetDiffusionCoeff_GuptaYos(CFluidModel *FluidModel);
-
-  /*!
-   * \brief Set the laminar viscosity.
-   */
-  void SetLaminarViscosity_GuptaYos(CFluidModel *FluidModel);
-
-  /*!
-   * \brief Get the laminar viscosity of the flow.
-   * \return Value of the laminar viscosity of the flow.
-   */
-  void SetThermalConductivity_GuptaYos(CFluidModel *FluidModel);
-
-  /*!
    * \brief Set the vorticity value.
    */
   bool SetVorticity(void);
+
+  /*!
+   * \brief Set the rate of strain magnitude.
+   */
+  bool SetStrainMag(void);
 
   /*!
    * \brief Set the temperature at the wall
@@ -145,11 +135,22 @@ public:
    * \param[in] val_dim - Index of the dimension.
    * \return Value of the vorticity.
    */
-  inline su2double *GetVorticity(unsigned short val_dim) { return Vorticity; }
+  inline su2double *GetVorticity(void) {return Vorticity; }
+
+  /*!
+   * \brief Get the value of the magnitude of rate of strain.
+   * \return Value of the rate of strain magnitude.
+   */
+  inline su2double GetStrainMag(void) {return StrainMag; }
 
   /*!
    * \brief Set all the primitive variables for compressible flows
    */
   bool SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel);
+
+  /*!
+   * \brief Set Eddy Viscosity using Baldwin Lomax Model
+   */
+  void CalcEddyVisc_BL(su2double y_max);
 
 };

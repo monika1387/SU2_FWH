@@ -101,6 +101,9 @@ void CTNE2TurbSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_cont
   bool limiter       = (config->GetKind_SlopeLimit_Turb() != NO_LIMITER);
   bool grid_movement = config->GetGrid_Movement();
 
+
+  numerics -> SetRhoIndex(solver_container[TNE2_SOL]->node[0]->GetRhoIndex());
+
   for (iEdge = 0; iEdge < geometry->GetnEdge(); iEdge++) {
 
     /*--- Points in edge and normal vectors ---*/
@@ -1176,7 +1179,7 @@ void CTNE2TurbSASolver::Source_Residual(CGeometry *geometry, CSolver **solver_co
 
     /*--- Conservative variables w/o reconstruction ---*/
 
-    numerics->SetPrimitive(solver_container[TNE2_SOL]->node[iPoint]->GetPrimitive(), NULL);
+    numerics->SetPrimitive(solver_container[TNE2_SOL]->node[iPoint]->GetPrimVar(), NULL);
 
     /*--- Gradient of the primitive and conservative variables ---*/
 
@@ -1357,11 +1360,11 @@ void CTNE2TurbSASolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_conta
 
       /*--- Allocate the value at the infinity ---*/
 
-      V_infty = solver_container[TNE2_SOL]->GetCharacPrimVar(val_marker, iVertex);
+      V_infty = solver_container[TNE2_SOL]->node_infty->GetPrimVar();
 
       /*--- Retrieve solution at the farfield boundary node ---*/
 
-      V_domain = solver_container[TNE2_SOL]->node[iPoint]->GetPrimitive();
+      V_domain = solver_container[TNE2_SOL]->node[iPoint]->GetPrimVar();
 
       /*--- Grid Movement ---*/
 
@@ -1517,11 +1520,11 @@ void CTNE2TurbSASolver::BC_Outlet(CGeometry *geometry, CSolver **solver_containe
 
       /*--- Allocate the value at the outlet ---*/
 
-      V_outlet = solver_container[TNE2_SOL]->GetCharacPrimVar(val_marker, iVertex);
+      V_outlet = solver_container[TNE2_SOL]->node_infty->GetPrimVar();
 
       /*--- Retrieve solution at the farfield boundary node ---*/
 
-      V_domain = solver_container[TNE2_SOL]->node[iPoint]->GetPrimitive();
+      V_domain = solver_container[TNE2_SOL]->node[iPoint]->GetPrimVar();
 
       /*--- Set various quantities in the solver class ---*/
 

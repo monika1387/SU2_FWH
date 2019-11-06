@@ -1006,7 +1006,8 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
   spalart_allmaras, neg_spalart_allmaras, menter_sst, transition,
   template_solver, disc_adj, disc_adj_turb, disc_adj_heat, disc_adj_tne2,
   fem_dg_flow, fem_dg_shock_persson,
-  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras,
+  baldwin_lomax;
 
   /*--- Count the number of DOFs per solution point. ---*/
 
@@ -1026,7 +1027,8 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
   template_solver      = false;
   fem_dg_flow          = false; fem_dg_shock_persson  = false;
   e_spalart_allmaras   = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
-  tne2_euler           = false; tne2_ns               = false; tne2_turbulent = false;
+  baldwin_lomax        = false;
+  tne2_euler           = false; tne2_ns               = false; tne2_turbulent          = false;
   disc_adj_tne2        = false;
 
 
@@ -1081,12 +1083,13 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
 
   if (turbulent || fem_turbulent || tne2_turbulent)
     switch (config->GetKind_Turb_Model()) {
-      case SA:     spalart_allmaras = true;     break;
-      case SA_NEG: neg_spalart_allmaras = true; break;
-      case SST:    menter_sst = true;           break;
-      case SA_E:   e_spalart_allmaras = true;   break;
-      case SA_COMP: comp_spalart_allmaras = true; break;
-      case SA_E_COMP: e_comp_spalart_allmaras = true; break;
+      case SA:            spalart_allmaras        = true; break;
+      case SA_NEG:        neg_spalart_allmaras    = true; break;
+      case SST:           menter_sst              = true; break;
+      case SA_E:          e_spalart_allmaras      = true; break;
+      case SA_COMP:       comp_spalart_allmaras   = true; break;
+      case SA_E_COMP:     e_comp_spalart_allmaras = true; break;
+      case BALDWIN_LOMAX: baldwin_lomax           = true; break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
 
@@ -1154,6 +1157,9 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       }
     }
     if (tne2_turbulent) {
+      if (baldwin_lomax){
+        break;
+      }
       if (spalart_allmaras || e_spalart_allmaras || comp_spalart_allmaras || e_comp_spalart_allmaras || neg_spalart_allmaras) {
         solver[iMGlevel][TURB_SOL] = new CTNE2TurbSASolver(geometry[iMGlevel], config, iMGlevel, solver[iMGlevel][TNE2_SOL]->GetFluidModel() );
         solver[iMGlevel][TNE2_SOL]->Preprocessing(geometry[iMGlevel], solver[iMGlevel], config, iMGlevel, NO_RK_ITER, RUNTIME_TNE2_SYS, false);
@@ -1567,7 +1573,8 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
   heat_fvm, fem,
   spalart_allmaras, neg_spalart_allmaras, menter_sst, transition,
   template_solver, disc_adj, disc_adj_turb, disc_adj_fem, disc_adj_heat,
-  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras,
+  baldwin_lomax;
 
   /*--- Initialize some useful booleans ---*/
 
@@ -1582,6 +1589,7 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
   transition           = false;
   template_solver      = false;
   e_spalart_allmaras   = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
+  baldwin_lomax        = false;
   disc_adj_tne2        = false;
 
   /*--- Assign booleans ---*/
@@ -1620,12 +1628,13 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
 
   if (turbulent || tne2_turbulent)
     switch (config->GetKind_Turb_Model()) {
-    case SA:     spalart_allmaras = true;     break;
-    case SA_NEG: neg_spalart_allmaras = true; break;
-    case SST:    menter_sst = true;           break;
-    case SA_E: e_spalart_allmaras = true; break;
-    case SA_COMP: comp_spalart_allmaras = true; break;
-    case SA_E_COMP: e_comp_spalart_allmaras = true; break;
+    case SA:            spalart_allmaras        = true; break;
+    case SA_NEG:        neg_spalart_allmaras    = true; break;
+    case SST:           menter_sst              = true; break;
+    case SA_E:          e_spalart_allmaras      = true; break;
+    case SA_COMP:       comp_spalart_allmaras   = true; break;
+    case SA_E_COMP:     e_comp_spalart_allmaras = true; break;
+    case BALDWIN_LOMAX: baldwin_lomax           = true; break;
     }
 
   /*--- Definition of the Class for the solution: solver_container[DOMAIN][MESH_LEVEL][EQUATION]. Note that euler, ns
@@ -1903,6 +1912,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
   spalart_allmaras, neg_spalart_allmaras, menter_sst,
   fem, heat_fvm, transition, template_solver;
   bool e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  bool baldwin_lomax;
 
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
@@ -1920,6 +1930,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
   transition         = false;
   template_solver    = false;
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
+  baldwin_lomax      = false;
 
   /*--- Assign booleans ---*/
   switch (config->GetKind_Solver()) {
@@ -1945,11 +1956,12 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
 
   if (turbulent || fem_turbulent || tne2_turbulent)
     switch (config->GetKind_Turb_Model()) {
-      case SA:        spalart_allmaras        = true; break;
-      case SA_NEG:    neg_spalart_allmaras    = true; break;
-      case SA_E:      e_spalart_allmaras      = true; break;
-      case SA_COMP:   comp_spalart_allmaras   = true; break;
-      case SA_E_COMP: e_comp_spalart_allmaras = true; break;
+      case SA:            spalart_allmaras        = true; break;
+      case SA_NEG:        neg_spalart_allmaras    = true; break;
+      case SA_E:          e_spalart_allmaras      = true; break;
+      case SA_COMP:       comp_spalart_allmaras   = true; break;
+      case SA_E_COMP:     e_comp_spalart_allmaras = true; break;
+    case BALDWIN_LOMAX: baldwin_lomax           = true; break;
       case SST:       menter_sst = true; constants = solver[MESH_0][TURB_SOL]->GetConstants(); break;
       default: SU2_MPI::Error("Specified turbulence model unavailable or none selected", CURRENT_FUNCTION); break;
     }
@@ -2495,7 +2507,7 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CSolver ***solver, CNumeri
 
   /*--- Solver definition for the turbulent model problem ---*/
 
-  if (tne2_turbulent) {
+  if (tne2_turbulent && !baldwin_lomax) {
 
     /*--- Definition of the convective scheme for each equation and mesh level ---*/
 
@@ -2907,7 +2919,8 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
   transition,
   template_solver;
 
-  bool e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras;
+  bool e_spalart_allmaras, comp_spalart_allmaras, e_comp_spalart_allmaras,
+       baldwin_lomax;
 
   bool compressible = (config->GetKind_Regime() == COMPRESSIBLE);
   bool incompressible = (config->GetKind_Regime() == INCOMPRESSIBLE);
@@ -2923,6 +2936,7 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
   template_solver  = false;
 
   e_spalart_allmaras = false; comp_spalart_allmaras = false; e_comp_spalart_allmaras = false;
+  baldwin_lomax      = false;
 
   /*--- Assign booleans ---*/
   switch (config->GetKind_Solver()) {
@@ -2948,13 +2962,13 @@ void CDriver::Numerics_Postprocessing(CNumerics *****numerics,
 
   if (turbulent || fem_turbulent || tne2_turbulent)
     switch (config->GetKind_Turb_Model()) {
-      case SA:     spalart_allmaras = true;     break;
-      case SA_NEG: neg_spalart_allmaras = true; break;
-      case SST:    menter_sst = true;  break;
-      case SA_COMP: comp_spalart_allmaras = true; break;
-      case SA_E: e_spalart_allmaras = true; break;
-      case SA_E_COMP: e_comp_spalart_allmaras = true; break;
-
+      case SA:            spalart_allmaras        = true; break;
+      case SA_NEG:        neg_spalart_allmaras    = true; break;
+      case SST:           menter_sst              = true; break;
+      case SA_E:          e_spalart_allmaras      = true; break;
+      case SA_COMP:       comp_spalart_allmaras   = true; break;
+      case SA_E_COMP:     e_comp_spalart_allmaras = true; break;
+      case BALDWIN_LOMAX: baldwin_lomax           = true; break;
     }
 
   /*--- Solver definition for the template problem ---*/

@@ -3671,6 +3671,9 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
       (Kind_Turb_Model != NONE))
     Kind_Solver = TNE2_RANS;
 
+  if (Kind_Solver == TNE2_RANS && Kind_Turb_Model == BALDWIN_LOMAX)
+    baldwinlomax = true;
+
   if (Kind_Solver == EULER) Kind_Turb_Model = NONE;
   if (Kind_Solver == TNE2_EULER) Kind_Turb_Model = NONE;
 
@@ -5186,15 +5189,16 @@ void CConfig::SetOutput(unsigned short val_software, unsigned short val_izone) {
       }
       break;
     case TNE2_RANS: case DISC_ADJ_TNE2_RANS:
-      if (Kind_Regime == COMPRESSIBLE) cout << "Compressible TNE2 RANS equations." << endl;
+      cout << "Compressible TNE2 RANS equations." << endl;
       cout << "Turbulence model: ";
       switch (Kind_Turb_Model) {
-      case SA:     cout << "Spalart Allmaras" << endl; break;
-      case SA_NEG: cout << "Negative Spalart Allmaras" << endl; break;
-      case SST:    cout << "Menter's SST"     << endl; break;
-      case SA_E:   cout << "Edwards Spalart Allmaras" << endl; break;
-      case SA_COMP:   cout << "Compressibility Correction Spalart Allmaras" << endl; break;
-      case SA_E_COMP:   cout << "Compressibility Correction Edwards Spalart Allmaras" << endl; break;
+      case SA:            cout << "Spalart Allmaras" << endl; break;
+      case SA_NEG:        cout << "Negative Spalart Allmaras" << endl; break;
+      case SST:           cout << "Menter's SST"     << endl; break;
+      case SA_E:          cout << "Edwards Spalart Allmaras" << endl; break;
+      case SA_COMP:       cout << "Compressibility Correction Spalart Allmaras" << endl; break;
+      case SA_E_COMP:     cout << "Compressibility Correction Edwards Spalart Allmaras" << endl; break;
+      case BALDWIN_LOMAX: cout << "Baldwin-Lomax Algebraic Model" << endl; break;
       }
       if (QCR) cout << "Using Quadratic Constitutive Relation, 2000 version (QCR2000)" << endl;
       cout << "Hybrid RANS/LES: ";

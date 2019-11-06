@@ -875,12 +875,13 @@ static const map<string, ENUM_LIMITER> Limiter_Map = CCreateMap<string, ENUM_LIM
  */
 enum ENUM_TURB_MODEL {
   NO_TURB_MODEL = 0, /*!< \brief No turbulence model. */
-  SA      = 1, /*!< \brief Kind of Turbulent model (Spalart-Allmaras). */
-  SA_NEG  = 2, /*!< \brief Kind of Turbulent model (Spalart-Allmaras). */
-  SST     = 3, /*!< \brief Kind of Turbulence model (Menter SST). */
-  SA_E    = 4, /*!< \brief Kind of Turbulent model (Spalart-Allmaras Edwards). */
-  SA_COMP = 5, /*!< \brief Kind of Turbulent model (Spalart-Allmaras Compressibility Correction). */
-  SA_E_COMP = 6, /*!< \brief Kind of Turbulent model (Spalart-Allmaras Edwards with Compressibility Correction). */
+  SA            = 1, /*!< \brief Kind of Turbulent model (Spalart-Allmaras). */
+  SA_NEG        = 2, /*!< \brief Kind of Turbulent model (Spalart-Allmaras). */
+  SST           = 3, /*!< \brief Kind of Turbulence model (Menter SST). */
+  SA_E          = 4, /*!< \brief Kind of Turbulent model (Spalart-Allmaras Edwards). */
+  SA_COMP       = 5, /*!< \brief Kind of Turbulent model (Spalart-Allmaras Compressibility Correction). */
+  SA_E_COMP     = 6, /*!< \brief Kind of Turbulent model (Spalart-Allmaras Edwards with Compressibility Correction). */
+  BALDWIN_LOMAX = 7, /*!< \brief Kind of Turbulent model (Balwin-Lomax Zero Equation Model). */
 };
 static const map<string, ENUM_TURB_MODEL> Turb_Model_Map = CCreateMap<string, ENUM_TURB_MODEL>
 ("NONE", NO_TURB_MODEL)
@@ -889,7 +890,8 @@ static const map<string, ENUM_TURB_MODEL> Turb_Model_Map = CCreateMap<string, EN
 ("SST", SST)
 ("SA_E", SA_E)
 ("SA_COMP", SA_COMP)
-("SA_E_COMP", SA_E_COMP);
+("SA_E_COMP", SA_E_COMP)
+("BALDWIN_LOMAX", BALDWIN_LOMAX);
 
 /*!
  * \brief types of transition models

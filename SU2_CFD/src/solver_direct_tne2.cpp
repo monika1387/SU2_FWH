@@ -2625,7 +2625,7 @@ void CTNE2EulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *co
         for (iVar = 0; iVar < nPrimVarGrad; iVar++)
           for (iDim = 0; iDim < nDim; iDim++)
             Cvector[iVar][iDim] += (Coord_j[iDim]-Coord_i[iDim]) *
-                (PrimVar_j[iVar]-PrimVar_i[iVar])/weight;
+                                   (PrimVar_j[iVar]-PrimVar_i[iVar])/weight;
       }
     }
 
@@ -6311,21 +6311,29 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
       && !Output && !van_albada) { SetPrimitive_Limiter(geometry, config); }
 
 
-  // THIS ISNT SET UP YET
   /*--- Evaluate the vorticity and strain rate magnitude ---*/
-  //StrainMag_Max = 0.0; Omega_Max = 0.0;
-  //for (iPoint = 0; iPoint < nPoint; iPoint++) {
+  StrainMag_Max = 0.0; Omega_Max = 0.0;
+  for (iPoint = 0; iPoint < nPoint; iPoint++) {
 
-  //  solver_container[TNE2_SOL]->node[iPoint]->SetVorticity();
-  //  solver_container[TNE2_SOL]->node[iPoint]->SetStrainMag();
+    solver_container[TNE2_SOL]->node[iPoint]->SetVorticity();
+    solver_container[TNE2_SOL]->node[iPoint]->SetStrainMag();
 
-  //  StrainMag = solver_container[TNE2_SOL]->node[iPoint]->GetStrainMag();
-  //  Vorticity = solver_container[TNE2_SOL]->node[iPoint]->GetVorticity();
-  //  Omega = sqrt(Vorticity[0]*Vorticity[0]+ Vorticity[1]*Vorticity[1]+ Vorticity[2]*Vorticity[2]);
+    StrainMag = solver_container[TNE2_SOL]->node[iPoint]->GetStrainMag();
+    Vorticity = solver_container[TNE2_SOL]->node[iPoint]->GetVorticity();
+    Omega = sqrt(Vorticity[0]*Vorticity[0]+ Vorticity[1]*Vorticity[1]+ Vorticity[2]*Vorticity[2]);
 
-  //  StrainMag_Max = max(StrainMag_Max, StrainMag);
-  //  Omega_Max = max(Omega_Max, Omega);
-  //}
+    StrainMag_Max = max(StrainMag_Max, StrainMag);
+    Omega_Max = max(Omega_Max, Omega);
+  }
+
+
+  /*--- Eddy viscousity for SGS and Balwin Lomax ---*/
+  for (iPoint = 0; iPoint < nPoint; iPoint ++) {
+    if (config->GetBaldwinLomax()){
+      su2double y_max = geometry->node[iPoint]->GetMaxLength();
+      node[iPoint]->CalcEddyVisc_BL(y_max);
+    }
+  }
 
   /*--- Initialize the Jacobian matrices ---*/
   if (implicit && !disc_adjoint) Jacobian.SetValZero();
@@ -7499,14 +7507,15 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
         dTvedn += GradV[TVE_INDEX][iDim]*Normal[iDim];
       }
       ktr = node[iPoint]->GetThermalConductivity();
-      //      kve = node[iPoint]->GetThermalConductivity_ve();
-      //			Res_Visc[nSpecies+nDim]   += pcontrol*(ktr*dTdn+kve*dTvedn) +
-      //                                   Wall_HeatFlux*Area;
-      //      Res_Visc[nSpecies+nDim+1] += pcontrol*(kve*dTvedn) +
-      //                                   Wall_HeatFlux*Area;
-      //
-      //			/*--- Apply viscous residual to the linear system ---*/
-      //      LinSysRes.SubtractBlock(iPoint, Res_Visc);
+      kve = node[iPoint]->GetThermalConductivity_ve();
+
+      Res_Visc[nSpecies+nDim]   += pcontrol*(ktr*dTdn+kve*dTvedn) +
+                                   Wall_HeatFlux*Area;
+      Res_Visc[nSpecies+nDim+1] += pcontrol*(kve*dTvedn) +
+                                   Wall_HeatFlux*Area;
+
+      /*--- Apply viscous residual to the linear system ---*/
+      LinSysRes.SubtractBlock(iPoint, Res_Visc);
 
       /*--- Apply the no-slip condition in a strong way ---*/
       for (iDim = 0; iDim < nDim; iDim++) Vector[iDim] = 0.0;

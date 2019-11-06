@@ -489,7 +489,7 @@ void COutput::SetSurfaceCSV_Flow(CConfig *config, CGeometry *geometry,
 
   switch (solver) {
     case EULER: case TNE2_EULER: SurfFlow_file <<  "\"Mach_Number\"" << "\n"; break;
-    case NAVIER_STOKES: case RANS: case TNE2_NAVIER_STOKES:
+    case NAVIER_STOKES: case RANS: case TNE2_NAVIER_STOKES: case TNE2_RANS:
       if (nDim == 2) SurfFlow_file <<  "\"Skin_Friction_Coefficient_X\", \"Skin_Friction_Coefficient_Y\", \"Heat_Flux\"" << "\n";
       if (nDim == 3) SurfFlow_file <<  "\"Skin_Friction_Coefficient_X\", \"Skin_Friction_Coefficient_Y\", \"Skin_Friction_Coefficient_Z\", \"Heat_Flux\", \"Temperature\", \"Temperature_ve\"" << "\n";
       break;
@@ -537,19 +537,19 @@ void COutput::SetSurfaceCSV_Flow(CConfig *config, CGeometry *geometry,
 
             break;
 
-          case TNE2_NAVIER_STOKES:
+          case TNE2_NAVIER_STOKES: case TNE2_RANS:
 
             for (iDim = 0; iDim < nDim; iDim++)
               SkinFrictionCoeff[iDim] = FlowSolver->GetCSkinFriction(iMarker, iVertex, iDim);
-              HeatFlux = FlowSolver->GetHeatFlux(iMarker, iVertex);
+            HeatFlux = FlowSolver->GetHeatFlux(iMarker, iVertex);
 
-              T   = FlowSolver->node[iPoint]->GetTemperature();
-              Tve = FlowSolver->node[iPoint]->GetTemperature_ve();
+            T   = FlowSolver->node[iPoint]->GetTemperature();
+            Tve = FlowSolver->node[iPoint]->GetTemperature_ve();
 
-              if (nDim == 2) SurfFlow_file << scientific << SkinFrictionCoeff[0] << ", " << SkinFrictionCoeff[1] << ", " << HeatFlux << ", " << T << ", " << Tve << "\n";
-              if (nDim == 3) SurfFlow_file << scientific << SkinFrictionCoeff[0] << ", " << SkinFrictionCoeff[1] << ", " << SkinFrictionCoeff[2] << ", " << HeatFlux << ", " << T << ", " << Tve << "\n";
+            if (nDim == 2) SurfFlow_file << scientific << SkinFrictionCoeff[0] << ", " << SkinFrictionCoeff[1] << ", " << HeatFlux << ", " << T << ", " << Tve << "\n";
+            if (nDim == 3) SurfFlow_file << scientific << SkinFrictionCoeff[0] << ", " << SkinFrictionCoeff[1] << ", " << SkinFrictionCoeff[2] << ", " << HeatFlux << ", " << T << ", " << Tve << "\n";
 
-              break;
+            break;
         }
       }
     }
@@ -680,7 +680,7 @@ void COutput::SetSurfaceCSV_Flow(CConfig *config, CGeometry *geometry,
             if (nDim == 3) Buffer_Send_SkinFriction_z[nVertex_Surface] = FlowSolver->GetCSkinFriction(iMarker, iVertex, 2);
             Buffer_Send_HeatTransfer[nVertex_Surface] = FlowSolver->GetHeatFlux(iMarker, iVertex);
           }
-          if (solver == TNE2_NAVIER_STOKES) {
+          if (solver == TNE2_NAVIER_STOKES || solver == TNE2_RANS) {
             Buffer_Send_T[nVertex_Surface]            = FlowSolver->node[iPoint]->GetTemperature();
             Buffer_Send_Tve[nVertex_Surface]          = FlowSolver->node[iPoint]->GetTemperature_ve();
             Buffer_Send_SkinFriction_x[nVertex_Surface] = FlowSolver->GetCSkinFriction(iMarker, iVertex, 0);
@@ -708,7 +708,7 @@ void COutput::SetSurfaceCSV_Flow(CConfig *config, CGeometry *geometry,
     if (nDim == 3) SU2_MPI::Gather(Buffer_Send_SkinFriction_z, MaxLocalVertex_Surface, MPI_DOUBLE, Buffer_Recv_SkinFriction_z, MaxLocalVertex_Surface, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
     SU2_MPI::Gather(Buffer_Send_HeatTransfer, MaxLocalVertex_Surface, MPI_DOUBLE, Buffer_Recv_HeatTransfer, MaxLocalVertex_Surface, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
   }
-  if (solver == TNE2_NAVIER_STOKES){
+  if (solver == TNE2_NAVIER_STOKES || solver == TNE2_RANS){
     SU2_MPI::Gather(Buffer_Send_SkinFriction_x, MaxLocalVertex_Surface, MPI_DOUBLE, Buffer_Recv_SkinFriction_x, MaxLocalVertex_Surface, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
     SU2_MPI::Gather(Buffer_Send_SkinFriction_y, MaxLocalVertex_Surface, MPI_DOUBLE, Buffer_Recv_SkinFriction_y, MaxLocalVertex_Surface, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
     if (nDim == 3) SU2_MPI::Gather(Buffer_Send_SkinFriction_z, MaxLocalVertex_Surface, MPI_DOUBLE, Buffer_Recv_SkinFriction_z, MaxLocalVertex_Surface, MPI_DOUBLE, MASTER_NODE, MPI_COMM_WORLD);
@@ -755,7 +755,7 @@ void COutput::SetSurfaceCSV_Flow(CConfig *config, CGeometry *geometry,
         if (nDim == 2) SurfFlow_file << "\"Skin_Friction_Coefficient_X\", \"Skin_Friction_Coefficient_Y\", \"Heat_Flux\"" << "\n";
         if (nDim == 3) SurfFlow_file << "\"Skin_Friction_Coefficient_X\", \"Skin_Friction_Coefficient_Y\", \"Skin_Friction_Coefficient_Z\", \"Heat_Flux\"" << "\n";
         break;
-      case TNE2_NAVIER_STOKES:
+      case TNE2_NAVIER_STOKES: case TNE2_RANS:
         if (nDim == 2) SurfFlow_file << "\"Skin_Friction_Coefficient_X\", \"Skin_Friction_Coefficient_Y\", \"Heat_Flux\", \"Temperature\", \"Temperature_ve\"" << "\n";
         if (nDim == 3) SurfFlow_file << "\"Skin_Friction_Coefficient_X\", \"Skin_Friction_Coefficient_Y\", \"Skin_Friction_Coefficient_Z\", \"Heat_Flux\", \"Temperature\", \"Temperature_ve\"" << "\n";
         break;
@@ -803,7 +803,7 @@ void COutput::SetSurfaceCSV_Flow(CConfig *config, CGeometry *geometry,
             if (nDim == 2) SurfFlow_file << scientific << SkinFrictionCoeff[0] << ", " << SkinFrictionCoeff[1] << ", " << HeatFlux << "\n";
             if (nDim == 3) SurfFlow_file << scientific << SkinFrictionCoeff[0] << ", " << SkinFrictionCoeff[1] << ", " << SkinFrictionCoeff[2] << ", " << HeatFlux << "\n";
             break;
-          case TNE2_NAVIER_STOKES:
+          case TNE2_NAVIER_STOKES: case TNE2_RANS:
             SkinFrictionCoeff[0] = Buffer_Recv_SkinFriction_x[Total_Index];
             SkinFrictionCoeff[1] = Buffer_Recv_SkinFriction_y[Total_Index];
             if (nDim == 3) SkinFrictionCoeff[2] = Buffer_Recv_SkinFriction_z[Total_Index];
@@ -4628,14 +4628,14 @@ void COutput::SetRestart(CConfig *config, CGeometry *geometry, CSolver **solver,
       }
     }
 
-    if ((Kind_Solver == TNE2_EULER) || (Kind_Solver == TNE2_NAVIER_STOKES)) {
+    if ((Kind_Solver == TNE2_EULER) || (Kind_Solver == TNE2_NAVIER_STOKES) || (Kind_Solver == TNE2_RANS)) {
       if ((config->GetOutput_FileFormat() == PARAVIEW) || (config->GetOutput_FileFormat() == PARAVIEW_BINARY)) {
         restart_file << "\t\"Pressure\"\t\"Temperature\"\t\"Pressure_Coefficient\"\t\"Mach\"";
       } else
         restart_file << "\t\"Pressure\"\t\"Temperature\"\t\"C<sub>p</sub>\"\t\"Mach\"";
     }
 
-    if (Kind_Solver == TNE2_NAVIER_STOKES) {
+    if (Kind_Solver == TNE2_NAVIER_STOKES || Kind_Solver == TNE2_RANS) {
       if ((config->GetOutput_FileFormat() == PARAVIEW) || (config->GetOutput_FileFormat() == PARAVIEW_BINARY)) {
         if (nDim == 2) restart_file << "\t\"Laminar_Viscosity\"\t\"Skin_Friction_Coefficient_X\"\t\"Skin_Friction_Coefficient_Y\"\t\"Heat_Flux\"\t\"Y_Plus\"";
         if (nDim == 3) restart_file << "\t\"Laminar_Viscosity\"\t\"Skin_Friction_Coefficient_X\"\t\"Skin_Friction_Coefficient_Y\"\t\"Skin_Friction_Coefficient_Z\"\t\"Heat_Flux\"\t\"Y_Plus\"";
@@ -4645,7 +4645,7 @@ void COutput::SetRestart(CConfig *config, CGeometry *geometry, CSolver **solver,
       }
     }
 
-    if (Kind_Solver == RANS) {
+    if ((Kind_Solver == RANS) || (Kind_Solver == TNE2_RANS)) {
       if ((config->GetOutput_FileFormat() == PARAVIEW) || (config->GetOutput_FileFormat() == PARAVIEW_BINARY)) {
         restart_file << "\t\"Eddy_Viscosity\"";
       } else
@@ -4667,7 +4667,8 @@ void COutput::SetRestart(CConfig *config, CGeometry *geometry, CSolver **solver,
         ( Kind_Solver == DISC_ADJ_NAVIER_STOKES      ) ||
         ( Kind_Solver == DISC_ADJ_TNE2_EULER         ) ||
         ( Kind_Solver == DISC_ADJ_TNE2_NAVIER_STOKES ) ||
-        ( Kind_Solver == DISC_ADJ_RANS               )) {
+        ( Kind_Solver == DISC_ADJ_RANS               ) ||
+        ( Kind_Solver == DISC_ADJ_TNE2_RANS          )) {
       restart_file << "\t\"Surface_Sensitivity\"\t\"Sensitivity_x\"\t\"Sensitivity_y\"";
       if (geometry->GetnDim() == 3) {
         restart_file << "\t\"Sensitivity_z\"";
@@ -4840,6 +4841,7 @@ void COutput::SetConvHistory_Header(ofstream *ConvHist_file, CConfig *config, un
   bool actuator_disk = ((config->GetnMarker_ActDiskInlet() != 0) || (config->GetnMarker_ActDiskOutlet() != 0));
   bool turbulent = ((config->GetKind_Solver() == RANS) || (config->GetKind_Solver() == ADJ_RANS) ||
                     (config->GetKind_Solver() == DISC_ADJ_RANS));
+  bool tne2_turbulent = ((config->GetKind_Solver() == TNE2_RANS) || (config->GetKind_Solver() == DISC_ADJ_TNE2_RANS));
   bool cont_adj = config->GetContinuous_Adjoint();
   bool disc_adj = config->GetDiscrete_Adjoint();
   bool frozen_visc = (cont_adj && config->GetFrozen_Visc_Cont()) ||( disc_adj && config->GetFrozen_Visc_Disc());
@@ -4858,7 +4860,8 @@ void COutput::SetConvHistory_Header(ofstream *ConvHist_file, CConfig *config, un
   bool thermal = false; /* Flag for whether to print heat flux values */
   bool weakly_coupled_heat = config->GetWeakly_Coupled_Heat();
 
-  if (config->GetKind_Solver() == RANS || config->GetKind_Solver()  == NAVIER_STOKES) {
+  if (config->GetKind_Solver() == RANS      || config->GetKind_Solver()  == NAVIER_STOKES ||
+      config->GetKind_Solver() == TNE2_RANS || config->GetKind_Solver()  == TNE2_NAVIER_STOKES){
     thermal = true;
   }
 
@@ -5002,7 +5005,7 @@ void COutput::SetConvHistory_Header(ofstream *ConvHist_file, CConfig *config, un
   switch (config->GetKind_Solver()) {
 
     case EULER : case NAVIER_STOKES: case RANS :
-    case TNE2_EULER: case TNE2_NAVIER_STOKES:
+    case TNE2_EULER: case TNE2_NAVIER_STOKES: case TNE2_RANS:
     case FEM_EULER : case FEM_NAVIER_STOKES: case FEM_RANS : case FEM_LES:
       ConvHist_file[0] << begin;
       if (!turbo) ConvHist_file[0] << flow_coeff;
@@ -5037,7 +5040,7 @@ void COutput::SetConvHistory_Header(ofstream *ConvHist_file, CConfig *config, un
 
     case ADJ_EULER           : case ADJ_NAVIER_STOKES           : case ADJ_RANS:
     case DISC_ADJ_EULER      : case DISC_ADJ_NAVIER_STOKES      : case DISC_ADJ_RANS:
-    case DISC_ADJ_TNE2_EULER : case DISC_ADJ_TNE2_NAVIER_STOKES :
+    case DISC_ADJ_TNE2_EULER : case DISC_ADJ_TNE2_NAVIER_STOKES : case DISC_ADJ_TNE2_RANS:
     if (!turbo) {
         if (compressible) {
           ConvHist_file[0] << begin << adj_coeff << adj_flow_resid;
@@ -5127,7 +5130,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
         ((config[val_iZone]->GetFixed_CL_Mode()) && (config[val_iZone]->GetnExtIter()-config[val_iZone]->GetIter_dCL_dAlpha() - 1 == iExtIter))) {
 
 
-      if ((rank == MASTER_NODE) && output_files) cout << endl << "------------------------ Evaluate Special Output ------------------------";
+      if ((rank == MASTER_NODE) && output_files) cout << endl << "------------------------ Evaluate Special Output ------------------------" << endl;
 
       switch (config[val_iZone]->GetKind_Solver()) {
 
@@ -5234,7 +5237,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
     bool transition = (config[val_iZone]->GetKind_Trans_Model() == LM);
     bool thermal = (config[val_iZone]->GetKind_Solver() == RANS || config[val_iZone]->GetKind_Solver()  == NAVIER_STOKES);
     bool turbulent = ((config[val_iZone]->GetKind_Solver() == RANS) || (config[val_iZone]->GetKind_Solver() == ADJ_RANS) ||
-                      (config[val_iZone]->GetKind_Solver() == DISC_ADJ_RANS));
+                      (config[val_iZone]->GetKind_Solver() == DISC_ADJ_RANS) || (config[val_iZone]->GetKind_Solver() == TNE2_RANS));
     bool adjoint =  cont_adj || disc_adj;
     bool frozen_visc = (cont_adj && config[val_iZone]->GetFrozen_Visc_Cont()) ||( disc_adj && config[val_iZone]->GetFrozen_Visc_Disc());
     bool heat =  ((config[val_iZone]->GetKind_Solver() == HEAT_EQUATION_FVM) || (config[val_iZone]->GetWeakly_Coupled_Heat()));
@@ -5242,7 +5245,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
     bool flow = (config[val_iZone]->GetKind_Solver() == EULER) || (config[val_iZone]->GetKind_Solver() == NAVIER_STOKES) ||
     (config[val_iZone]->GetKind_Solver() == RANS) || (config[val_iZone]->GetKind_Solver() == FEM_EULER) || (config[val_iZone]->GetKind_Solver() == FEM_NAVIER_STOKES) || (config[val_iZone]->GetKind_Solver() == FEM_RANS) || (config[val_iZone]->GetKind_Solver() == FEM_LES) || (config[val_iZone]->GetKind_Solver() == ADJ_EULER) ||
     (config[val_iZone]->GetKind_Solver() == ADJ_NAVIER_STOKES) || (config[val_iZone]->GetKind_Solver() == ADJ_RANS);
-    bool tne2 = (config[val_iZone]->GetKind_Solver() == TNE2_EULER) || (config[val_iZone]->GetKind_Solver() == TNE2_NAVIER_STOKES) || (config[val_iZone]->GetKind_Solver() == DISC_ADJ_TNE2_EULER) || (config[val_iZone]->GetKind_Solver() == DISC_ADJ_TNE2_NAVIER_STOKES);
+    bool tne2 = (config[val_iZone]->GetKind_Solver() == TNE2_EULER) || (config[val_iZone]->GetKind_Solver() == TNE2_NAVIER_STOKES) || (config[val_iZone]->GetKind_Solver() == TNE2_RANS) || (config[val_iZone]->GetKind_Solver() == DISC_ADJ_TNE2_EULER) || (config[val_iZone]->GetKind_Solver() == DISC_ADJ_TNE2_NAVIER_STOKES);
     bool buffet = (config[val_iZone]->GetBuffet_Monitoring() || config[val_iZone]->GetKind_ObjFunc() == BUFFET_SENSOR);
 
     bool fem = ((config[val_iZone]->GetKind_Solver() == FEM_ELASTICITY) ||          // FEM structural solver.
@@ -5645,8 +5648,8 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
 
         break;
 
-    case TNE2_EULER:              case TNE2_NAVIER_STOKES:
-    case DISC_ADJ_TNE2_EULER:     case DISC_ADJ_TNE2_NAVIER_STOKES:
+    case TNE2_EULER:              case TNE2_NAVIER_STOKES:          case TNE2_RANS:
+    case DISC_ADJ_TNE2_EULER:     case DISC_ADJ_TNE2_NAVIER_STOKES: case DISC_ADJ_TNE2_RANS:
 
       /*--- Flow solution coefficients ---*/
 
@@ -6451,7 +6454,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
               switch (config[val_iZone]->GetKind_Solver()) {
               case EULER : case NAVIER_STOKES: case RANS:
               case FEM_EULER : case FEM_NAVIER_STOKES: case FEM_RANS: case FEM_LES:
-              case TNE2_EULER : case TNE2_NAVIER_STOKES:
+              case TNE2_EULER : case TNE2_NAVIER_STOKES: case TNE2_RANS:
               case ADJ_EULER : case ADJ_NAVIER_STOKES: case ADJ_RANS:
 
                 cout << endl << "---------------------- Local Time Stepping Summary ----------------------" << endl;
@@ -6518,7 +6521,7 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
                 break;
 
               case DISC_ADJ_EULER     : case DISC_ADJ_NAVIER_STOKES     : case DISC_ADJ_RANS:
-              case DISC_ADJ_TNE2_EULER: case DISC_ADJ_TNE2_NAVIER_STOKES:
+              case DISC_ADJ_TNE2_EULER: case DISC_ADJ_TNE2_NAVIER_STOKES: case DISC_ADJ_TNE2_RANS:
                 cout << endl;
                 cout << "------------------------ Discrete Adjoint Summary -----------------------" << endl;
                 cout << "Total Geometry Sensitivity (updated every "  << config[val_iZone]->GetWrt_Sol_Freq() << " iterations): ";
@@ -6743,6 +6746,78 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
             cout << endl;
 
             break;
+
+          case TNE2_RANS :
+
+            /*--- Visualize the maximum residual ---*/
+            iPointMaxResid = solver_container[val_iZone][val_iInst][FinestMesh][TNE2_SOL]->GetPoint_Max(0);
+            Coord = solver_container[val_iZone][val_iInst][FinestMesh][TNE2_SOL]->GetPoint_Max_Coord(0);
+
+            cout << endl << "----------------------- Residual Evolution Summary ----------------------" << endl;
+
+            cout << "log10[Maximum residual]: " << log10(solver_container[val_iZone][val_iInst][FinestMesh][TNE2_SOL]->GetRes_Max(0)) << "." << endl;
+            if (config[val_iZone]->GetSystemMeasurements() == SI) {
+              cout <<"Maximum residual point " << iPointMaxResid << ", located at (" << Coord[0] << ", " << Coord[1];
+              if (nDim == 3) cout << ", " << Coord[2];
+              cout <<   ")." << endl;
+            }
+            else {
+              cout <<"Maximum residual point " << iPointMaxResid << ", located at (" << Coord[0]*12.0 << ", " << Coord[1]*12.0;
+              if (nDim == 3) cout << ", " << Coord[2]*12.0;
+              cout <<   ")." << endl;
+            }
+            cout <<"Maximum Omega " << solver_container[val_iZone][val_iInst][FinestMesh][TNE2_SOL]->GetOmega_Max() << ", maximum Strain Rate " << solver_container[val_iZone][val_iInst][FinestMesh][TNE2_SOL]->GetStrainMag_Max() << "." << endl;
+
+            /*--- Print out the number of non-physical points and reconstructions ---*/
+            if (config[val_iZone]->GetNonphysical_Points() > 0)
+              cout << "There are " << config[val_iZone]->GetNonphysical_Points() << " non-physical points in the solution." << endl;
+            if (config[val_iZone]->GetNonphysical_Reconstr() > 0)
+              cout << "There are " << config[val_iZone]->GetNonphysical_Reconstr() << " non-physical states in the upwind reconstruction." << endl;
+
+            cout << "-------------------------------------------------------------------------" << endl;
+
+            if (!Unsteady) cout << endl << " Iter" << "    Time(s)";
+            else cout << endl << " IntIter" << " ExtIter";
+            if (incompressible) cout << "   Res[Press]";
+            else cout << "      Res[Rho]";//, cout << "     Res[RhoE]";
+
+            switch (config[val_iZone]->GetKind_Turb_Model()) {
+              case SA: case SA_NEG: case SA_E: case SA_E_COMP: case SA_COMP:        cout << "       Res[nu]"; break;
+              case SST:	      cout << "     Res[kine]" << "     Res[omega]"; break;
+            }
+
+            if (weakly_coupled_heat) {
+              cout <<  "     Res[Heat]";
+            }
+
+            if (transition) { cout << "      Res[Int]" << "       Res[Re]"; }
+            else if (rotating_frame && nDim == 3 && !turbo ) cout << "   CThrust(Total)" << "   CTorque(Total)";
+            else if (aeroelastic) cout << "   CLift(Total)" << "   CDrag(Total)" << "         plunge" << "          pitch";
+            else if (equiv_area) cout << "   CLift(Total)" << "   CDrag(Total)" << "    CPress(N-F)";
+            else if (turbo){
+              if (nZone < 2){
+                /*--- single zone output ---*/
+                cout << "  TotPresLoss(%)" << "  Entropy Gen.(%)";
+              }
+              else{
+                /*--- multi zone output ---*/
+                cout << " TTEfficiency(%)" << " Entropy Gen.(%)";
+
+              }
+            }
+            else if (weakly_coupled_heat) {
+              cout << "   HFlux(Total)";
+            }
+            else cout << "   CLift(Total)"   << "   CDrag(Total)";
+
+            if(extra_heat_output) {
+              cout <<  "      Res[Heat]" << "   HFlux(Total)";
+            }
+
+            cout << endl;
+
+            break;
+
 
             case HEAT_EQUATION_FVM :
               if (!Unsteady) cout << endl << " Iter" << "    Time(s)";
@@ -7220,7 +7295,106 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
           }
           break;
 
+      case TNE2_RANS :
 
+        /*--- Write history file ---*/
+
+        if ((!DualTime_Iteration) && (output_files)) {
+
+          if (!turbo) {
+            config[val_iZone]->GetHistFile()[0] << begin << direct_coeff;
+            if (buffet) config[val_iZone]->GetHistFile()[0] << buffet_coeff;
+            if (thermal) config[val_iZone]->GetHistFile()[0] << heat_coeff;
+            if (equiv_area) config[val_iZone]->GetHistFile()[0] << equivalent_area_coeff;
+            if (engine || actuator_disk) config[val_iZone]->GetHistFile()[0] << engine_coeff;
+            if (inv_design) {
+              config[val_iZone]->GetHistFile()[0] << Cp_inverse_design;
+              if (thermal) config[val_iZone]->GetHistFile()[0] << Heat_inverse_design;
+            }
+            if (rotating_frame && !turbo) config[val_iZone]->GetHistFile()[0] << rotating_frame_coeff;
+            config[val_iZone]->GetHistFile()[0] << flow_resid << turb_resid;
+            if (weakly_coupled_heat) config[val_iZone]->GetHistFile()[0] << heat_resid;
+          }
+          else {
+            config[val_iZone]->GetHistFile()[0] << begin << turbo_coeff << flow_resid << turb_resid;
+          }
+
+          if (aeroelastic) config[val_iZone]->GetHistFile()[0] << aeroelastic_coeff;
+          if (output_per_surface) config[val_iZone]->GetHistFile()[0] << monitoring_coeff;
+          if (output_surface) config[val_iZone]->GetHistFile()[0] << surface_outputs;
+          if (direct_diff != NO_DERIVATIVE) {
+            config[val_iZone]->GetHistFile()[0] << d_direct_coeff;
+            if (output_surface) config[val_iZone]->GetHistFile()[0] << d_surface_outputs;
+          }
+          if (output_comboObj) config[val_iZone]->GetHistFile()[0] << combo_obj;
+          config[val_iZone]->GetHistFile()[0] << end;
+          config[val_iZone]->GetHistFile()[0].flush();
+        }
+
+        /*--- Write screen output ---*/
+
+        if ((val_iZone == 0 && val_iInst == 0)|| fluid_structure){
+          if(DualTime_Iteration || !Unsteady) {
+            cout.precision(6);
+            cout.setf(ios::fixed, ios::floatfield);
+
+            if (incompressible) cout.width(13);
+            else  cout.width(14);
+            cout << log10(residual_flow[0]);
+            switch(nVar_Turb) {
+            case 1: cout.width(14); cout << log10(residual_turbulent[0]); break;
+            case 2: cout.width(14); cout << log10(residual_turbulent[0]);
+            cout.width(15); cout << log10(residual_turbulent[1]); break;
+            }
+
+            if (weakly_coupled_heat) {
+              cout.width(14); cout << log10(residual_heat[0]);
+            }
+
+            if (transition) { cout.width(14); cout << log10(residual_transition[0]); cout.width(14); cout << log10(residual_transition[1]); }
+
+            if (rotating_frame && nDim == 3 && !turbo ) {
+              cout.setf(ios::scientific, ios::floatfield);
+              cout.width(15); cout << Total_CT; cout.width(15);
+              cout << Total_CQ;
+              cout.unsetf(ios_base::floatfield);
+            }
+            else if (equiv_area) { cout.width(15); cout << min(10000.0, max(-10000.0, Total_CL)); cout.width(15); cout << min(10000.0, max(-10000.0, Total_CD)); cout.width(15);
+            cout.precision(4);
+            cout.setf(ios::scientific, ios::floatfield);
+            cout << Total_CNearFieldOF; }
+            else if (turbo) {
+              cout.setf(ios::scientific, ios::floatfield);
+              if (nZone < 2){
+                /*--- single zone output ---*/
+                cout.width(15); cout << TotalPressureLoss[0][nSpanWiseSections]*100.0;
+                cout.width(15); cout << EntropyGen[0][nSpanWiseSections]*100.0;
+              }
+              else{
+                /*--- multi zone output ---*/
+                cout.width(15); cout << TotalTotalEfficiency[nTurboPerf - 1][nSpanWiseSections]*100.0;
+                cout.width(15); cout << EntropyGen[nTurboPerf -1][nSpanWiseSections]*100.0;
+                if (direct_diff){
+                  cout.width(15); cout << D_EntropyGen;
+                }
+              }
+              cout.unsetf(ios_base::floatfield);
+            }
+            else if (weakly_coupled_heat) { cout.width(15); cout << Total_Heat; }
+            else { cout.width(15); cout << min(10000.0, max(-10000.0, Total_CL)); cout.width(15); cout << min(10000.0, max(-10000.0, Total_CD)); }
+
+            if (aeroelastic) {
+              cout.setf(ios::scientific, ios::floatfield);
+              cout.width(15); cout << aeroelastic_plunge[0]; //Only output the first marker being monitored to the console.
+              cout.width(15); cout << aeroelastic_pitch[0];
+              cout.unsetf(ios_base::floatfield);
+            }
+
+            if (extra_heat_output) { cout.width(15); cout << Extra_Heat_Residual; cout.width(15); cout << Extra_Total_Heat; }
+            cout << endl;
+          }
+        }
+        break;
         case HEAT_EQUATION_FVM:
 
           if (!DualTime_Iteration) {
@@ -13559,7 +13733,7 @@ void COutput::SetResult_Files_Parallel(CSolver *****solver_container,
         else
           LoadLocalData_IncFlow(config[iZone], geometry[iZone][iInst][MESH_0], solver_container[iZone][iInst][MESH_0], iZone);
         break;
-      case TNE2_EULER : case TNE2_NAVIER_STOKES:
+      case TNE2_EULER : case TNE2_NAVIER_STOKES: case TNE2_RANS:
         if (compressible)
           LoadLocalData_TNE2(config[iZone], geometry[iZone][iInst][MESH_0], solver_container[iZone][iInst][MESH_0], iZone);
           break;
@@ -15786,6 +15960,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
 
   switch (config->GetKind_Solver()) {
     case TNE2_EULER : case TNE2_NAVIER_STOKES: FirstIndex = TNE2_SOL; SecondIndex = NONE; break;
+    case TNE2_RANS : FirstIndex = TNE2_SOL; SecondIndex = TURB_SOL; break;
     default: SecondIndex = NONE; break;
   }
 
@@ -15937,7 +16112,7 @@ void COutput::LoadLocalData_TNE2(CConfig *config, CGeometry *geometry, CSolver *
 
     /*--- Add Laminar Viscosity, Skin Friction, Heat Flux, & yPlus to the restart file ---*/
 
-    if (Kind_Solver == TNE2_NAVIER_STOKES) {
+    if ((Kind_Solver == TNE2_NAVIER_STOKES) ||(Kind_Solver == TNE2_RANS)) {
       if ((config->GetOutput_FileFormat() == PARAVIEW) ||
           (config->GetOutput_FileFormat() == PARAVIEW_BINARY)){
         nVar_Par += 1; Variable_Names.push_back("Laminar_Viscosity");

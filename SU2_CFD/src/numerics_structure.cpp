@@ -186,10 +186,12 @@ CNumerics::CNumerics(unsigned short val_nDim, unsigned short val_nVar,
   sumdFdYih   = NULL;  sumdFdYjh   = NULL;
   sumdFdYieve = NULL;  sumdFdYjeve = NULL;
 
-  if ((config->GetKind_Solver() == TNE2_EULER)                 ||
-      (config->GetKind_Solver() == TNE2_NAVIER_STOKES)         ||
-      (config->GetKind_Solver() == DISC_ADJ_TNE2_EULER)        ||
-      (config->GetKind_Solver() == DISC_ADJ_TNE2_NAVIER_STOKES) ) {
+  if ((config->GetKind_Solver() == TNE2_EULER)                  ||
+      (config->GetKind_Solver() == TNE2_NAVIER_STOKES)          ||
+      (config->GetKind_Solver() == TNE2_RANS)                   ||
+      (config->GetKind_Solver() == DISC_ADJ_TNE2_EULER)         ||
+      (config->GetKind_Solver() == DISC_ADJ_TNE2_NAVIER_STOKES) ||
+      (config->GetKind_Solver() == DISC_ADJ_TNE2_RANS)          ){
     nSpecies = nVar - nDim - 2;
 
     hs     = new su2double[nSpecies];

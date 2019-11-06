@@ -122,12 +122,12 @@ inline su2double* CFluidModel::GetRxnTcb_b(void) { }
 inline su2double* CFluidModel::GetDissociationPot(void) { }
 inline su2double CFluidModel::GetCharVibTemp(unsigned short iSpecies) { }
 inline su2double* CFluidModel::GetCharVibTemp() { }
-inline su2double** CFluidModel::GetCharElTemp() { }
+inline su2double** CFluidModel::GetCharElTemp() {}
 inline unsigned short* CFluidModel::GetnElStates() { }
-inline su2double** CFluidModel::GetElDegeneracy() { }
-inline su2double* CFluidModel::GetRotationModes() {  }
+inline su2double** CFluidModel::GetElDegeneracy() {}
+inline su2double* CFluidModel::GetRotationModes() { }
 inline su2double* CFluidModel::GetRefTemperature() { }
-inline su2double* CFluidModel::GetWall_Catalycity() { }
+inline su2double* CFluidModel::GetWall_Catalycity() {}
 inline su2double* CFluidModel::GetMolar_Mass() { }
 inline su2double CFluidModel::GetMolar_Mass(unsigned short iSpecies) { }
 inline su2double* CFluidModel::GetEnthalpy_Formation(void) {  }

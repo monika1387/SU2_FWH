@@ -2531,6 +2531,7 @@ CAvgGradCorrected_TNE2::CAvgGradCorrected_TNE2(unsigned short val_nDim,
   nVar         = val_nVar;
   nPrimVar     = val_nPrimVar;
   nPrimVarGrad = val_nPrimVarGrad;
+  nSpecies     = config->GetnSpecies();
 
   /*--- Compressible flow, primitive variables nDim+3, (T,vx,vy,vz,P,rho) ---*/
   PrimVar_i    = new su2double [nPrimVar];

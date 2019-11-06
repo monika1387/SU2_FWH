@@ -79,8 +79,8 @@ void CTNE2UpwScalar::ComputeResidual(su2double *val_residual,
   q_ij = 0.0;
   if (grid_movement) {
     for (iDim = 0; iDim < nDim; iDim++) {
-      Velocity_i[iDim] = V_i[iDim+1] - GridVel_i[iDim];
-      Velocity_j[iDim] = V_j[iDim+1] - GridVel_j[iDim];
+      Velocity_i[iDim] = V_i[VEL_INDEX+iDim] - GridVel_i[iDim];
+      Velocity_j[iDim] = V_j[VEL_INDEX+iDim] - GridVel_j[iDim];
       q_ij += 0.5*(Velocity_i[iDim]+Velocity_j[iDim])*Normal[iDim];
     }
   }
@@ -162,20 +162,11 @@ void CAvgGrad_TNE2Scalar::ComputeResidual(su2double *val_residual,
                                           su2double **Jacobian_j,
                                           CConfig *config) {
 
-  AD::StartPreacc();
-  AD::SetPreaccIn(Coord_i, nDim); AD::SetPreaccIn(Coord_j, nDim);
-  AD::SetPreaccIn(Normal, nDim);
-  AD::SetPreaccIn(TurbVar_Grad_i, nVar, nDim);
-  AD::SetPreaccIn(TurbVar_Grad_j, nVar, nDim);
-  if (correct_gradient) {
-    AD::SetPreaccIn(TurbVar_i, nVar); AD::SetPreaccIn(TurbVar_j ,nVar);
-  }
-  ExtraADPreaccIn();
 
-  AD::SetPreaccIn(V_i, nDim+7); AD::SetPreaccIn(V_j, nDim+7);
-  Density_i = V_i[RHO_INDEX];            Density_j = V_j[RHO_INDEX];
-  Laminar_Viscosity_i = FluidModel->GetLaminarViscosity();  Laminar_Viscosity_j = FluidModel->GetLaminarViscosity();
-  //Eddy_Viscosity_i = GetEddyViscosity();     Eddy_Viscosity_j = GetEddyViscosity(); //DELETE ME, NOT IMPLEMENTED YET --> NEED FOR TURB
+  /*--- Extract variables from primitive variable vector ---*/
+  Density_i           = V_i[RHO_INDEX];       Density_j           = V_j[RHO_INDEX];
+  Laminar_Viscosity_i = V_i[LAM_VISC_INDEX];  Laminar_Viscosity_j = V_j[LAM_VISC_INDEX];
+  Eddy_Viscosity_i    = V_i[EDDY_VISC_INDEX]; Eddy_Viscosity_j    = V_j[EDDY_VISC_INDEX];
 
   /*--- Compute vector going from iPoint to jPoint ---*/
 
@@ -272,31 +263,17 @@ CSourcePieceWise_TNE2TurbSA::~CSourcePieceWise_TNE2TurbSA(void) { }
 
 void CSourcePieceWise_TNE2TurbSA::ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, su2double **val_Jacobian_j, CConfig *config) {
 
-//  AD::StartPreacc();
-//  AD::SetPreaccIn(V_i, nDim+6);
-//  AD::SetPreaccIn(Vorticity_i, nDim);
-//  AD::SetPreaccIn(StrainMag_i);
-//  AD::SetPreaccIn(TurbVar_i[0]);
-//  AD::SetPreaccIn(TurbVar_Grad_i[0], nDim);
-//  AD::SetPreaccIn(Volume); AD::SetPreaccIn(dist_i);
 
-//  BC Transition Model variables
   su2double vmag, rey, re_theta, re_theta_t, re_v;
   su2double tu , nu_cr, nu_t, nu_BC, chi_1, chi_2, term1, term2, term_exponential;
 
-  if (incompressible) {
-    Density_i = V_i[nDim+2];
-    Laminar_Viscosity_i = V_i[nDim+4];
-  }
-  else {
-    Density_i = V_i[nDim+2];
-    Laminar_Viscosity_i = V_i[nDim+5];
-  }
+  Density_i = V_i[RHO_INDEX];
+  Laminar_Viscosity_i = V_i[LAM_VISC_INDEX];
 
   val_residual[0] = 0.0;
   Production      = 0.0;
   Destruction     = 0.0;
-  CrossProduction = 0.0;
+  CrossProduction      = 0.0;
   val_Jacobian_i[0][0] = 0.0;
 
   gamma_BC = 0.0;
@@ -305,10 +282,11 @@ void CSourcePieceWise_TNE2TurbSA::ComputeResidual(su2double *val_residual, su2do
   rey  = config->GetReynolds();
 
   if (nDim==2) {
-    vmag = sqrt(V_i[1]*V_i[1]+V_i[2]*V_i[2]);
+    vmag = sqrt(V_i[VEL_INDEX]*V_i[VEL_INDEX]+V_i[VEL_INDEX+1]*V_i[VEL_INDEX+1]);
   }
   else if (nDim==3) {
-    vmag = sqrt(V_i[1]*V_i[1]+V_i[2]*V_i[2]+V_i[3]*V_i[3]);
+    vmag = sqrt(V_i[VEL_INDEX]*V_i[VEL_INDEX]+V_i[VEL_INDEX+1]*V_i[VEL_INDEX+1]+
+                V_i[VEL_INDEX+2]*V_i[VEL_INDEX+2]);
   }
 
   /*--- Evaluate Omega ---*/
@@ -418,6 +396,13 @@ void CSourcePieceWise_TNE2TurbSA::ComputeResidual(su2double *val_residual, su2do
 //  AD::EndPreacc();
 
 }
+
+
+
+
+
+
+
 
 CUpwSca_TNE2TurbSST::CUpwSca_TNE2TurbSST(unsigned short val_nDim,
                                  unsigned short val_nVar,

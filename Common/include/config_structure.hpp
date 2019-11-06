@@ -150,6 +150,7 @@ private:
   Integrated_HeatFlux, /*!< \brief Flag for heat flux BC whether it deals with integrated values.*/
   ionization,                  /*!< \brief Flag for determining if free electron gas is in the mixture. */
   Buffet_Monitoring;       /*!< \brief Flag for computing the buffet sensor.*/
+  bool baldwinlomax;      /*!< \brief Flag for using balwin lomax turb model.*/
   su2double Buffet_k;     /*!< \brief Sharpness coefficient for buffet sensor.*/
   su2double Buffet_lambda; /*!< \brief Offset parameter for buffet sensor.*/
   su2double Damp_Engine_Inflow;	/*!< \brief Damping factor for the engine inlet. */
@@ -5410,7 +5411,13 @@ public:
    */
   su2double *GetGas_Composition(void);
 
-    /*!
+  /*!
+   * \brief  Checks whether Baldwin-Lomax Turb model is used.
+   * \return: Baldwin Lomax
+   */
+  bool GetBaldwinLomax(void);
+
+  /*!
    * \brief Provides the restart information.
    * \return Restart information, if <code>TRUE</code> then the code will use the solution as restart.
    */

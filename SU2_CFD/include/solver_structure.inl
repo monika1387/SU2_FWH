@@ -1748,6 +1748,14 @@ inline su2double CNSSolver::GetConjugateHeatVariable(unsigned short val_marker, 
 inline void CNSSolver::SetConjugateHeatVariable(unsigned short val_marker, unsigned long val_vertex, unsigned short pos_var, su2double relaxation_factor, su2double val_var) {
   HeatConjugateVar[val_marker][val_vertex][pos_var] = relaxation_factor*val_var + (1.0-relaxation_factor)*HeatConjugateVar[val_marker][val_vertex][pos_var]; }
 
+inline su2double CTNE2NSSolver::GetStrainMag_Max(void) { return StrainMag_Max; }
+
+inline su2double CTNE2NSSolver::GetOmega_Max(void) { return Omega_Max; }
+
+inline void CTNE2NSSolver::SetStrainMag_Max(su2double val_strainmag_max) { StrainMag_Max = val_strainmag_max; }
+
+inline void CTNE2NSSolver::SetOmega_Max(su2double val_omega_max) { Omega_Max = val_omega_max; }
+
 inline CFluidModel* CFEM_DG_EulerSolver::GetFluidModel(void) { return FluidModel;}
 
 inline su2double* CFEM_DG_EulerSolver::GetVecSolDOFs(void) {return VecSolDOFs.data();}

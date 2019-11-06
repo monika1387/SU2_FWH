@@ -118,302 +118,8 @@ CTNE2NSVariable::~CTNE2NSVariable(void) {
   delete [] Dij;
 }
 
-void CTNE2NSVariable::SetDiffusionCoeff_GuptaYos(CFluidModel *FluidModel) {
-
-  unsigned short iSpecies, jSpecies, nHeavy, nEl;
-  su2double rho, T, Tve, P;
-  su2double *Ms, Mi, Mj, pi, RuSI, Ru, kb, gam_i, gam_j, gam_t, Theta_v;
-  su2double denom, d1_ij, D_ij;
-  su2double ***Omega00, Omega_ij;
-
-  /*--- Acquire gas parameters from CConfig ---*/
-  Omega00 = FluidModel->GetCollisionIntegral00();
-  Ms      = FluidModel->GetMolar_Mass();
-  if (ionization) {nHeavy = nSpecies-1;  nEl = 1;}
-  else            {nHeavy = nSpecies;    nEl = 0;}
-
-  /*--- Rename for convenience ---*/
-  rho  = Primitive[RHO_INDEX];
-  T    = Primitive[T_INDEX];
-  Tve  = Primitive[TVE_INDEX];
-  P    = Primitive[P_INDEX];
-  pi   = PI_NUMBER;
-  RuSI = UNIVERSAL_GAS_CONSTANT;
-  Ru   = 1000.0*RuSI;
-  kb   = BOLTZMANN_CONSTANT;
-
-  /*--- Calculate mixture gas constant ---*/
-  gam_t = 0.0;
-  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    gam_t += Primitive[RHOS_INDEX+iSpecies] / (rho*Ms[iSpecies]);
-  }
-
-  /*--- Mixture thermal conductivity via Gupta-Yos approximation ---*/
-  for (iSpecies = 0; iSpecies < nHeavy; iSpecies++) {
-
-    /*--- Initialize the species diffusion coefficient ---*/
-    DiffusionCoeff[iSpecies] = 0.0;
-
-    /*--- Calculate molar concentration ---*/
-    Mi      = Ms[iSpecies];
-    gam_i   = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-    Theta_v = FluidModel->GetCharVibTemp(iSpecies);
-
-    denom = 0.0;
-    for (jSpecies = 0; jSpecies < nHeavy; jSpecies++) {
-      if (jSpecies != iSpecies) {
-        Mj    = Ms[jSpecies];
-        gam_j = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
-
-        /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
-        Omega_ij = 1E-20 * Omega00[iSpecies][jSpecies][3]
-            * pow(T, Omega00[iSpecies][jSpecies][0]*log(T)*log(T)
-            + Omega00[iSpecies][jSpecies][1]*log(T)
-            + Omega00[iSpecies][jSpecies][2]);
-
-        /*--- Calculate "delta1_ij" ---*/
-        d1_ij = 8.0/3.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*T*(Mi+Mj))) * Omega_ij;
-
-        /*--- Calculate heavy-particle binary diffusion coefficient ---*/
-        D_ij = kb*T/(P*d1_ij);
-        denom += gam_j/D_ij;
-      }
-    }
-
-    if (ionization) {
-      jSpecies = nSpecies-1;
-      Mj       = FluidModel->GetMolar_Mass(jSpecies);
-      gam_j    = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
-
-      /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
-      Omega_ij = 1E-20 * Omega00[iSpecies][jSpecies][3]
-          * pow(Tve, Omega00[iSpecies][jSpecies][0]*log(Tve)*log(Tve)
-          + Omega00[iSpecies][jSpecies][1]*log(Tve)
-          + Omega00[iSpecies][jSpecies][2]);
-
-      /*--- Calculate "delta1_ij" ---*/
-      d1_ij = 8.0/3.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*Tve*(Mi+Mj))) * Omega_ij;
-    }
-
-    /*--- Assign species diffusion coefficient ---*/
-    DiffusionCoeff[iSpecies] = gam_t*gam_t*Mi*(1-Mi*gam_i) / denom;
-  }
-  if (ionization) {
-    iSpecies = nSpecies-1;
-    /*--- Initialize the species diffusion coefficient ---*/
-    DiffusionCoeff[iSpecies] = 0.0;
-
-    /*--- Calculate molar concentration ---*/
-    Mi      = Ms[iSpecies];
-    gam_i   = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-
-    denom = 0.0;
-    for (jSpecies = 0; jSpecies < nHeavy; jSpecies++) {
-      if (iSpecies != jSpecies) {
-        Mj    = FluidModel->GetMolar_Mass(jSpecies);
-        gam_j = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
-
-        /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
-        Omega_ij = 1E-20 * Omega00[iSpecies][jSpecies][3]
-            * pow(Tve, Omega00[iSpecies][jSpecies][0]*log(Tve)*log(Tve)
-            + Omega00[iSpecies][jSpecies][1]*log(Tve)
-            + Omega00[iSpecies][jSpecies][2]);
-
-        /*--- Calculate "delta1_ij" ---*/
-        d1_ij = 8.0/3.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*Tve*(Mi+Mj))) * Omega_ij;
-
-        /*--- Calculate heavy-particle binary diffusion coefficient ---*/
-        D_ij = kb*Tve/(P*d1_ij);
-        denom += gam_j/D_ij;
-      }
-    }
-    DiffusionCoeff[iSpecies] = gam_t*gam_t*Ms[iSpecies]*(1-Ms[iSpecies]*gam_i)
-        / denom;
-  }
-  //  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
-  //    DiffusionCoeff[iSpecies] = 0.0;
-}
-
-void CTNE2NSVariable::SetLaminarViscosity_GuptaYos(CFluidModel *FluidModel) {
-
-  unsigned short iSpecies, jSpecies, nHeavy, nEl;
-  su2double rho, T, Tve;
-  su2double *Ms, Mi, Mj, pi, Ru, RuSI, Na, gam_i, gam_j, denom;
-  su2double ***Omega11, Omega_ij, d2_ij;
-
-  /*--- Acquire gas parameters from CConfig ---*/
-  Omega11 = FluidModel->GetCollisionIntegral11();
-  Ms      = FluidModel->GetMolar_Mass();
-  if (ionization) {nHeavy = nSpecies-1;  nEl = 1;}
-  else            {nHeavy = nSpecies;    nEl = 0;}
-
-  /*--- Rename for convenience ---*/
-  rho  = Primitive[RHO_INDEX];
-  T    = Primitive[T_INDEX];
-  Tve  = Primitive[TVE_INDEX];
-  pi   = PI_NUMBER;
-  RuSI = UNIVERSAL_GAS_CONSTANT;
-  Ru   = 1000.0*RuSI;
-  Na   = AVOGAD_CONSTANT;
-
-  LaminarViscosity = 0.0;
-
-  /*--- Mixture viscosity via Gupta-Yos approximation ---*/
-  for (iSpecies = 0; iSpecies < nHeavy; iSpecies++) {
-    denom = 0.0;
-
-    /*--- Calculate molar concentration ---*/
-    Mi    = Ms[iSpecies];
-    gam_i = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-    for (jSpecies = 0; jSpecies < nHeavy; jSpecies++) {
-      Mj    = Ms[jSpecies];
-      gam_j = Primitive[RHOS_INDEX+jSpecies] / (rho*Mj);
-
-      /*--- Calculate "delta" quantities ---*/
-      Omega_ij = 1E-20 * Omega11[iSpecies][jSpecies][3]
-          * pow(T, Omega11[iSpecies][jSpecies][0]*log(T)*log(T)
-          + Omega11[iSpecies][jSpecies][1]*log(T)
-          + Omega11[iSpecies][jSpecies][2]);
-      d2_ij = 16.0/5.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*T*(Mi+Mj))) * Omega_ij;
-
-      /*--- Add to denominator of viscosity ---*/
-      denom += gam_j*d2_ij;
-    }
-    if (ionization) {
-      jSpecies = nSpecies-1;
-      Mj    = Ms[jSpecies];
-      gam_j = Primitive[RHOS_INDEX+jSpecies] / (rho*Mj);
-
-      /*--- Calculate "delta" quantities ---*/
-      Omega_ij = 1E-20 * Omega11[iSpecies][jSpecies][3]
-          * pow(Tve, Omega11[iSpecies][jSpecies][0]*log(Tve)*log(Tve)
-          + Omega11[iSpecies][jSpecies][1]*log(Tve)
-          + Omega11[iSpecies][jSpecies][2]);
-      d2_ij = 16.0/5.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*Tve*(Mi+Mj))) * Omega_ij;
-
-      denom += gam_j*d2_ij;
-    }
-
-    /*--- Calculate species laminar viscosity ---*/
-    LaminarViscosity += (Mi/Na * gam_i) / denom;
-  }
-  if (ionization) {
-    iSpecies = nSpecies-1;
-    denom = 0.0;
-
-    /*--- Calculate molar concentration ---*/
-    Mi    = Ms[iSpecies];
-    gam_i = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-    for (jSpecies = 0; jSpecies < nSpecies; jSpecies++) {
-      Mj    = Ms[jSpecies];
-      gam_j = Primitive[RHOS_INDEX+jSpecies] / (rho*Mj);
-
-      /*--- Calculate "delta" quantities ---*/
-      Omega_ij = 1E-20 * Omega11[iSpecies][jSpecies][3]
-          * pow(Tve, Omega11[iSpecies][jSpecies][0]*log(Tve)*log(Tve)
-          + Omega11[iSpecies][jSpecies][1]*log(Tve)
-          + Omega11[iSpecies][jSpecies][2]);
-      d2_ij = 16.0/5.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*Tve*(Mi+Mj))) * Omega_ij;
-
-      /*--- Add to denominator of viscosity ---*/
-      denom += gam_j*d2_ij;
-    }
-  LaminarViscosity += (Mi/Na * gam_i) / denom;
-  }
-}
-
-void CTNE2NSVariable ::SetThermalConductivity_GuptaYos(CFluidModel *FluidModel) {
-  unsigned short iSpecies, jSpecies, nHeavy, nEl;
-  su2double rho, T, Tve, Cvve;
-  su2double *xi, *Ms, Mi, Mj, mi, mj, pi, R, RuSI, Ru, Na, kb, gam_i, gam_j, Theta_v;
-  su2double denom_t, denom_r, d1_ij, d2_ij, a_ij;
-  su2double ***Omega00, ***Omega11, Omega_ij;
-
-  if (ionization) {
-    cout << "SetThermalConductivity: NEEDS REVISION w/ IONIZATION" << endl;
-    exit(1);
-  }
-
-  /*--- Acquire gas parameters from CConfig ---*/
-  Omega00 = FluidModel->GetCollisionIntegral00();
-  Omega11 = FluidModel->GetCollisionIntegral11();
-  Ms      = FluidModel->GetMolar_Mass();
-  xi      = FluidModel->GetRotationModes();
-  if (ionization) {nHeavy = nSpecies-1;  nEl = 1;}
-  else            {nHeavy = nSpecies;    nEl = 0;}
-
-  /*--- Rename for convenience ---*/
-  rho  = Primitive[RHO_INDEX];
-  T    = Primitive[T_INDEX];
-  Tve  = Primitive[TVE_INDEX];
-  Cvve = Primitive[RHOCVVE_INDEX]/rho;
-  pi   = PI_NUMBER;
-  RuSI = UNIVERSAL_GAS_CONSTANT;
-  Ru   = 1000.0*RuSI;
-  Na   = AVOGAD_CONSTANT;
-  kb   = BOLTZMANN_CONSTANT;
-
-  /*--- Calculate mixture gas constant ---*/
-  R = 0.0;
-  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-    R += Ru * Primitive[RHOS_INDEX+iSpecies]/rho;
-  }
-
-  /*--- Mixture thermal conductivity via Gupta-Yos approximation ---*/
-  ThermalCond    = 0.0;
-  ThermalCond_ve = 0.0;
-  for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-
-    /*--- Calculate molar concentration ---*/
-    Mi      = Ms[iSpecies];
-    mi      = Mi/Na;
-    gam_i   = Primitive[RHOS_INDEX+iSpecies] / (rho*Mi);
-    Theta_v = FluidModel->GetCharVibTemp(iSpecies);
-
-    denom_t = 0.0;
-    denom_r = 0.0;
-    for (jSpecies = 0; jSpecies < nSpecies; jSpecies++) {
-      Mj    = FluidModel->GetMolar_Mass(jSpecies);
-      mj    = Mj/Na;
-      gam_j = Primitive[RHOS_INDEX+iSpecies] / (rho*Mj);
-
-      a_ij = 1.0 + (1.0 - mi/mj)*(0.45 - 2.54*mi/mj) / ((1.0 + mi/mj)*(1.0 + mi/mj));
-
-      /*--- Calculate the Omega^(0,0)_ij collision cross section ---*/
-      Omega_ij = 1E-20 * Omega00[iSpecies][jSpecies][3]
-          * pow(T, Omega00[iSpecies][jSpecies][0]*log(T)*log(T)
-          + Omega00[iSpecies][jSpecies][1]*log(T)
-          + Omega00[iSpecies][jSpecies][2]);
-
-      /*--- Calculate "delta1_ij" ---*/
-      d1_ij = 8.0/3.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*T*(Mi+Mj))) * Omega_ij;
-
-      /*--- Calculate the Omega^(1,1)_ij collision cross section ---*/
-      Omega_ij = 1E-20 * Omega11[iSpecies][jSpecies][3]
-          * pow(T, Omega11[iSpecies][jSpecies][0]*log(T)*log(T)
-          + Omega11[iSpecies][jSpecies][1]*log(T)
-          + Omega11[iSpecies][jSpecies][2]);
-
-      /*--- Calculate "delta2_ij" ---*/
-      d2_ij = 16.0/5.0 * sqrt((2.0*Mi*Mj) / (pi*Ru*T*(Mi+Mj))) * Omega_ij;
-
-      denom_t += a_ij*gam_j*d2_ij;
-      denom_r += gam_j*d1_ij;
-    }
-
-    /*--- Translational contribution to thermal conductivity ---*/
-    ThermalCond    += (15.0/4.0)*kb*gam_i/denom_t;
-
-    /*--- Translational contribution to thermal conductivity ---*/
-    if (xi[iSpecies] != 0.0)
-      ThermalCond  += kb*gam_i/denom_r;
-
-    /*--- Vibrational-electronic contribution to thermal conductivity ---*/
-    ThermalCond_ve += kb*Cvve/R*gam_i / denom_r;
-  }
-}
-
 bool CTNE2NSVariable::SetVorticity(void) {
+
   su2double u_y = Gradient_Primitive[VEL_INDEX][1];
   su2double v_x = Gradient_Primitive[VEL_INDEX+1][0];
   su2double u_z = 0.0;
@@ -435,6 +141,42 @@ bool CTNE2NSVariable::SetVorticity(void) {
   return false;
 }
 
+bool CTNE2NSVariable::SetStrainMag(void) {
+
+  su2double Div;
+  unsigned short iDim;
+
+  Div = 0.0;
+  for (iDim = 0; iDim < nDim; iDim++) {
+    Div += Gradient_Primitive[VEL_INDEX+iDim][iDim];
+  }
+
+  StrainMag = 0.0;
+
+  /*--- Add diagonal part ---*/
+
+  for (iDim = 0; iDim < nDim; iDim++) {
+    StrainMag += pow(Gradient_Primitive[VEL_INDEX+iDim][iDim] - 1.0/3.0*Div, 2.0);
+  }
+  if (nDim == 2) {
+    StrainMag += pow(1.0/3.0*Div, 2.0);
+  }
+
+  /*--- Add off diagonals ---*/
+
+  StrainMag += 2.0*pow(0.5*(Gradient_Primitive[VEL_INDEX][1] + Gradient_Primitive[VEL_INDEX+1][0]), 2.0);
+
+  if (nDim == 3) {
+    StrainMag += 2.0*pow(0.5*(Gradient_Primitive[VEL_INDEX][2]   + Gradient_Primitive[VEL_INDEX+2][0]), 2.0);
+    StrainMag += 2.0*pow(0.5*(Gradient_Primitive[VEL_INDEX+1][2] + Gradient_Primitive[VEL_INDEX+2][1]), 2.0);
+  }
+
+  StrainMag = sqrt(2.0*StrainMag);
+
+  return false;
+
+}
+
 bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *FluidModel) {
 
   bool nonPhys, bkup;
@@ -452,4 +194,25 @@ bool CTNE2NSVariable::SetPrimVar_Compressible(CConfig *config, CFluidModel *Flui
   FluidModel->Calc_TransportCoeff(config, Primitive);
 
   return nonPhys;
+}
+
+void CTNE2NSVariable::CalcEddyVisc_BL(su2double ymax){
+
+  su2double A, S, l, I, Tau;
+  su2double rho, mu_t, muti, muto;
+  su2double y, yplus;
+
+
+  /*--- Set parameters for model ---*/
+  A   = 26;
+  S   = GetStrainMag();
+  //y   = GetWallDistance(); //Ask Eddie
+  Tau = GetTauWall();
+
+  /*--- Rename for convenience ---*/
+  rho = Primitive[RHO_INDEX];
+
+  /*--- Compute ---*/
+  //yplus =
+
 }

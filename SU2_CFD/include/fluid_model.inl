@@ -137,7 +137,7 @@ inline su2double CFluidModel::CalcEve(su2double val_Tve, unsigned short val_Spec
 
 inline su2double CFluidModel::Calc_CvVibElSpecies(su2double val_Tve, unsigned short val_Species){return 0.0;}
 
-inline su2double CFluidModel::Calc_CvTraRotSpecies(su2double *Ms, su2double Ru, unsigned short val_Species) { return 0.0; }
+inline su2double CFluidModel::Calc_CvTraRotSpecies(su2double Ru, unsigned short val_Species) { return 0.0; }
 
 inline su2double CFluidModel::Calc_MixtureEnergy(su2double* cs, su2double sqvel,
                                     su2double rho,

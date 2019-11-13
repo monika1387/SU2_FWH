@@ -513,7 +513,7 @@ public:
                                  su2double T, su2double Tve, su2double P);
 
   virtual su2double Calc_CvVibElSpecies(su2double val_Tve, unsigned short val_Species);
-  virtual su2double Calc_CvTraRotSpecies(su2double *Ms, su2double Ru, unsigned short val_Species);
+  virtual su2double Calc_CvTraRotSpecies(su2double Ru, unsigned short val_Species);
 
   virtual su2double Calc_SoundSpeed(su2double *cs, su2double rhoCvtr,
                                     su2double rho, su2double P);
@@ -1198,7 +1198,7 @@ public:
 
   void InitializeMixture(CConfig *Config);
 
-  su2double Calc_CvTraRotSpecies(su2double *Ms, su2double Ru, unsigned short val_Species);
+  su2double Calc_CvTraRotSpecies(su2double Ru, unsigned short val_Species);
 
   su2double Calc_CvVibElSpecies(su2double val_Tve, unsigned short val_Species);
 

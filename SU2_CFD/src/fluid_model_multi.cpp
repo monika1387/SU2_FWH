@@ -108,6 +108,7 @@ void CTNE2Gas::InitializeMixture(CConfig *config) {
   case ONESPECIES:
     /*--- Define parameters of the gas model ---*/
     nSpecies    = 1;
+    nReactions  = 0;
     ionization  = false;
 
     /*--- Allocate vectors for gas properties ---*/
@@ -762,11 +763,11 @@ void CTNE2Gas::InitializeMixture(CConfig *config) {
   }
 }
 
-su2double CTNE2Gas::Calc_CvTraRotSpecies(su2double *Ms, su2double Ru, unsigned short val_Species) {
+su2double CTNE2Gas::Calc_CvTraRotSpecies(su2double Ru, unsigned short val_Species) {
 
   su2double Cv_tr_ks;
 
-  Cv_tr_ks = (3.0/2.0 + RotationModes[val_Species]/2.0) * Ru/Ms[val_Species];
+  Cv_tr_ks = (3.0/2.0 + RotationModes[val_Species]/2.0) * Ru/Molar_Mass[val_Species];
 
   return Cv_tr_ks;
 
@@ -1251,7 +1252,6 @@ void CTNE2Gas::Calc_DiffusionCoeff_WBE(su2double *V, su2double *Xs) {
   }
 
   /*--- Fill in primitive variable vector ---*/
-  // DELETE ME, MAYBE UNNECESSARY...MORE CLEAR WHAT HAPPENING, THOUGHTs?
   for (iSpecies=0; iSpecies<nSpecies; iSpecies++)
     V[DIFF_COEFF_INDEX+iSpecies] = DiffusionCoeff[iSpecies];
 
@@ -1635,6 +1635,8 @@ void CTNE2Gas::Calc_ThermalConductivity_GY(su2double *V) {
     ThermalCond_ve += kb*Cvve/R*gam_i / denom_r;
   }
 }
+
+
 
 
 CMutationGas::CMutationGas(string Mixfile, string Transport, unsigned short val_nSpecies,

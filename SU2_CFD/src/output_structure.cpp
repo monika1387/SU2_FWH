@@ -5162,6 +5162,39 @@ void COutput::SetConvHistory_Body(ofstream *ConvHist_file,
           }
 
           break;
+
+      case TNE2_EULER: case TNE2_NAVIER_STOKES: case TNE2_RANS:
+
+        /*--- For specific applications, evaluate and plot the surface. ---*/
+
+        if (config[val_iZone]->GetnMarker_Analyze() != 0) {
+          SpecialOutput_AnalyzeSurface(solver_container[val_iZone][val_iInst][MESH_0][TNE2_SOL],
+                                       geometry[val_iZone][val_iInst][MESH_0], config[val_iZone], output_files);
+        }
+
+        /*--- For specific applications, evaluate and plot the surface. ---*/
+
+        if ((config[val_iZone]->GetnMarker_Analyze() != 0) && compressible) {
+          SpecialOutput_Distortion(solver_container[val_iZone][val_iInst][MESH_0][TNE2_SOL],
+                                   geometry[val_iZone][val_iInst][MESH_0], config[val_iZone], output_files);
+        }
+
+        /*--- For specific applications, evaluate and plot the equivalent area. ---*/
+
+        if (config[val_iZone]->GetnMarker_NearFieldBound() != 0) {
+          SpecialOutput_SonicBoom(solver_container[val_iZone][val_iInst][MESH_0][TNE2_SOL],
+                                  geometry[val_iZone][val_iInst][MESH_0], config[val_iZone], output_files);
+        }
+
+        /*--- For specific applications, evaluate and plot the cp coefficent at different stations. ---*/
+
+        if (config[val_iZone]->GetPlot_Section_Forces()) {
+          SpecialOutput_SpanLoad(solver_container[val_iZone][val_iInst][MESH_0][TNE2_SOL],
+                                 geometry[val_iZone][val_iInst][MESH_0], config[val_iZone], output_files);
+        }
+
+        break;
+
       }
 
       /*--- Output a file with the forces breakdown. ---*/
@@ -8294,7 +8327,6 @@ void COutput::SpecialOutput_ForcesBreakdown(CSolver *****solver, CGeometry ****g
         else if (config[val_iZone]->GetSystemMeasurements() == US) Breakdown_file << " lbf/ft.s.R." << "\n";
       }
     }
-
 
     if (unsteady) Breakdown_file << "Reference time: " << config[val_iZone]->GetTime_Ref() <<" s." << "\n";
 

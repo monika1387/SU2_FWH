@@ -3989,6 +3989,7 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
 
     switch (Kind_GasModel) {
     case ONESPECIES:
+      nSpecies = 1;
       break;
     case N2:
 
@@ -8354,6 +8355,13 @@ su2double CConfig::GetInlet_Temperature(string val_marker) {
   for (iMarker_Supersonic_Inlet = 0; iMarker_Supersonic_Inlet < nMarker_Supersonic_Inlet; iMarker_Supersonic_Inlet++)
     if (Marker_Supersonic_Inlet[iMarker_Supersonic_Inlet] == val_marker) break;
   return Inlet_Temperature[iMarker_Supersonic_Inlet];
+}
+
+su2double CConfig::GetInlet_Temperature_ve(string val_marker) {
+  unsigned short iMarker_Supersonic_Inlet;
+  for (iMarker_Supersonic_Inlet = 0; iMarker_Supersonic_Inlet < nMarker_Supersonic_Inlet; iMarker_Supersonic_Inlet++)
+    if (Marker_Supersonic_Inlet[iMarker_Supersonic_Inlet] == val_marker) break;
+  return Inlet_Temperature_ve[iMarker_Supersonic_Inlet];
 }
 
 su2double CConfig::GetInlet_Pressure(string val_marker) {

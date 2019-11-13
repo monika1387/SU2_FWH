@@ -136,6 +136,24 @@ public:
   bool SetVorticity(void);
 
   /*!
+   * \brief Get the laminar viscosity of the flow.
+   * \return Value of the laminar viscosity of the flow.
+   */
+  inline su2double GetLaminarViscosity(void) {return Primitive[LAM_VISC_INDEX]; }
+
+  /*!
+   * \brief Get the thermal conductivity of the flow.
+   * \return Value of the laminar viscosity of the flow.
+   */
+  inline su2double GetThermalConductivity(void) {return Primitive[K_INDEX]; }
+
+  /*!
+   * \brief Get the eddy viscosity of the flow.
+   * \return The eddy viscosity of the flow.
+   */
+  inline su2double GetEddyViscosity(void) {return Primitive[EDDY_VISC_INDEX]; }
+
+  /*!
    * \brief Set the temperature at the wall
    */
   inline void SetWallTemperature(su2double Temperature_Wall) { Primitive[T_INDEX] = Temperature_Wall; }

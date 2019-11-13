@@ -295,6 +295,7 @@ private:
   su2double *Inlet_Ptotal;    /*!< \brief Specified total pressures for inlet boundaries. */
   su2double **Inlet_FlowDir;  /*!< \brief Specified flow direction vector (unit vector) for inlet boundaries. */
   su2double *Inlet_Temperature;    /*!< \brief Specified temperatures for a supersonic inlet boundaries. */
+  su2double *Inlet_Temperature_ve;    /*!< \brief Specified ve temperatures for a supersonic inlet boundaries. (TNE2) */
   su2double *Inlet_Pressure;    /*!< \brief Specified static pressures for supersonic inlet boundaries. */
   su2double **Inlet_Velocity;  /*!< \brief Specified flow velocity vectors for supersonic inlet boundaries. */
   su2double **Inlet_MassFrac;  /*!< \brief Specified Mass fraction vectors for supersonic inlet bounfaries (TNE2). */
@@ -6692,6 +6693,13 @@ public:
    */
   su2double GetInlet_Temperature(string val_index);
   
+  /*!
+   * \brief Get the vibe-elec temperature at a supersonic inlet boundary.
+   * \param[in] val_index - Index corresponding to the inlet boundary.
+   * \return The inlet density.
+   */
+  su2double GetInlet_Temperature_ve(string val_index);
+
   /*!
    * \brief Get the pressure at a supersonic inlet boundary.
    * \param[in] val_index - Index corresponding to the inlet boundary.

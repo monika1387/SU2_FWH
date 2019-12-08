@@ -60,6 +60,10 @@ endif
 
 libSU2Core_sources = ../src/definition_structure.cpp \
   ../src/fluid_model.cpp \
+  ../src/CFluidFlamelet.cpp \
+  ../src/CLookUpTable.cpp \
+  ../src/CFileReaderLUT.cpp \
+  ../src/CTrapezoidalMap.cpp \
   ../src/fluid_model_pig.cpp \
   ../src/fluid_model_pvdw.cpp \
   ../src/fluid_model_ppr.cpp \
@@ -133,6 +137,7 @@ libSU2Core_sources = ../src/definition_structure.cpp \
   ../src/solvers/CMeshSolver.cpp \
   ../src/solvers/CScalarSolver.cpp \
   ../src/solvers/CPassiveScalarSolver.cpp \
+  ../src/solvers/CFlameletSolver.cpp \
   ../src/solver_structure.cpp \
   ../src/solver_template.cpp \
   ../src/interfaces/CInterface.cpp \
@@ -163,6 +168,7 @@ libSU2Core_sources = ../src/definition_structure.cpp \
   ../src/variables/CTurbVariable.cpp \
   ../src/variables/CScalarVariable.cpp \
   ../src/variables/CPassiveScalarVariable.cpp \
+  ../src/variables/CFlameletVariable.cpp \
   ../src/variables/CNSVariable.cpp \
   ../src/variables/CBaselineVariable.cpp \
   ../src/variables/CTurbSAVariable.cpp \

@@ -1168,6 +1168,10 @@ inline void CSolver::SetImplicitPeriodic(bool val_implicit_periodic) { implicit_
 
 inline void CSolver::SetRotatePeriodic(bool val_rotate_periodic) { rotate_periodic = val_rotate_periodic; }
 
+inline void CSolver::SetScalarNames(vector<string> val_names) { }
+
+inline string CSolver::GetScalarName(int val_ivar) {return "\0";}
+
 inline string CSolver::GetSolverName(void) {return SolverName;}
 
 inline su2double CEulerSolver::GetDensity_Inf(void) { return Density_Inf; }

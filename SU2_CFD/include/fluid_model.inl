@@ -37,6 +37,9 @@
 
 #pragma once
 
+#include <vector>
+using namespace std;
+
 inline void CFluidModel::SetCpModel(CConfig *config) { }
 inline su2double CFluidModel::GetPressure () { return Pressure; }
 inline su2double CFluidModel::GetSoundSpeed () { return sqrt(SoundSpeed2); }
@@ -55,6 +58,16 @@ inline su2double CFluidModel::Getdhdrho_P () {return dhdrho_P;}
 inline su2double CFluidModel::GetdhdP_rho () {return dhdP_rho;}
 inline su2double CFluidModel::Getdsdrho_P () {return dsdrho_P;}
 inline su2double CFluidModel::GetdsdP_rho () {return dsdP_rho;}
+inline su2double CFluidModel::GetSourceEnergy() { return source_energy; }
+inline su2double CFluidModel::GetSourceProg()   { return source_prog; }
+inline su2double *CFluidModel::GetScalarTable() { return scalar_table; }
+
+inline su2double CFluidModel::LookUp_ProgEnth(string val_name_var, su2double val_prog, su2double val_enth){ return 73; }
+
+inline su2double CFluidModel::GetEnthFromTemp(su2double val_prog, su2double val_temp){ return 73; }
+
+inline pair<su2double, su2double> CFluidModel::GetTableLimitsEnth() { return make_pair(73,37); }
+inline pair<su2double, su2double> CFluidModel::GetTableLimitsProg() { return make_pair(73,37); }
 
 inline su2double CFluidModel::GetLaminarViscosity () {
         LaminarViscosity->SetViscosity(Temperature, Density);
@@ -99,12 +112,13 @@ inline void CFluidModel::SetTDState_rhoT (su2double rho, su2double T ) { }
 inline void CFluidModel::SetEnergy_Prho (su2double P, su2double rho ) { }
 inline void CFluidModel::SetTDState_Ps (su2double P, su2double s ) { }
 inline void CFluidModel::ComputeDerivativeNRBC_Prho (su2double P, su2double rho ){ }
-inline void CFluidModel::SetTDState_T (su2double val_Temperature) { }
+inline void CFluidModel::SetTDState_T (su2double val_temperature, su2double *val_scalar) { }
+inline void CFluidModel::SetFluidFlameletTableOutput(CConfig *config, su2double val_temperature, su2double *val_scalars) { };
 inline void CFluidModel::SetEddyViscosity (su2double val_Mu_Turb) { Mu_Turb = val_Mu_Turb; }
 
-inline void CFluidModel::SetDiffusivityState(su2double val_Temperature, su2double val_Density,
+inline void CFluidModel::SetDiffusivityState(su2double val_temperature, su2double val_Density,
                                              su2double val_Mu, su2double val_Mu_Turb, su2double val_Cp) {
-  Temperature = val_Temperature;
+  Temperature = val_temperature;
   Density = val_Density;
   Mu = val_Mu;
   Mu_Turb = val_Mu_Turb;

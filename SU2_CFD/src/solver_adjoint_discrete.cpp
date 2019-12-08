@@ -999,7 +999,10 @@ void CDiscAdjSolver::LoadRestart(CGeometry **geometry, CSolver ***solver, CConfi
 
   /*--- Skip coordinates ---*/
   unsigned short skipVars = geometry[MESH_0]->GetnDim();
-
+  bool turbulent = (config->GetKind_Turb_Model() !=NONE); 
+  bool turb_SST  = ((turbulent) && (config->GetKind_Turb_Model() == SST));
+  bool turb_SA   = ((turbulent) && (config->GetKind_Turb_Model() == SA));
+  
   /*--- Skip flow adjoint variables ---*/
   if (KindDirect_Solver== RUNTIME_TURB_SYS) {
     if (compressible) {
@@ -1010,6 +1013,14 @@ void CDiscAdjSolver::LoadRestart(CGeometry **geometry, CSolver ***solver, CConfi
     }
   }
 
+  if (KindDirect_Solver== RUNTIME_SCALAR_SYS) {
+    skipVars = 2*nDim+2 ;
+    if (turbulent) {
+      if (turb_SA) skipVars += 1;
+      else if (turb_SST) skipVars += 2;
+    }
+  }
+ 
   /*--- Load data from the restart into correct containers. ---*/
 
   counter = 0;

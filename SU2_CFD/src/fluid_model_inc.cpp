@@ -52,7 +52,7 @@ CConstantDensity::CConstantDensity(su2double val_Density,
 
 CConstantDensity::~CConstantDensity(void) { }
 
-void CConstantDensity::SetTDState_T (su2double val_Temperature) {
+void CConstantDensity::SetTDState_T (su2double val_temperature, su2double *val_scalar) {
   
   /*--- Density is constant and thermodynamic pressure is
    not required for incompressible, constant density flows,
@@ -60,7 +60,7 @@ void CConstantDensity::SetTDState_T (su2double val_Temperature) {
    decoupled equation. Hence, we update the value.
    Note Cp = Cv (gamma = 1). ---*/
   
-  Temperature = val_Temperature;
+  Temperature = val_temperature;
   
 }
 
@@ -90,7 +90,7 @@ CIncIdealGas::CIncIdealGas(su2double val_Cp,
 
 CIncIdealGas::~CIncIdealGas(void) { }
 
-void CIncIdealGas::SetTDState_T(su2double val_temperature) {
+void CIncIdealGas::SetTDState_T(su2double val_temperature, su2double *val_scalar) {
 
  /*--- The EoS only depends upon temperature. ---*/
 
@@ -146,7 +146,7 @@ void CIncIdealGasPolynomial::SetCpModel(CConfig *config) {
 
 }
 
-void CIncIdealGasPolynomial::SetTDState_T(su2double val_temperature) {
+void CIncIdealGasPolynomial::SetTDState_T(su2double val_temperature, su2double *val_scalar) {
   
   /*--- The EoS only depends upon temperature. ---*/
   

@@ -42,9 +42,9 @@
 
 CAdjFlowIncOutput::CAdjFlowIncOutput(CConfig *config, unsigned short nDim) : COutput(config, nDim, false) {
      
-  turb_model = config->GetKind_Turb_Model();
-  
-  heat = config->GetEnergy_Equation();
+  turb_model   = config->GetKind_Turb_Model();
+  scalar_model = config->GetKind_Scalar_Model();
+  heat         = config->GetEnergy_Equation();
   
   weakly_coupled_heat = config->GetWeakly_Coupled_Heat();
   
@@ -131,6 +131,16 @@ void CAdjFlowIncOutput::SetHistoryOutputFields(CConfig *config){
     default: break;
     }
   }
+  switch (scalar_model) {
+    case PROGRESS_VARIABLE:
+      /// DESCRIPTION: Root-mean square residual of the adjoint progress variable.
+      AddHistoryOutput("RMS_ADJ_PROGRESS_VARIABLE", "rms[A_prog]", ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean square residual of the adjoint progress variable.", HistoryFieldType::RESIDUAL);   
+      /// DESCRIPTION: Root-mean square residual of the adjoint enthalpy.
+      AddHistoryOutput("RMS_ADJ_ENTHALPY",          "rms[A_enth]", ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean square residual of the adjoint enthalpy.", HistoryFieldType::RESIDUAL);   
+      break;
+    case NO_SCALAR_MODEL:
+      break;
+  }
   /// END_GROUP
   
   /// BEGIN_GROUP: MAX_RES, DESCRIPTION: The maximum residuals of the SOLUTION variables. 
@@ -206,9 +216,10 @@ void CAdjFlowIncOutput::SetHistoryOutputFields(CConfig *config){
 
 void CAdjFlowIncOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSolver **solver) { 
   
-  CSolver* adjflow_solver = solver[ADJFLOW_SOL];
-  CSolver* adjturb_solver = solver[ADJTURB_SOL];  
-  CSolver* adjheat_solver = solver[ADJHEAT_SOL];
+  CSolver* adjflow_solver   = solver[ADJFLOW_SOL];
+  CSolver* adjturb_solver   = solver[ADJTURB_SOL];  
+  CSolver* adjheat_solver   = solver[ADJHEAT_SOL];
+  CSolver* adjscalar_solver = solver[ADJSCALAR_SOL];
 
   SetHistoryOutputValue("RMS_ADJ_PRESSURE", log10(adjflow_solver->GetRes_RMS(0)));
   SetHistoryOutputValue("RMS_ADJ_VELOCITY-X", log10(adjflow_solver->GetRes_RMS(1)));
@@ -235,6 +246,18 @@ void CAdjFlowIncOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CS
     default: break;
     }
   }
+
+  switch (scalar_model) {
+    case PROGRESS_VARIABLE:
+      /// DESCRIPTION: Root-mean square residual of the adjoint progress variable.
+      SetHistoryOutputValue("RMS_ADJ_PROGRESS_VARIABLE", log10(adjscalar_solver->GetRes_RMS(I_PROG_VAR)));
+      /// DESCRIPTION: Root-mean square residual of the adjoint enthalpy.
+      SetHistoryOutputValue("RMS_ADJ_ENTHALPY", log10(adjscalar_solver->GetRes_RMS(I_ENTHALPY)));
+      break;
+    case NO_SCALAR_MODEL:
+      break;
+  }
+
   SetHistoryOutputValue("MAX_ADJ_PRESSURE", log10(adjflow_solver->GetRes_Max(0)));
   SetHistoryOutputValue("MAX_ADJ_VELOCITY-X", log10(adjflow_solver->GetRes_Max(1)));
   SetHistoryOutputValue("MAX_ADJ_VELOCITY-Y", log10(adjflow_solver->GetRes_Max(2)));

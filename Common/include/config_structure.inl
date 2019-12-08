@@ -416,6 +416,8 @@ inline bool CConfig::Add_CrossTerm(void) { return addCrossTerm; }
 
 inline void CConfig::Set_CrossTerm(bool needCrossTerm) { addCrossTerm = needCrossTerm; }
 
+inline string CConfig::GetFileNameLUT(void){ return file_name_lut; }
+
 inline string CConfig::GetFEA_FileName(void) { return FEA_FileName; }
 
 inline string CConfig::GetPrestretch_FEMFileName(void) { return Prestretch_FEMFileName; }
@@ -476,13 +478,19 @@ inline su2double* CConfig::GetInc_Velocity_Init(void) { return Inc_Velocity_Init
 
 inline su2double CConfig::GetInc_Temperature_Init(void) { return Inc_Temperature_Init; }
 
-inline su2double CConfig::GetScalar_Init(void) { return Scalar_Init; }
+inline su2double* CConfig::GetScalar_Init(void) { return Scalar_Init; }
 
 inline bool CConfig::GetScalar_Clipping(void) { return Scalar_Clipping; }
 
-inline su2double CConfig::GetScalar_Clipping_Max(void) { return Scalar_Clipping_Max; }
+inline su2double *CConfig::GetScalar_Clipping_Max(void) { return Scalar_Clipping_Max; }
 
-inline su2double CConfig::GetScalar_Clipping_Min(void) { return Scalar_Clipping_Min; }
+inline su2double *CConfig::GetScalar_Clipping_Min(void) { return Scalar_Clipping_Min; }
+
+inline su2double CConfig::GetFlameOffset(void) { return flame_offset; }
+
+inline su2double CConfig::GetFlameThickness(void) { return flame_thickness; }
+
+inline su2double CConfig::GetBurntThickness(void) { return burnt_thickness; }
 
 inline su2double CConfig::GetHeat_Flux_Ref(void) { return Heat_Flux_Ref; }
 
@@ -861,6 +869,8 @@ inline unsigned short CConfig::GetKind_FluidModel(void) { return Kind_FluidModel
 inline unsigned short CConfig::GetKind_FreeStreamOption(void) { return Kind_FreeStreamOption; } 
 
 inline unsigned short CConfig::GetKind_DensityModel(void) { return Kind_DensityModel; } 
+
+inline unsigned short CConfig::GetKind_FlameletThermoSystem(void) { return kind_flamelet_thermo_system; } 
 
 inline bool CConfig::GetEnergy_Equation(void) { return Energy_Equation; } 
 
@@ -2072,7 +2082,11 @@ inline string CConfig::GetScreenOutput_Field(unsigned short iField) { return Scr
 
 inline unsigned short CConfig::GetnHistoryOutput(void) { return nHistoryOutput; }
 
+inline unsigned short CConfig::GetnFlameletTableOutput(void) { return nFlameletTableOutput; }
+
 inline string CConfig::GetHistoryOutput_Field(unsigned short iField) { return HistoryOutput[iField]; }
+
+inline string CConfig::GetFlameletTableOutput_Field(unsigned short iField) { return FlameletTableOutput[iField]; }
 
 inline unsigned short CConfig::GetnVolumeOutput(void) { return nVolumeOutput; }
 

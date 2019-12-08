@@ -122,8 +122,12 @@ bool CIncNSVariable::SetPrimVar(unsigned long iPoint, su2double eddy_visc, su2do
   from the dynamic pressure being iterated. ---*/
 
   /*--- Use the fluid model to compute the new value of density. ---*/
-
-  FluidModel->SetTDState_T(Temperature);
+  
+  FluidModel->SetTDState_T(Temperature,scalar);
+  
+  Solution(iPoint,nDim+1) = FluidModel->GetTemperature();
+  Temperature             = Solution(iPoint,nDim+1);
+  check_temp              = SetTemperature(iPoint, Temperature);
 
   /*--- Set the value of the density ---*/
 
@@ -142,7 +146,7 @@ bool CIncNSVariable::SetPrimVar(unsigned long iPoint, su2double eddy_visc, su2do
 
     Temperature = Solution(iPoint,nDim+1);
     SetTemperature(iPoint, Temperature);
-    FluidModel->SetTDState_T(Temperature);
+    FluidModel->SetTDState_T(Temperature, scalar);
     SetDensity(iPoint, FluidModel->GetDensity());
 
     /*--- Flag this point as non-physical. ---*/

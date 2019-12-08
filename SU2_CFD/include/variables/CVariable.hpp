@@ -2727,6 +2727,20 @@ public:
 
   inline virtual su2double GetSolution_Old_Accel(unsigned long iPoint, unsigned long iVar) const { return 0.0; }
 
+  inline virtual void SetSourceProg(unsigned long iPoint, su2double val_source_prog, unsigned short val_ivar)  { }
+
+  inline virtual su2double GetSourceProg(unsigned long iPoint, unsigned short val_ivar) { return 0.0; }
+  
+  inline virtual su2double *GetSourceProg(unsigned long iPoint) { return nullptr; }
+  
+  inline virtual void SetScalarTableParaview(unsigned long iPoint, su2double *val_scalar_table, unsigned short val_ivar) { }
+  
+  inline virtual su2double GetScalarTableParaview(unsigned long iPoint, unsigned short val_ivar) { return 0.0; }
+  
+  inline virtual void SetSourceEnergy(unsigned long iPoint, su2double val_source_energy) { }
+
+  inline virtual su2double GetSourceEnergy(unsigned long iPoint) { return 0.0; }
+  
   /*!
    * \brief Set the FSI force sensitivity at the node
    * \param[in] iDim - spacial component

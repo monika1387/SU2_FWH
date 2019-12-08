@@ -294,8 +294,8 @@ void CScalarSolver::ImplicitEuler_Iteration(CGeometry *geometry,
   su2double Delta, *local_Res_TruncError, Vol;
   
   bool scalar_clipping = config->GetScalar_Clipping();
-  su2double scalar_clipping_min = config->GetScalar_Clipping_Min();
-  su2double scalar_clipping_max = config->GetScalar_Clipping_Max();
+  su2double *scalar_clipping_min = config->GetScalar_Clipping_Min();
+  su2double *scalar_clipping_max = config->GetScalar_Clipping_Max();
   
   bool adjoint = ( config->GetContinuous_Adjoint() ||
                   (config->GetDiscrete_Adjoint() && config->GetFrozen_Visc_Disc()));
@@ -360,17 +360,24 @@ void CScalarSolver::ImplicitEuler_Iteration(CGeometry *geometry,
   if (!adjoint) {
     
     /*--- Update the scalar solution. ---*/
-    
+
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
       if (scalar_clipping) {
-        nodes->AddClippedSolution(iPoint, 0, config->GetRelaxation_Factor_Scalar()*LinSysSol[iPoint],
-                                  scalar_clipping_min, scalar_clipping_max);
+        for (iVar = 0; iVar < nVar; iVar++) {
+          nodes->AddClippedSolution(iPoint, iVar,
+                                    config->GetRelaxation_Factor_Scalar() *
+                                    LinSysSol[iPoint * nVar + iVar],
+                                    scalar_clipping_min[iVar],
+                                    scalar_clipping_max[iVar]);
+        }
       }
       else {
-        nodes->AddSolution(iPoint, 0, config->GetRelaxation_Factor_Scalar()*LinSysSol[iPoint]);
+        for (iVar = 0; iVar < nVar; iVar++) {
+          nodes->AddSolution(iPoint, iVar, config->GetRelaxation_Factor_Scalar()*LinSysSol[iPoint*nVar+iVar]);
+        }
       }
     }
-    
+
   }
   
   /*--- Communicate the solution at the periodic boundaries. ---*/
@@ -397,9 +404,7 @@ void CScalarSolver::BC_Sym_Plane(CGeometry *geometry,
                                  CNumerics *visc_numerics,
                                  CConfig *config,
                                  unsigned short val_marker) {
-  
   /*--- Convective fluxes across symmetry plane are equal to zero. ---*/
-  
 }
 
 void CScalarSolver::BC_Euler_Wall(CGeometry *geometry,
@@ -407,9 +412,7 @@ void CScalarSolver::BC_Euler_Wall(CGeometry *geometry,
                                   CNumerics *numerics,
                                   CConfig *config,
                                   unsigned short val_marker) {
-  
   /*--- Convective fluxes across euler wall are equal to zero. ---*/
-  
 }
 
 void CScalarSolver::BC_HeatFlux_Wall(CGeometry *geometry,
@@ -418,20 +421,7 @@ void CScalarSolver::BC_HeatFlux_Wall(CGeometry *geometry,
                                      CNumerics *visc_numerics,
                                      CConfig *config,
                                      unsigned short val_marker) {
-  
   /*--- Convective fluxes across viscous walls are equal to zero. ---*/
-  
-}
-
-void CScalarSolver::BC_Isothermal_Wall(CGeometry *geometry,
-                                       CSolver **solver_container,
-                                       CNumerics *conv_numerics,
-                                       CNumerics *visc_numerics,
-                                       CConfig *config,
-                                       unsigned short val_marker) {
-  
-  /*--- Convective fluxes across viscous walls are equal to zero. ---*/
-  
 }
 
 void CScalarSolver::BC_Far_Field(CGeometry *geometry,
@@ -499,219 +489,6 @@ void CScalarSolver::BC_Far_Field(CGeometry *geometry,
       
     }
   }
-  
-  delete [] Normal;
-  
-}
-
-void CScalarSolver::BC_Inlet(CGeometry *geometry,
-                             CSolver **solver_container,
-                             CNumerics *conv_numerics,
-                             CNumerics *visc_numerics,
-                             CConfig *config,
-                             unsigned short val_marker) {
-  
-  unsigned short iDim, iVar;
-  unsigned long iVertex, iPoint;
-  su2double *V_inlet, *V_domain, *Normal;
-  
-  Normal = new su2double[nDim];
-  
-  bool grid_movement  = config->GetGrid_Movement();
-  string Marker_Tag = config->GetMarker_All_TagBound(val_marker);
-  
-  /*--- Loop over all the vertices on this boundary marker ---*/
-  
-  for (iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
-    
-    iPoint = geometry->vertex[val_marker][iVertex]->GetNode();
-    
-    /*--- Check if the node belongs to the domain (i.e., not a halo node) ---*/
-    
-    if (geometry->node[iPoint]->GetDomain()) {
-      
-      /*--- Normal vector for this vertex (negate for outward convention) ---*/
-      
-      geometry->vertex[val_marker][iVertex]->GetNormal(Normal);
-      for (iDim = 0; iDim < nDim; iDim++) Normal[iDim] = -Normal[iDim];
-      
-      /*--- Allocate the value at the inlet ---*/
-      
-      V_inlet = solver_container[FLOW_SOL]->GetCharacPrimVar(val_marker, iVertex);
-      
-      /*--- Retrieve solution at the farfield boundary node ---*/
-      
-      V_domain = solver_container[FLOW_SOL]->GetNodes()->GetPrimitive(iPoint);
-      
-      /*--- Set various quantities in the solver class ---*/
-      
-      conv_numerics->SetPrimitive(V_domain, V_inlet);
-      
-      /*--- Set the scalar variable states (prescribed for an inflow) ---*/
-      
-      for (iVar = 0; iVar < nVar; iVar++) {
-        Solution_i[iVar] = nodes->GetSolution(iPoint,iVar);
-        Solution_j[iVar] = Inlet_ScalarVars[val_marker][iVertex][iVar];
-      }
-      conv_numerics->SetScalarVar(Solution_i, Solution_j);
-      
-      /*--- Set various other quantities in the conv_numerics class ---*/
-      
-      conv_numerics->SetNormal(Normal);
-      
-      if (grid_movement)
-        conv_numerics->SetGridVel(geometry->node[iPoint]->GetGridVel(),
-                                  geometry->node[iPoint]->GetGridVel());
-      
-      /*--- Compute the residual using an upwind scheme ---*/
-      
-      conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-      LinSysRes.AddBlock(iPoint, Residual);
-      
-      /*--- Jacobian contribution for implicit integration ---*/
-      
-      Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
-      
-      /*--- Viscous contribution, commented out because serious convergence problems ---*/
-      
-      unsigned long Point_Normal = geometry->vertex[val_marker][iVertex]->GetNormal_Neighbor();
-      visc_numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[Point_Normal]->GetCoord());
-      visc_numerics->SetNormal(Normal);
-      
-      /*--- Conservative variables w/o reconstruction ---*/
-      
-      visc_numerics->SetPrimitive(V_domain, V_inlet);
-      
-      /*--- Scalar variables w/o reconstruction, and its gradients ---*/
-      
-      visc_numerics->SetScalarVar(Solution_i, Solution_j);
-      visc_numerics->SetScalarVarGradient(nodes->GetGradient(iPoint),
-                                          nodes->GetGradient(iPoint));
-      
-      /*--- Mass diffusivity coefficients. ---*/
-      
-      visc_numerics->SetDiffusionCoeff(nodes->GetDiffusivity(iPoint),
-                                       nodes->GetDiffusivity(iPoint));
-      
-      /*--- Compute residual, and Jacobians ---*/
-      
-      visc_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-      
-      /*--- Subtract residual, and update Jacobians ---*/
-      
-      LinSysRes.SubtractBlock(iPoint, Residual);
-      Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
-      
-    }
-  }
-  
-  /*--- Free locally allocated memory ---*/
-  delete[] Normal;
-  
-}
-
-void CScalarSolver::BC_Outlet(CGeometry *geometry,
-                              CSolver **solver_container,
-                              CNumerics *conv_numerics,
-                              CNumerics *visc_numerics,
-                              CConfig *config,
-                              unsigned short val_marker) {
-  
-  unsigned long iPoint, iVertex;
-  unsigned short iVar, iDim;
-  su2double *V_outlet, *V_domain, *Normal;
-  
-  bool grid_movement  = config->GetGrid_Movement();
-  
-  Normal = new su2double[nDim];
-  
-  /*--- Loop over all the vertices on this boundary marker ---*/
-  
-  for (iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
-    iPoint = geometry->vertex[val_marker][iVertex]->GetNode();
-    
-    /*--- Check if the node belongs to the domain (i.e., not a halo node) ---*/
-    
-    if (geometry->node[iPoint]->GetDomain()) {
-      
-      /*--- Allocate the value at the outlet ---*/
-      
-      V_outlet = solver_container[FLOW_SOL]->GetCharacPrimVar(val_marker, iVertex);
-      
-      /*--- Retrieve solution at the farfield boundary node ---*/
-      
-      V_domain = solver_container[FLOW_SOL]->GetNodes()->GetPrimitive(iPoint);
-      
-      /*--- Set various quantities in the solver class ---*/
-      
-      conv_numerics->SetPrimitive(V_domain, V_outlet);
-      
-      /*--- Set the scalar variables. Here we use a Neumann BC such
-       that the scalar variable is copied from the interior of the
-       domain to the outlet before computing the residual.
-       Solution_i --> ScalarVar_internal,
-       Solution_j --> ScalarVar_outlet ---*/
-      
-      for (iVar = 0; iVar < nVar; iVar++) {
-        Solution_i[iVar] = nodes->GetSolution(iPoint,iVar);
-        Solution_j[iVar] = nodes->GetSolution(iPoint,iVar);
-      }
-      conv_numerics->SetScalarVar(Solution_i, Solution_j);
-      
-      /*--- Set Normal (negate for outward convention) ---*/
-      
-      geometry->vertex[val_marker][iVertex]->GetNormal(Normal);
-      for (iDim = 0; iDim < nDim; iDim++)
-        Normal[iDim] = -Normal[iDim];
-      conv_numerics->SetNormal(Normal);
-      
-      if (grid_movement)
-        conv_numerics->SetGridVel(geometry->node[iPoint]->GetGridVel(),
-                                  geometry->node[iPoint]->GetGridVel());
-      
-      /*--- Compute the residual using an upwind scheme ---*/
-      
-      conv_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-      LinSysRes.AddBlock(iPoint, Residual);
-      
-      /*--- Jacobian contribution for implicit integration ---*/
-      
-      Jacobian.AddBlock(iPoint, iPoint, Jacobian_i);
-      
-      /*--- Viscous contribution, commented out because serious convergence problems ---*/
-      
-      unsigned long Point_Normal = geometry->vertex[val_marker][iVertex]->GetNormal_Neighbor();
-      visc_numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[Point_Normal]->GetCoord());
-      visc_numerics->SetNormal(Normal);
-      
-      /*--- Conservative variables w/o reconstruction ---*/
-      
-      visc_numerics->SetPrimitive(V_domain, V_outlet);
-      
-      /*--- Scalar variables w/o reconstruction, and its gradients ---*/
-      
-      visc_numerics->SetScalarVar(Solution_i, Solution_j);
-      visc_numerics->SetScalarVarGradient(nodes->GetGradient(iPoint),
-                                          nodes->GetGradient(iPoint));
-      
-      /*--- Mass diffusivity coefficients. ---*/
-      
-      visc_numerics->SetDiffusionCoeff(nodes->GetDiffusivity(iPoint),
-                                       nodes->GetDiffusivity(iPoint));
-      
-      /*--- Compute residual, and Jacobians ---*/
-      
-      visc_numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-      
-      /*--- Subtract residual, and update Jacobians ---*/
-      
-      LinSysRes.SubtractBlock(iPoint, Residual);
-      Jacobian.SubtractBlock(iPoint, iPoint, Jacobian_i);
-      
-    }
-  }
-  
-  /*--- Free locally allocated memory ---*/
   
   delete [] Normal;
   

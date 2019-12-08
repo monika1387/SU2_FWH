@@ -520,7 +520,7 @@ void CConfig::SetPointersNull(void) {
   Marker_DV                   = NULL;   Marker_Moving            = NULL;    Marker_Monitoring = NULL;
   Marker_Designing            = NULL;   Marker_GeoEval           = NULL;    Marker_Plotting   = NULL;
   Marker_Analyze              = NULL;   Marker_PyCustom          = NULL;    Marker_WallFunctions        = NULL;
-  Marker_CfgFile_KindBC       = NULL;   Marker_All_KindBC        = NULL;
+  Marker_CfgFile_KindBC       = NULL;   Marker_All_KindBC        = NULL;    Marker_Inlet_Scalar    = NULL;
 
   Kind_WallFunctions       = NULL;
   IntInfo_WallFunctions    = NULL;
@@ -629,6 +629,7 @@ void CConfig::SetPointersNull(void) {
   MassFrac_FreeStream = NULL;
   Velocity_FreeStream = NULL;
   Inc_Velocity_Init   = NULL;
+  Scalar_Init         = NULL;
 
   RefOriginMoment     = NULL;
   CFL_AdaptParam      = NULL;            
@@ -698,6 +699,7 @@ void CConfig::SetPointersNull(void) {
   /*--- Initialize some default arrays to NULL. ---*/
   
   default_vel_inf            = NULL;
+  default_scalar_init        = NULL;
   default_ffd_axis           = NULL;
   default_eng_cyl            = NULL;
   default_eng_val            = NULL;
@@ -770,6 +772,7 @@ void CConfig::SetPointersNull(void) {
   
   ScreenOutput = NULL;
   HistoryOutput = NULL;
+  FlameletTableOutput = NULL;
   VolumeOutput = NULL;
   VolumeOutputFiles = NULL;
 
@@ -816,6 +819,8 @@ void CConfig::SetConfig_Options() {
   /*--- Allocate some default arrays needed for lists of doubles. ---*/
   
   default_vel_inf            = new su2double[3];
+  // FIXME Dan: It would be nice to have the following line generic based on CSolver->nVar
+  default_scalar_init        = new su2double[2];
   default_ffd_axis           = new su2double[3];
   default_eng_cyl            = new su2double[7];
   default_eng_val            = new su2double[5];
@@ -838,7 +843,7 @@ void CConfig::SetConfig_Options() {
   default_body_force         = new su2double[3];
   default_sineload_coeff     = new su2double[3];
   default_nacelle_location   = new su2double[5];
-  default_wrt_freq             = new su2double[3];
+  default_wrt_freq           = new su2double[3];
   
   /*--- All temperature polynomial fits for the fluid models currently
    assume a quartic form (5 coefficients). For example,
@@ -1059,13 +1064,34 @@ void CConfig::SetConfig_Options() {
   addBoolOption("INC_INLET_USENORMAL", Inc_Inlet_UseNormal, false);
 
   /*!\brief SCALAR_INIT \n DESCRIPTION: Initial value for scalar transport \ingroup Config*/
-  addDoubleOption("SCALAR_INIT", Scalar_Init, 0.0);
+  //addDoubleOption("SCALAR_INIT", Scalar_Init, 0.0);
+
+  default_scalar_init[0] = 0.0; default_scalar_init[1] = 0.0; 
+  addDoubleArrayOption("SCALAR_INIT", 2, Scalar_Init, default_scalar_init);
+  
   /*!\brief SCALAR_CLIPPING \n DESCRIPTION: Activate clipping for scalar transport equations \ingroup Config*/
   addBoolOption("SCALAR_CLIPPING", Scalar_Clipping, false);
+
   /*!\brief SCALAR_CLIPPING_MAX \n DESCRIPTION: Maximum value for scalar clipping \ingroup Config*/
-  addDoubleOption("SCALAR_CLIPPING_MAX", Scalar_Clipping_Max, 1.0e15);
+  // FIXME daniel: this looks dirty (dont use scalar_init to set defaults for clipping_max!)
+  default_scalar_init[0] = 1.0; default_scalar_init[1] = 1.0;
+  addDoubleArrayOption("SCALAR_CLIPPING_MAX", 2,Scalar_Clipping_Max, default_scalar_init);
+
   /*!\brief SCALAR_CLIPPING_MIN \n DESCRIPTION: Minimum value for scalar clipping \ingroup Config*/
-  addDoubleOption("SCALAR_CLIPPING_MIN", Scalar_Clipping_Min, -1.0e15);
+  // FIXME daniel: this looks dirty (dont use scalar_init to set defaults for clipping_min!)
+  default_scalar_init[0] = 0.0; default_scalar_init[1] = 0.0; 
+  addDoubleArrayOption("SCALAR_CLIPPING_MIN", 2, Scalar_Clipping_Min, default_scalar_init);
+
+  /*!\brief FLAMELET__THERMO_SYSTEM \n DESCRIPTION: Thermodynamic system for flamelet model */
+  addEnumOption("FLAMELET_THERMO_SYSTEM", kind_flamelet_thermo_system, flamelet_thermo_system_map, ADIABATIC);
+
+  /*!\brief FLAME_OFFSET \n DESCRIPTION: Offset for flame initialization using the flamelet model \ingroup Config*/
+  addDoubleOption("FLAME_OFFSET", flame_offset, 0);
+
+  /*!\brief FLAME_OFFSET \n DESCRIPTION: Offset for flame initialization using the flamelet model \ingroup Config*/
+  addDoubleOption("FLAME_THICKNESS", flame_thickness, 0.5e-3);
+  
+  addDoubleOption("BURNT_THICKNESS", burnt_thickness, 1);
 
   /*!\brief INC_INLET_DAMPING \n DESCRIPTION: Damping factor applied to the iterative updates to the velocity at a pressure inlet in incompressible flow (0.1 by default). \ingroup Config*/
   addDoubleOption("INC_INLET_DAMPING", Inc_Inlet_Damping, 0.1);
@@ -1245,7 +1271,9 @@ void CConfig::SetConfig_Options() {
    flow_direction_y, flow_direction_z, ... ) where flow_direction is
    a unit vector. \ingroup Config*/
   addInletOption("MARKER_INLET", nMarker_Inlet, Marker_Inlet, Inlet_Ttotal, Inlet_Ptotal, Inlet_FlowDir);
-
+  /*!\brief MARKER_Inlet_Scalar \n DESCRIPTION: Inlet Scalar boundary marker(s) with the following format
+   Inlet Scalar: (inlet_marker, progress variable, enthalpy) */
+  addInletScalarOption("MARKER_INLET_SCALAR",nMarker_Inlet_Scalar, Marker_Inlet_Scalar, Inlet_ScalarVal);
   /*!\brief MARKER_RIEMANN \n DESCRIPTION: Riemann boundary marker(s) with the following formats, a unit vector.
    * \n OPTIONS: See \link Riemann_Map \endlink. The variables indicated by the option and the flow direction unit vector must be specified. \ingroup Config*/
   addRiemannOption("MARKER_RIEMANN", nMarker_Riemann, Marker_Riemann, Kind_Data_Riemann, Riemann_Map, Riemann_Var1, Riemann_Var2, Riemann_FlowDir);
@@ -1753,6 +1781,9 @@ void CConfig::SetConfig_Options() {
   addBoolOption("MULTIZONE_MESH", Multizone_Mesh, true);
   /* DESCRIPTION: Determine if we need to allocate memory to store the multizone residual. \n DEFAULT: true (temporarily) */
   addBoolOption("MULTIZONE_RESIDUAL", Multizone_Residual, false);
+
+  /*!\brief File name of the look up table.*/
+  addStringOption("FILENAME_LUT", file_name_lut, string("LUT"));
 
   /*!\brief CONV_FILENAME \n DESCRIPTION: Output file convergence history (w/o extension) \n DEFAULT: history \ingroup Config*/
   addStringOption("CONV_FILENAME", Conv_FileName, string("history"));
@@ -2520,6 +2551,8 @@ void CConfig::SetConfig_Options() {
   addStringListOption("SCREEN_OUTPUT", nScreenOutput, ScreenOutput);
   /* DESCRIPTION: Type of output printed to the history file */
   addStringListOption("HISTORY_OUTPUT", nHistoryOutput, HistoryOutput);
+  /* DESCRIPTION: Type of flamelet table output printed to the solution file */
+  addStringListOption("FLAMELET_TABLE_OUTPUT", nFlameletTableOutput, FlameletTableOutput);
   /* DESCRIPTION: Type of output printed to the volume solution file */
   addStringListOption("VOLUME_OUTPUT", nVolumeOutput, VolumeOutput);
   
@@ -2672,7 +2705,8 @@ void CConfig::SetDefaultFromConfig(CConfig *config){
   
   map<string, bool> noInheritance = CCreateMap<string, bool>
       ("SCREEN_OUTPUT", true)
-      ("HISTORY_OUTPUT", true);
+      ("HISTORY_OUTPUT", true)
+      ("FLAMELET_TABLE_OUTPUT",true);
   
   map<string, bool>::iterator iter = all_options.begin(), curr_iter;
   
@@ -2913,14 +2947,23 @@ void CConfig::SetnZone(){
 
 void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_izone, unsigned short val_nDim) {
   
+  if (Kind_FluidModel == FLAMELET_FLUID_MODEL){
+    Kind_Scalar_Model      = PROGRESS_VARIABLE;
+    Kind_ViscosityModel    = FLAMELET_VISC_MODEL;
+    Kind_ConductivityModel = FLAMELET_CONDUCT_MODEL;
+    Kind_DiffusivityModel  = FLAMELET_DIFF_MODEL;
+  }
+
   unsigned short iCFL, iMarker;
   bool ideal_gas = ((Kind_FluidModel == STANDARD_AIR) ||
                     (Kind_FluidModel == IDEAL_GAS) ||
                     (Kind_FluidModel == INC_IDEAL_GAS) ||
                     (Kind_FluidModel == INC_IDEAL_GAS_POLY) ||
-                    (Kind_FluidModel == CONSTANT_DENSITY));
+                    (Kind_FluidModel == CONSTANT_DENSITY) ||
+                    (Kind_FluidModel == FLAMELET_FLUID_MODEL));
+
   bool standard_air = ((Kind_FluidModel == STANDARD_AIR));
-  
+
   if (nZone > 1){
     Multizone_Problem = YES;
   }
@@ -3981,7 +4024,7 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
      integration schemes other than ADER. */
   if (Kind_TimeIntScheme_FEM_Flow != ADER_DG && nLevels_TimeAccurateLTS != 1) {
 
-    if (rank==MASTER_NODE) {
+    if (rank == MASTER_NODE) {
       cout << endl << "WARNING: "
            << nLevels_TimeAccurateLTS << " levels specified for time accurate local time stepping." << endl
            << "Time accurate local time stepping is only possible for ADER, hence this option is not used." << endl
@@ -4293,8 +4336,8 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
   }
 
   if (Kind_DensityModel == VARIABLE) {
-    if (Kind_FluidModel != INC_IDEAL_GAS && Kind_FluidModel != INC_IDEAL_GAS_POLY) {
-      SU2_MPI::Error("Variable density incompressible solver limited to ideal gases.\n Check the fluid model options (use INC_IDEAL_GAS, INC_IDEAL_GAS_POLY).", CURRENT_FUNCTION);
+    if (Kind_FluidModel != INC_IDEAL_GAS && Kind_FluidModel != INC_IDEAL_GAS_POLY && Kind_FluidModel != FLAMELET_FLUID_MODEL) {
+      SU2_MPI::Error("Variable density incompressible solver limited to ideal gases.\n Check the fluid model options (use INC_IDEAL_GAS, INC_IDEAL_GAS_POLY, FLAMELET_FLUID_MODEL).", CURRENT_FUNCTION);
     }
   }
 
@@ -4306,8 +4349,8 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
 
   if (Kind_Solver == INC_NAVIER_STOKES || Kind_Solver == INC_RANS) {
     if (Kind_ViscosityModel == SUTHERLAND) {
-      if ((Kind_FluidModel != INC_IDEAL_GAS) && (Kind_FluidModel != INC_IDEAL_GAS_POLY)) {
-        SU2_MPI::Error("Sutherland's law only valid for ideal gases in incompressible flows.\n Must use VISCOSITY_MODEL=CONSTANT_VISCOSITY and set viscosity with\n MU_CONSTANT, or use DENSITY_MODEL= VARIABLE with FLUID_MODEL= INC_IDEAL_GAS or INC_IDEAL_GAS_POLY for VISCOSITY_MODEL=SUTHERLAND.\n NOTE: FREESTREAM_VISCOSITY is no longer used for incompressible flows!", CURRENT_FUNCTION);
+      if ((Kind_FluidModel != INC_IDEAL_GAS) && (Kind_FluidModel != INC_IDEAL_GAS_POLY) && (Kind_FluidModel != FLAMELET_FLUID_MODEL)) {
+        SU2_MPI::Error("Sutherland's law only valid for ideal gases in incompressible flows.\n Must use VISCOSITY_MODEL=CONSTANT_VISCOSITY and set viscosity with\n MU_CONSTANT, or use DENSITY_MODEL= VARIABLE with FLUID_MODEL= INC_IDEAL_GAS, INC_IDEAL_GAS_POLY, or FLAMELET_FLUID_MODEL for VISCOSITY_MODEL=SUTHERLAND.\n NOTE: FREESTREAM_VISCOSITY is no longer used for incompressible flows!", CURRENT_FUNCTION);
       }
     }
   }
@@ -4406,7 +4449,8 @@ void CConfig::SetPostprocessing(unsigned short val_software, unsigned short val_
    they are implemented. ---*/
   
   if ((Kind_Scalar_Model != NO_SCALAR_MODEL) &&
-      (Kind_Scalar_Model != PASSIVE_SCALAR)) {
+      (Kind_Scalar_Model != PASSIVE_SCALAR) &&
+      (Kind_Scalar_Model != PROGRESS_VARIABLE)) {
     SU2_MPI::Error(string("Selected scalar model not yet implemented.") , CURRENT_FUNCTION);
   }
   
@@ -4608,7 +4652,7 @@ void CConfig::SetMarkers(unsigned short val_software) {
   unsigned short iMarker_All, iMarker_CfgFile, iMarker_Euler, iMarker_Custom,
   iMarker_FarField, iMarker_SymWall, iMarker_PerBound,
   iMarker_NearFieldBound, iMarker_Fluid_InterfaceBound, iMarker_Dirichlet,
-  iMarker_Inlet, iMarker_Riemann, iMarker_Giles, iMarker_Outlet, iMarker_Isothermal,
+  iMarker_Inlet, iMarker_Inlet_Scalar, iMarker_Riemann, iMarker_Giles, iMarker_Outlet, iMarker_Isothermal,
   iMarker_HeatFlux, iMarker_EngineInflow, iMarker_EngineExhaust, iMarker_Damper,
   iMarker_Displacement, iMarker_Load, iMarker_FlowLoad, iMarker_Neumann, iMarker_Internal,
   iMarker_Monitoring, iMarker_Designing, iMarker_GeoEval, iMarker_Plotting, iMarker_Analyze,
@@ -5121,7 +5165,7 @@ void CConfig::SetMarkers(unsigned short val_software) {
       if (Marker_CfgFile_TagBound[iMarker_CfgFile] == Marker_Plotting[iMarker_Plotting])
         Marker_CfgFile_Plotting[iMarker_CfgFile] = YES;
   }
-  
+
   for (iMarker_CfgFile = 0; iMarker_CfgFile < nMarker_CfgFile; iMarker_CfgFile++) {
     Marker_CfgFile_Analyze[iMarker_CfgFile] = NO;
     for (iMarker_Analyze = 0; iMarker_Analyze < nMarker_Analyze; iMarker_Analyze++)
@@ -5226,7 +5270,7 @@ void CConfig::SetOutput(unsigned short val_software, unsigned short val_izone) {
 
   unsigned short iMarker_Euler, iMarker_Custom, iMarker_FarField,
   iMarker_SymWall, iMarker_PerBound, iMarker_NearFieldBound,
-  iMarker_Fluid_InterfaceBound, iMarker_Dirichlet, iMarker_Inlet, iMarker_Riemann,
+  iMarker_Fluid_InterfaceBound, iMarker_Dirichlet, iMarker_Inlet, iMarker_Inlet_Scalar, iMarker_Riemann,
   iMarker_Deform_Mesh, iMarker_Fluid_Load,
   iMarker_Giles, iMarker_Outlet, iMarker_Isothermal, iMarker_HeatFlux,
   iMarker_EngineInflow, iMarker_EngineExhaust, iMarker_Displacement, iMarker_Damper,
@@ -7192,6 +7236,7 @@ CConfig::~CConfig(void) {
   if (Marker_Designing != NULL)       delete[] Marker_Designing;
   if (Marker_GeoEval != NULL)         delete[] Marker_GeoEval;
   if (Marker_Plotting != NULL)        delete[] Marker_Plotting;
+  if (Marker_Inlet_Scalar != NULL)    delete[] Marker_Inlet_Scalar;
   if (Marker_Analyze != NULL)        delete[] Marker_Analyze;
   if (Marker_WallFunctions != NULL)  delete[] Marker_WallFunctions;
   if (Marker_ZoneInterface != NULL)        delete[] Marker_ZoneInterface;
@@ -7458,6 +7503,7 @@ CConfig::~CConfig(void) {
   /*--- Delete some arrays needed just for initializing options. ---*/
   
   if (default_vel_inf       != NULL) delete [] default_vel_inf;
+  if (default_scalar_init   != NULL) delete [] default_scalar_init;
   if (default_ffd_axis      != NULL) delete [] default_ffd_axis;
   if (default_eng_cyl       != NULL) delete [] default_eng_cyl;
   if (default_eng_val       != NULL) delete [] default_eng_val;
@@ -7520,6 +7566,7 @@ CConfig::~CConfig(void) {
   
   if (ScreenOutput != NULL) delete [] ScreenOutput;
   if (HistoryOutput != NULL) delete [] HistoryOutput;
+  if (FlameletTableOutput != NULL) delete [] FlameletTableOutput;
   if (VolumeOutput != NULL) delete [] VolumeOutput;
   if (Mesh_Box_Size != NULL) delete [] Mesh_Box_Size;
   if (VolumeOutputFiles != NULL) delete [] VolumeOutputFiles;
@@ -8240,6 +8287,13 @@ su2double CConfig::GetInlet_Ttotal(string val_marker) {
   for (iMarker_Inlet = 0; iMarker_Inlet < nMarker_Inlet; iMarker_Inlet++)
     if (Marker_Inlet[iMarker_Inlet] == val_marker) break;
   return Inlet_Ttotal[iMarker_Inlet];
+}
+
+su2double* CConfig::GetInlet_ScalarVal(string val_marker) {
+  unsigned short iMarker_Inlet_Scalar;
+  for (iMarker_Inlet_Scalar = 0; iMarker_Inlet_Scalar < nMarker_Inlet_Scalar; iMarker_Inlet_Scalar++)
+    if (Marker_Inlet_Scalar[iMarker_Inlet_Scalar] == val_marker) break;
+  return Inlet_ScalarVal[iMarker_Inlet_Scalar];
 }
 
 su2double CConfig::GetInlet_Ptotal(string val_marker) {

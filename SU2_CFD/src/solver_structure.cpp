@@ -5736,7 +5736,8 @@ void CBaselineSolver::LoadRestart(CGeometry **geometry, CSolver ***solver, CConf
         } else if (turb_model == SST) {
           index+=2;
         }
-        
+       
+        // FIXME for progress-enthalpy-equation 
         if ((scalar_model == PASSIVE_SCALAR) ||
             (scalar_model == PROGRESS_VARIABLE)) {
           index++;

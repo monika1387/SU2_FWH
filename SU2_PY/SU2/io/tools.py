@@ -803,7 +803,7 @@ def get_specialCases(config):
                           '1D_OUTPUT'                        ,
                           'INV_DESIGN_CP'                    ,
                           'INV_DESIGN_HEATFLUX'              ]
-    
+
     special_cases = []
     for key in all_special_cases:
         if key in config and config[key] == 'YES':
@@ -826,7 +826,11 @@ def get_specialCases(config):
     # Special case for rotating frame
     if 'GRID_MOVEMENT_KIND' in config and config['GRID_MOVEMENT_KIND'] == 'ROTATING_FRAME':
         special_cases.append('ROTATING_FRAME')
-        
+    
+    # Special case for look up table
+    if 'FLUID_MODEL' in config and config['FLUID_MODEL'] == 'FLAMELET_FLUID_MODEL':
+      special_cases.append('FLAMELET_FLUID_MODEL')
+
     return special_cases
 
 #: def get_specialCases()

@@ -1222,6 +1222,8 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
     if (scalar) {
       if (passive_scalar) {
         solver[iMGlevel][SCALAR_SOL] = new CPassiveScalarSolver(geometry[iMGlevel], config, iMGlevel);
+      } else if (progress_variable){
+        solver[iMGlevel][SCALAR_SOL] = new CFlameletSolver(geometry[iMGlevel], config, iMGlevel);
       }
       if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][SCALAR_SOL]->GetnVar();
     }
@@ -1286,6 +1288,10 @@ void CDriver::Solver_Preprocessing(CConfig* config, CGeometry** geometry, CSolve
       if (disc_adj_turb) {
         solver[iMGlevel][ADJTURB_SOL] = new CDiscAdjSolver(geometry[iMGlevel], config, solver[iMGlevel][TURB_SOL], RUNTIME_TURB_SYS, iMGlevel);
         if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][ADJTURB_SOL]->GetnVar();
+      }
+      if (scalar) {
+        solver[iMGlevel][ADJSCALAR_SOL] = new CDiscAdjSolver(geometry[iMGlevel], config, solver[iMGlevel][SCALAR_SOL], RUNTIME_SCALAR_SYS, iMGlevel);
+        if (iMGlevel == MESH_0) DOFsPerPoint += solver[iMGlevel][ADJSCALAR_SOL]->GetnVar();
       }
       if (heat_fvm) {
         solver[iMGlevel][ADJHEAT_SOL] = new CDiscAdjSolver(geometry[iMGlevel], config, solver[iMGlevel][HEAT_SOL], RUNTIME_HEAT_SYS, iMGlevel);
@@ -1582,6 +1588,8 @@ void CDriver::Solver_Restart(CSolver ***solver, CGeometry **geometry,
       solver[MESH_0][ADJFLOW_SOL]->LoadRestart(geometry, solver, config, val_iter, update_geo);
       if (disc_adj_turb)
         solver[MESH_0][ADJTURB_SOL]->LoadRestart(geometry, solver, config, val_iter, update_geo);
+      if (scalar)
+        solver[MESH_0][ADJSCALAR_SOL]->LoadRestart(geometry, solver, config, val_iter, update_geo);
       if (disc_adj_heat)
         solver[MESH_0][ADJHEAT_SOL]->LoadRestart(geometry, solver, config, val_iter, update_geo);
     }
@@ -1701,6 +1709,9 @@ void CDriver::Solver_Postprocessing(CSolver ****solver, CGeometry **geometry,
       delete solver[val_iInst][iMGlevel][ADJFLOW_SOL];
       if (disc_adj_turb || adj_turb) {
         delete solver[val_iInst][iMGlevel][ADJTURB_SOL];
+      }
+      if (scalar) {
+        delete solver[val_iInst][iMGlevel][ADJSCALAR_SOL];
       }
       if (heat_fvm) {
         delete solver[val_iInst][iMGlevel][ADJHEAT_SOL];

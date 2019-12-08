@@ -81,3 +81,6 @@ Mercurial
 
 # Ignore build folder
 ./build/
+
+# Ignore vscode settings
+.vscode

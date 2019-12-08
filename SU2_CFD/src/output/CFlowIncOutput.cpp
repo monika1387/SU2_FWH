@@ -128,6 +128,10 @@ void CFlowIncOutput::SetHistoryOutputFields(CConfig *config){
     case PASSIVE_SCALAR:
       AddHistoryOutput("RMS_PASSIVE_SCALAR", "rms[c]", ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
       break;
+    case PROGRESS_VARIABLE:
+      AddHistoryOutput("RMS_PROGRESS_VARIABLE", "rms[prog]"   , ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
+      AddHistoryOutput("RMS_ENTHALPY"         , "rms[enth]"   , ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
+      break;
     default: break;
   }
   /// END_GROUP
@@ -164,6 +168,10 @@ void CFlowIncOutput::SetHistoryOutputFields(CConfig *config){
     case PASSIVE_SCALAR:
       AddHistoryOutput("MAX_PASSIVE_SCALAR", "max[c]", ScreenOutputFormat::FIXED, "MAX_RES", "Maximum residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
       break;
+    case PROGRESS_VARIABLE:
+      AddHistoryOutput("MAX_PROGRESS_VARIABLE", "max[prog]"   , ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
+      AddHistoryOutput("MAX_ENTHALPY"         , "max[enth]"   , ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
+      break;
     default: break;
   }
   /// END_GROUP
@@ -199,6 +207,10 @@ void CFlowIncOutput::SetHistoryOutputFields(CConfig *config){
   switch(scalar_model){
     case PASSIVE_SCALAR:
       AddHistoryOutput("BGS_PASSIVE_SCALAR", "bgs[c]", ScreenOutputFormat::FIXED, "BGS_RES", "BGS residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
+      break;
+    case PROGRESS_VARIABLE:
+      AddHistoryOutput("BGS_PROGRESS_VARIABLE", "bgs[prog]"   , ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
+      AddHistoryOutput("BGS_ENTHALPY"         , "bgs[enth]"   , ScreenOutputFormat::FIXED, "RMS_RES", "Root-mean squared residual of the passive scalar equation.", HistoryFieldType::RESIDUAL);
       break;
     default: break;
   }
@@ -264,6 +276,10 @@ void CFlowIncOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSolv
     case PASSIVE_SCALAR:
       SetHistoryOutputValue("RMS_PASSIVE_SCALAR", log10(scalar_solver->GetRes_RMS(0)));
       break;
+    case PROGRESS_VARIABLE:
+      SetHistoryOutputValue("RMS_PROGRESS_VARIABLE", log10(scalar_solver->GetRes_RMS(I_PROG_VAR)));
+      SetHistoryOutputValue("RMS_ENTHALPY"         , log10(scalar_solver->GetRes_RMS(I_ENTHALPY)));
+      break;
   }
   
   SetHistoryOutputValue("MAX_PRESSURE", log10(flow_solver->GetRes_Max(0)));
@@ -284,6 +300,10 @@ void CFlowIncOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSolv
   switch(scalar_model){
     case PASSIVE_SCALAR:
       SetHistoryOutputValue("MAX_PASSIVE_SCALAR", log10(scalar_solver->GetRes_Max(0)));
+      break;
+    case PROGRESS_VARIABLE:
+      SetHistoryOutputValue("MAX_PROGRESS_VARIABLE", log10(scalar_solver->GetRes_Max(I_PROG_VAR)));
+      SetHistoryOutputValue("MAX_ENTHALPY"         , log10(scalar_solver->GetRes_Max(I_ENTHALPY)));
       break;
   }
   
@@ -306,6 +326,10 @@ void CFlowIncOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSolv
     switch(scalar_model){
       case PASSIVE_SCALAR:
         SetHistoryOutputValue("BGS_PASSIVE_SCALAR", log10(scalar_solver->GetRes_BGS(0)));
+        break;
+      case PROGRESS_VARIABLE:
+        SetHistoryOutputValue("BGS_PROGRESS_VARIABLE", log10(scalar_solver->GetRes_BGS(I_PROG_VAR)));
+        SetHistoryOutputValue("BGS_ENTHALPY"         , log10(scalar_solver->GetRes_BGS(I_ENTHALPY)));
         break;
     }
   }
@@ -349,7 +373,7 @@ void CFlowIncOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSolv
   
   /*--- Set the analyse surface history values --- */
   
-  SetAnalyzeSurface(flow_solver, geometry, config, false);
+  SetAnalyzeSurface(solver, geometry, config, false);
   
   /*--- Set aeroydnamic coefficients --- */
   
@@ -392,10 +416,29 @@ void CFlowIncOutput::SetVolumeOutputFields(CConfig *config){
     case PASSIVE_SCALAR:
       AddVolumeOutput("PASSIVE_SCALAR", "Passive_Scalar", "SOLUTION", "Passive scalar solution");
       break;
+    case PROGRESS_VARIABLE:
+      AddVolumeOutput("PROGRESS_VARIABLE" , "Progress_Variable" , "SOLUTION", "Progress variable solution" );
+      AddVolumeOutput("ENTHALPY"          , "Enthalpy"          , "SOLUTION", "Enthalpy solution"          );
+      if (config->GetnFlameletTableOutput() > 0){
+      for (int ivar = 0;ivar<config->GetnFlameletTableOutput();ivar++)
+      AddVolumeOutput(config->GetFlameletTableOutput_Field(ivar),config->GetFlameletTableOutput_Field(ivar).append("-flamelet-table"),"SOLUTION",config->GetFlameletTableOutput_Field(ivar).append(" from flamelet table"));
+      }
+      break;
     case NO_SCALAR_MODEL:
       break;
   }
-  
+
+  // Sources
+  switch (scalar_model) {
+    case PASSIVE_SCALAR:
+      break;
+    case PROGRESS_VARIABLE:
+      AddVolumeOutput("SOURCE_PROGRESS_VARIABLE" , "Source_Progress_Variable" , "SOURCE", "Progress variable source term" );
+      AddVolumeOutput("SOURCE_ENTHALPY"          , "Source_Enthalpy"          , "SOURCE", "Enthalpy source term"          );
+    case NO_SCALAR_MODEL:
+      break;
+  }
+
   // Grid velocity
   if (config->GetGrid_Movement()){
     AddVolumeOutput("GRID_VELOCITY-X", "Grid_Velocity_x", "GRID_VELOCITY", "x-component of the grid velocity vector");
@@ -454,6 +497,10 @@ void CFlowIncOutput::SetVolumeOutputFields(CConfig *config){
     case PASSIVE_SCALAR:
       AddVolumeOutput("RES_PASSIVE_SCALAR", "Residual_Passive_Scalar", "RESIDUAL", "Residual of passive scalar equation");
       break;
+    case PROGRESS_VARIABLE:
+      AddVolumeOutput("RES_PROGRESS_VARIABLE", "Residual_Progress_Variable", "RESIDUAL", "Residual of progress variable equation");
+      AddVolumeOutput("RES_ENTHALPY"         , "Residual_Enthalpy"         , "RESIDUAL", "Residual of Enthalpy equation"         );
+      break;
     case NO_SCALAR_MODEL:
       break;
   }
@@ -482,6 +529,10 @@ void CFlowIncOutput::SetVolumeOutputFields(CConfig *config){
   switch(scalar_model){
     case PASSIVE_SCALAR:
       AddVolumeOutput("LIMITER_PASSIVE_SCALAR", "Limiter_Passive_Scalar", "LIMITER", "Limiter value for the passive scalar");
+      break;
+    case PROGRESS_VARIABLE:
+      AddVolumeOutput("LIMITER_PROGRESS_VARIABLE", "Limiter_Progress_Variable", "LIMITER", "Limiter value for the progress variable");
+      AddVolumeOutput("LIMITER_ENTHALPY"         , "Limiter_Enthalpy"         , "LIMITER", "Limiter value for the enthalpy"         );
       break;
     case NO_SCALAR_MODEL:
       break;
@@ -556,14 +607,35 @@ void CFlowIncOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolve
     break;
   }
   
+  // Solution data
   switch(scalar_model){
     case PASSIVE_SCALAR:
       SetVolumeOutputValue("PASSIVE_SCALAR", iPoint, Node_Scalar->GetSolution(iPoint, 0));
       break;
+    case PROGRESS_VARIABLE:
+      SetVolumeOutputValue("PROGRESS_VARIABLE", iPoint, Node_Scalar->GetSolution(iPoint, I_PROG_VAR));
+      SetVolumeOutputValue("ENTHALPY"         , iPoint, Node_Scalar->GetSolution(iPoint, I_ENTHALPY));
+      if (config->GetnFlameletTableOutput() > 0){
+      for (int ivar = 0;ivar<config->GetnFlameletTableOutput();ivar++)
+      SetVolumeOutputValue(config->GetFlameletTableOutput_Field(ivar),iPoint,Node_Scalar->GetScalarTableParaview(iPoint, ivar));
+      }
+      break;
     case NO_SCALAR_MODEL:
       break;
   }
-  
+
+  // Sources
+    switch(scalar_model){
+    case PASSIVE_SCALAR:
+      break;
+    case PROGRESS_VARIABLE:
+      SetVolumeOutputValue("SOURCE_PROGRESS_VARIABLE", iPoint, Node_Scalar->GetSourceProg(iPoint, I_PROG_VAR));
+      SetVolumeOutputValue("SOURCE_ENTHALPY"         , iPoint, Node_Scalar->GetSourceProg(iPoint, I_ENTHALPY));
+      break;
+    case NO_SCALAR_MODEL:
+      break;
+  }
+
   if (config->GetGrid_Movement()){
     SetVolumeOutputValue("GRID_VELOCITY-X", iPoint, Node_Geo->GetGridVel()[0]);
     SetVolumeOutputValue("GRID_VELOCITY-Y", iPoint, Node_Geo->GetGridVel()[1]);
@@ -618,6 +690,10 @@ void CFlowIncOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolve
     case PASSIVE_SCALAR:
       SetVolumeOutputValue("RES_PASSIVE_SCALAR", iPoint, solver[SCALAR_SOL]->LinSysRes.GetBlock(iPoint, 0));
       break;
+    case PROGRESS_VARIABLE:
+      SetVolumeOutputValue("RES_PROGRESS_VARIABLE" , iPoint, solver[SCALAR_SOL]->LinSysRes.GetBlock(iPoint, I_PROG_VAR ));
+      SetVolumeOutputValue("RES_ENTHALPY"          , iPoint, solver[SCALAR_SOL]->LinSysRes.GetBlock(iPoint, I_ENTHALPY ));
+      break;      
     case NO_SCALAR_MODEL:
       break;
   }
@@ -649,6 +725,10 @@ void CFlowIncOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolve
     case PASSIVE_SCALAR:
       SetVolumeOutputValue("LIMITER_PASSIVE_SCALAR", iPoint, Node_Scalar->GetLimiter(iPoint, 0));
       break;
+    case PROGRESS_VARIABLE:
+      SetVolumeOutputValue("LIMITER_PROGRESS_VARIABLE", iPoint, Node_Scalar->GetLimiter(iPoint, I_PROG_VAR));
+      SetVolumeOutputValue("LIMITER_ENTHALPY"         , iPoint, Node_Scalar->GetLimiter(iPoint, I_ENTHALPY));
+      break;          
     case NO_SCALAR_MODEL:
       break;
   }

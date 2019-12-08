@@ -39,23 +39,23 @@
 #include <limits>
 
 CUpwFDSInc_Flow::CUpwFDSInc_Flow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
-  
-  implicit         = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
-  variable_density = (config->GetKind_DensityModel() == VARIABLE);
-  energy           = config->GetEnergy_Equation();
+   
+  implicit               = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
+  variable_density       = (config->GetKind_DensityModel() == VARIABLE);
+  energy                 = config->GetEnergy_Equation();
   /* A grid is defined as dynamic if there's rigid grid movement or grid deformation AND the problem is time domain */
-  dynamic_grid = config->GetDynamic_Grid();
-
-  Diff_V       = new su2double[nVar];
-  Velocity_i   = new su2double[nDim];
-  Velocity_j   = new su2double[nDim];
-  MeanVelocity = new su2double[nDim];
-  ProjFlux_i   = new su2double[nVar];
-  ProjFlux_j   = new su2double[nVar];
-  Lambda       = new su2double[nVar];
-  Epsilon      = new su2double[nVar];
-  Precon       = new su2double*[nVar];
-  invPrecon_A  = new su2double*[nVar];
+  dynamic_grid           = config->GetDynamic_Grid();
+  flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
+  Diff_V                 = new su2double[nVar];
+  Velocity_i             = new su2double[nDim];
+  Velocity_j             = new su2double[nDim];
+  MeanVelocity           = new su2double[nDim];
+  ProjFlux_i             = new su2double[nVar];
+  ProjFlux_j             = new su2double[nVar];
+  Lambda                 = new su2double[nVar];
+  Epsilon                = new su2double[nVar];
+  Precon                 = new su2double*[nVar];
+  invPrecon_A            = new su2double*[nVar];
   
   for (iVar = 0; iVar < nVar; iVar++) {
     Precon[iVar]      = new su2double[nVar];
@@ -263,7 +263,7 @@ void CUpwFDSInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_J
     }
   }
 
-  if (!energy) {
+  if (!energy || flamelet_thermo_system == ADIABATIC) {
     val_residual[nDim+1] = 0.0;
     if (implicit) {
       for (iVar = 0; iVar < nVar; iVar++) {
@@ -282,11 +282,12 @@ void CUpwFDSInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_J
 
 CCentJSTInc_Flow::CCentJSTInc_Flow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
   
-  implicit         = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
-  variable_density = (config->GetKind_DensityModel() == VARIABLE);
-  energy           = config->GetEnergy_Equation();
+  implicit               = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
+  variable_density       = (config->GetKind_DensityModel() == VARIABLE);
+  energy                 = config->GetEnergy_Equation();
   /* A grid is defined as dynamic if there's rigid grid movement or grid deformation AND the problem is time domain */
-  dynamic_grid = config->GetDynamic_Grid();
+  dynamic_grid           = config->GetDynamic_Grid();
+  flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
 
   /*--- Artifical dissipation part ---*/
 
@@ -479,7 +480,7 @@ void CCentJSTInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_
 
   /*--- Remove energy contributions if not solving the energy equation. ---*/
 
-  if (!energy) {
+  if (!energy || flamelet_thermo_system == ADIABATIC) {
     val_residual[nDim+1] = 0.0;
     if (implicit) {
       for (iVar = 0; iVar < nVar; iVar++) {
@@ -500,6 +501,7 @@ CCentLaxInc_Flow::CCentLaxInc_Flow(unsigned short val_nDim, unsigned short val_n
   /* A grid is defined as dynamic if there's rigid grid movement or grid deformation AND the problem is time domain */
   dynamic_grid = config->GetDynamic_Grid();
   energy           = config->GetEnergy_Equation();
+  flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
 
   /*--- Artificial dissipation part ---*/
 
@@ -685,7 +687,7 @@ void CCentLaxInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_
   
   /*--- Remove energy contributions if we aren't solving the energy equation. ---*/
 
-  if (!energy) {
+  if (!energy || flamelet_thermo_system == ADIABATIC) {
     val_residual[nDim+1] = 0.0;
     if (implicit) {
       for (iVar = 0; iVar < nVar; iVar++) {
@@ -704,7 +706,8 @@ CAvgGradInc_Flow::CAvgGradInc_Flow(unsigned short val_nDim,
                                    bool val_correct_grad, CConfig *config)
     : CAvgGrad_Base(val_nDim, val_nVar, val_nDim+3, val_correct_grad, config) {
   
-  energy   = config->GetEnergy_Equation();
+  energy                 = config->GetEnergy_Equation();
+  flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
   
 }
 
@@ -814,7 +817,7 @@ void CAvgGradInc_Flow::ComputeResidual(su2double *val_residual, su2double **val_
     
   }
 
-  if (!energy) {
+  if (!energy || flamelet_thermo_system == ADIABATIC) {
     val_residual[nDim+1] = 0.0;
     if (implicit) {
       for (iVar = 0; iVar < nVar; iVar++) {
@@ -1102,10 +1105,10 @@ void CSourceBoussinesq::ComputeResidual(su2double *val_residual, CConfig *config
 
 CSourceIncAxisymmetric_Flow::CSourceIncAxisymmetric_Flow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
 
-  implicit = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
-  energy   = config->GetEnergy_Equation();
-  viscous  = config->GetViscous();
-
+  implicit               = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
+  energy                 = config->GetEnergy_Equation();
+  viscous                = config->GetViscous();
+  flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
 }
 
 CSourceIncAxisymmetric_Flow::~CSourceIncAxisymmetric_Flow(void) { }
@@ -1215,7 +1218,7 @@ void CSourceIncAxisymmetric_Flow::ComputeResidual(su2double *val_residual, su2do
     
   }
 
-  if (!energy) {
+  if (!energy || flamelet_thermo_system == ADIABATIC) {
     val_residual[nDim+1] = 0.0;
     if (implicit) {
       for (iVar = 0; iVar < nVar; iVar++) {

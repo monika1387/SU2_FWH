@@ -1,7 +1,7 @@
 /*!
- * \file CPassiveScalarSolver.hpp
- * \brief Declaration and inlines for the passive scalar transport class.
- * \author T. Economon
+ * \file CFlameletSolver.hpp
+ * \brief Declaration and inlines for the flamelet solver class.
+ * \author D. Mayer, T. Economon, N.Beishuizen, G. Tamanampudi
  * \version 6.2.0 "Falcon"
  *
  * The current SU2 release has been coordinated by the
@@ -40,20 +40,21 @@
 #include "CScalarSolver.hpp"
 
 /*!
- * \class CPassiveScalarSolver
- * \brief Main class for defining the passive scalar solver.
+ * \class CFlameletSolver
+ * \brief Main class for defining the flamelet solver.
  * \ingroup Scalar_Model
- * \author T. Economon
+ * \author D. Mayer, T. Economon, N.Beishuizen, G. Tamanampudi
  */
-class CPassiveScalarSolver: public CScalarSolver {
+class CFlameletSolver: public CScalarSolver {
 private:
-  CFluidModel *FluidModel;  /*!< \brief Fluid model for the scalar transport problem. */
+  CFluidModel *FluidModel;     /*!< \brief Fluid model for the calar transport problem. */
+  vector<string> scalar_names; /*!< \brief vector to store names of scalar variables.   */
   
 public:
   /*!
    * \brief Constructor of the class.
    */
-  CPassiveScalarSolver(void);
+  CFlameletSolver(void);
   
   /*!
    * \overload
@@ -62,13 +63,13 @@ public:
    * \param[in] iMesh - Index of the mesh in multigrid computations.
    * \param[in] FluidModel
    */
-  CPassiveScalarSolver(CGeometry *geometry, CConfig *config,
-                       unsigned short iMesh);
+  CFlameletSolver(CGeometry *geometry, CConfig *config,
+                          unsigned short iMesh);
   
   /*!
    * \brief Destructor of the class.
    */
-  ~CPassiveScalarSolver(void);
+  ~CFlameletSolver(void);
   
   /*!
    * \brief Restart residual and compute gradients.
@@ -134,7 +135,19 @@ public:
                        CNumerics *numerics, CNumerics *second_numerics,
                        CConfig *config, unsigned short iMesh);
 
-    /*!
+  /*!
+   * \brief Store the names of scalar variables that are being solved
+   * \param[out] stores the names in vector scalar_names
+   */
+  inline void SetScalarNames(vector<string> val_names) {scalar_names = val_names;}
+  
+  /*!
+   * \brief Get the name of scalar variable requested
+   * \param[out] returns the name of scalar variable stored in the vector scalar_names
+   */
+  inline string GetScalarName(int val_ivar) {return scalar_names[val_ivar];}
+
+  /*!
    * \brief Impose the Navier-Stokes wall boundary condition.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] solver_container - Container vector with all the solutions.

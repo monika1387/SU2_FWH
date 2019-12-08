@@ -1,8 +1,8 @@
 /*!
- * \file CScalarVariable.cpp
- * \brief Definition of the scalar equation variables at each vertex.
- * \author T. Economon
- * \version 6.1.0 "Falcon"
+ * \file CTrapezoidalMap.hpp
+ * \brief Declaration and inlines for the trapezoidal map class.
+ * \author D. Mayer, T. Economon, N.Beishuizen, G. Tamanampudi
+ * \version 6.2.0 "Falcon"
  *
  * The current SU2 release has been coordinated by the
  * SU2 International Developers Society <www.su2devsociety.org>
@@ -18,7 +18,7 @@
  *  - Prof. Edwin van der Weide's group at the University of Twente.
  *  - Lab. of New Concepts in Aeronautics at Tech. Institute of Aeronautics.
  *
- * Copyright 2012-2018, Francisco D. Palacios, Thomas D. Economon,
+ * Copyright 2012-2019, Francisco D. Palacios, Thomas D. Economon,
  *                      Tim Albring, and the SU2 contributors.
  *
  * SU2 is free software; you can redistribute it and/or
@@ -35,44 +35,44 @@
  * License along with SU2. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../include/variables/CScalarVariable.hpp"
+#pragma once
 
-CScalarVariable::CScalarVariable(unsigned long npoint,
-                                 unsigned long ndim,
-                                 unsigned long nvar,
-                                 CConfig       *config)
-: CVariable(npoint, ndim, nvar, config) {
-  
-  /*--- Gradient related fields ---*/
-  
-  Gradient.resize(nPoint,nVar,nDim,0.0);
-  
-  if (config->GetKind_Gradient_Method() == WEIGHTED_LEAST_SQUARES) {
-    Rmatrix.resize(nPoint,nDim,nDim,0.0);
-  }
-  
-  /*--- Allocate residual structures ---*/
-  
-  Res_TruncError.resize(nPoint,nVar) = su2double(0.0);
-  
-  /*--- Always allocate the slope limiter, and the auxiliar
-   variables (check the logic - JST with 2nd order Turb model) ---*/
-  
-  Limiter.resize(nPoint,nVar) = su2double(0.0);
-  Solution_Max.resize(nPoint,nVar) = su2double(0.0);
-  Solution_Min.resize(nPoint,nVar) = su2double(0.0);
-  
-  Delta_Time.resize(nPoint) = su2double(0.0);
-  
-  /*--- Allocate space for the mass diffusivity. ---*/
-  
-  Diffusivity.resize(nPoint,nVar) = su2double(0.0);
-  
-  /*--- If axisymmetric and viscous, we need an auxiliary gradient. ---*/
-  
-  if (config->GetAxisymmetric() && config->GetViscous()) {
-    AuxVar.resize(nPoint);
-    Grad_AuxVar.resize(nPoint,nDim);
-  }
+#include <vector>
 
-}
+using namespace std;
+
+class CTrapezoidalMap {
+protected:
+
+  /* The unique values of x which exist in the data */
+  vector< su2double > unique_bands_x;
+
+  vector< vector< su2double > > edge_limits_x;
+  vector< vector< su2double > > edge_limits_y;
+
+  vector< vector< unsigned long > > const *edge_to_triangle;
+
+  /* The value that each edge which intersects the band takes within that
+   * same band. Used to sort the edges */
+  vector< vector< pair< su2double, unsigned long > > > y_edge_at_band_mid;
+
+  
+public:
+  CTrapezoidalMap();
+
+  CTrapezoidalMap(const vector< su2double >                &samples_x,
+                  const vector< su2double >                &samples_y,
+                  const vector< vector< unsigned long > >  &edges,
+                  const vector< vector< unsigned long > >  &edge_to_triangle);
+
+  ~CTrapezoidalMap(void);
+
+  void Search_Band_For_Edge(su2double x, su2double y);
+
+  unsigned long GetTriangle(su2double val_x, su2double val_y);
+
+  pair<unsigned long, unsigned long> GetBand(su2double x);
+  pair<unsigned long, unsigned long> GetEdges(
+      pair<unsigned long, unsigned long> band, su2double val_x,
+      su2double val_y);
+};

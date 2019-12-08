@@ -4498,11 +4498,22 @@ public:
   virtual void ComputeVerificationError(CGeometry *geometry, CConfig *config);
 
   /*!
+   * \brief Store the names of scalar variables that are being solved
+   * \param[out] stores the names in vector scalar_names
+   */
+  virtual void SetScalarNames(vector<string> val_names);
+
+  /*!
+   * \brief Get the name of scalar variable requested
+   * \param[out] returns the name of scalar variable stored in the vector scalar_names
+   */
+  virtual string GetScalarName(int val_ivar);
+
+  /*!
    * \brief Initialize the vertex traction containers at the vertices.
    * \param[in] geometry - Geometrical definition.
    * \param[in] config   - Definition of the particular problem.
    */
-
   inline void InitVertexTractionContainer(CGeometry *geometry, CConfig *config){
 
     unsigned long iVertex;

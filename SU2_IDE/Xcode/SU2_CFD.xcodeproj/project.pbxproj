@@ -125,6 +125,9 @@
 		E90B501222DFE043000ED392 /* CSysSolve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E90B500E22DFE043000ED392 /* CSysSolve.cpp */; };
 		E90D35F7203F9C5800A3290D /* fluid_model_inc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E90D35F6203F9C5800A3290D /* fluid_model_inc.cpp */; };
 		E9225F761FCBC36D002F3682 /* solver_adjoint_elasticity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9225F741FCBC36D002F3682 /* solver_adjoint_elasticity.cpp */; };
+		E92D8D7A2301DF8F00130878 /* CTrapezoidalMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E92D8D762301DF8E00130878 /* CTrapezoidalMap.cpp */; };
+		E92D8D7B2301DF8F00130878 /* CFileReaderLUT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E92D8D772301DF8E00130878 /* CFileReaderLUT.cpp */; };
+		E92D8D7D2301DF8F00130878 /* CLookUpTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E92D8D792301DF8E00130878 /* CLookUpTable.cpp */; };
 		E941BB8E1B71D0D0005C6C06 /* solver_adjoint_discrete.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E941BB8D1B71D0D0005C6C06 /* solver_adjoint_discrete.cpp */; };
 		E941BB941B71D124005C6C06 /* mpi_structure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E941BB911B71D124005C6C06 /* mpi_structure.cpp */; };
 		E96766A4237B31E0009FBEE1 /* numerics_direct_scalar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96766A3237B31E0009FBEE1 /* numerics_direct_scalar.cpp */; };
@@ -132,10 +135,13 @@
 		E96766A9237B4EE9009FBEE1 /* CPassiveScalarVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96766A8237B4EE9009FBEE1 /* CPassiveScalarVariable.cpp */; };
 		E96766AD237BB889009FBEE1 /* CScalarSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96766AB237BB888009FBEE1 /* CScalarSolver.cpp */; };
 		E96766AE237BB889009FBEE1 /* CPassiveScalarSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96766AC237BB889009FBEE1 /* CPassiveScalarSolver.cpp */; };
+		E96766BB2380FC45009FBEE1 /* CFlameletVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96766BA2380FC45009FBEE1 /* CFlameletVariable.cpp */; };
+		E96766BD2380FC5D009FBEE1 /* CFlameletSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96766BC2380FC5D009FBEE1 /* CFlameletSolver.cpp */; };
 		E96FAF102189FE9C0046BF5D /* blas_structure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96FAF0F2189FE9C0046BF5D /* blas_structure.cpp */; };
 		E96FAF142189FECA0046BF5D /* graph_coloring_structure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96FAF112189FECA0046BF5D /* graph_coloring_structure.cpp */; };
 		E96FAF152189FECA0046BF5D /* fem_gauss_jacobi_quadrature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96FAF122189FECA0046BF5D /* fem_gauss_jacobi_quadrature.cpp */; };
 		E96FAF162189FECA0046BF5D /* fem_cgns_elements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E96FAF132189FECA0046BF5D /* fem_cgns_elements.cpp */; };
+		E97C63A6238131D2003336A6 /* CFluidFlamelet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E97C63A5238131D1003336A6 /* CFluidFlamelet.cpp */; };
 		E9C8307F2061E60E004417A9 /* fem_geometry_structure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9C830752061E60E004417A9 /* fem_geometry_structure.cpp */; };
 		E9C830802061E60E004417A9 /* fem_integration_rules.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9C830762061E60E004417A9 /* fem_integration_rules.cpp */; };
 		E9C830812061E60E004417A9 /* fem_standard_element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9C830772061E60E004417A9 /* fem_standard_element.cpp */; };
@@ -406,6 +412,10 @@
 		E91CAD081B8C117A00EE3FCC /* inv_NACA0012.cfg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = inv_NACA0012.cfg; sourceTree = "<group>"; };
 		E91CAD091B8C117A00EE3FCC /* mesh_NACA0012_inv.su2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mesh_NACA0012_inv.su2; sourceTree = "<group>"; };
 		E9225F741FCBC36D002F3682 /* solver_adjoint_elasticity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = solver_adjoint_elasticity.cpp; path = ../../SU2_CFD/src/solver_adjoint_elasticity.cpp; sourceTree = "<group>"; };
+		E92D8D762301DF8E00130878 /* CTrapezoidalMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CTrapezoidalMap.cpp; path = ../../SU2_CFD/src/CTrapezoidalMap.cpp; sourceTree = "<group>"; };
+		E92D8D772301DF8E00130878 /* CFileReaderLUT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CFileReaderLUT.cpp; path = ../../SU2_CFD/src/CFileReaderLUT.cpp; sourceTree = "<group>"; };
+		E92D8D792301DF8E00130878 /* CLookUpTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CLookUpTable.cpp; path = ../../SU2_CFD/src/CLookUpTable.cpp; sourceTree = "<group>"; };
+		E92D8D7E2301DFAA00130878 /* CTrapezoidalMap.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CTrapezoidalMap.hpp; path = ../../SU2_CFD/include/CTrapezoidalMap.hpp; sourceTree = "<group>"; };
 		E941BB8D1B71D0D0005C6C06 /* solver_adjoint_discrete.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = solver_adjoint_discrete.cpp; path = ../../SU2_CFD/src/solver_adjoint_discrete.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		E941BB911B71D124005C6C06 /* mpi_structure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = mpi_structure.cpp; path = ../../Common/src/mpi_structure.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		E941BB951B71D1AB005C6C06 /* datatype_structure.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = datatype_structure.hpp; path = ../../Common/include/datatype_structure.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -427,6 +437,13 @@
 		E96766AC237BB889009FBEE1 /* CPassiveScalarSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CPassiveScalarSolver.cpp; path = ../../SU2_CFD/src/solvers/CPassiveScalarSolver.cpp; sourceTree = "<group>"; };
 		E96766AF237BB917009FBEE1 /* CPassiveScalarSolver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CPassiveScalarSolver.hpp; path = ../../SU2_CFD/include/solvers/CPassiveScalarSolver.hpp; sourceTree = "<group>"; };
 		E96766B0237BB918009FBEE1 /* CScalarSolver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CScalarSolver.hpp; path = ../../SU2_CFD/include/solvers/CScalarSolver.hpp; sourceTree = "<group>"; };
+		E96766B2237F8D5C009FBEE1 /* CFluidFlamelet.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CFluidFlamelet.hpp; path = ../../SU2_CFD/include/CFluidFlamelet.hpp; sourceTree = "<group>"; };
+		E96766B3237F8D5C009FBEE1 /* CLookUpTable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CLookUpTable.hpp; path = ../../SU2_CFD/include/CLookUpTable.hpp; sourceTree = "<group>"; };
+		E96766B4237F8D5D009FBEE1 /* CFileReaderLUT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CFileReaderLUT.hpp; path = ../../SU2_CFD/include/CFileReaderLUT.hpp; sourceTree = "<group>"; };
+		E96766B82380FC06009FBEE1 /* CFlameletSolver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CFlameletSolver.hpp; path = ../../SU2_CFD/include/solvers/CFlameletSolver.hpp; sourceTree = "<group>"; };
+		E96766B92380FC14009FBEE1 /* CFlameletVariable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CFlameletVariable.hpp; path = ../../SU2_CFD/include/variables/CFlameletVariable.hpp; sourceTree = "<group>"; };
+		E96766BA2380FC45009FBEE1 /* CFlameletVariable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CFlameletVariable.cpp; path = ../../SU2_CFD/src/variables/CFlameletVariable.cpp; sourceTree = "<group>"; };
+		E96766BC2380FC5D009FBEE1 /* CFlameletSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CFlameletSolver.cpp; path = ../../SU2_CFD/src/solvers/CFlameletSolver.cpp; sourceTree = "<group>"; };
 		E96FAF0F2189FE9C0046BF5D /* blas_structure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = blas_structure.cpp; path = ../../Common/src/blas_structure.cpp; sourceTree = "<group>"; };
 		E96FAF112189FECA0046BF5D /* graph_coloring_structure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graph_coloring_structure.cpp; path = ../../Common/src/graph_coloring_structure.cpp; sourceTree = "<group>"; };
 		E96FAF122189FECA0046BF5D /* fem_gauss_jacobi_quadrature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fem_gauss_jacobi_quadrature.cpp; path = ../../Common/src/fem_gauss_jacobi_quadrature.cpp; sourceTree = "<group>"; };
@@ -437,6 +454,7 @@
 		E96FAF1C2189FF620046BF5D /* fem_cgns_elements.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = fem_cgns_elements.hpp; path = ../../Common/include/fem_cgns_elements.hpp; sourceTree = "<group>"; };
 		E96FAF1D2189FF620046BF5D /* fem_gauss_jacobi_quadrature.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = fem_gauss_jacobi_quadrature.hpp; path = ../../Common/include/fem_gauss_jacobi_quadrature.hpp; sourceTree = "<group>"; };
 		E97B6C8117F941800008255B /* config_template.cfg */ = {isa = PBXFileReference; lastKnownFileType = text; name = config_template.cfg; path = ../../config_template.cfg; sourceTree = "<group>"; };
+		E97C63A5238131D1003336A6 /* CFluidFlamelet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CFluidFlamelet.cpp; path = ../../SU2_CFD/src/CFluidFlamelet.cpp; sourceTree = "<group>"; };
 		E9C2835022A701B5007B4E59 /* CMMSNSTwoHalfSpheresSolution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CMMSNSTwoHalfSpheresSolution.hpp; path = ../../Common/include/toolboxes/MMS/CMMSNSTwoHalfSpheresSolution.hpp; sourceTree = "<group>"; };
 		E9C2835122A701B5007B4E59 /* CMMSNSTwoHalfCirclesSolution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CMMSNSTwoHalfCirclesSolution.hpp; path = ../../Common/include/toolboxes/MMS/CMMSNSTwoHalfCirclesSolution.hpp; sourceTree = "<group>"; };
 		E9C2835222A701B5007B4E59 /* CMMSIncEulerSolution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CMMSIncEulerSolution.hpp; path = ../../Common/include/toolboxes/MMS/CMMSIncEulerSolution.hpp; sourceTree = "<group>"; };
@@ -535,6 +553,7 @@
 			isa = PBXGroup;
 			children = (
 				E9D6EE662317B80600618E36 /* CDiscAdjMeshSolver.cpp */,
+				E96766BC2380FC5D009FBEE1 /* CFlameletSolver.cpp */,
 				E9D6EE652317B80500618E36 /* CMeshSolver.cpp */,
 				E96766AC237BB889009FBEE1 /* CPassiveScalarSolver.cpp */,
 				E96766AB237BB888009FBEE1 /* CScalarSolver.cpp */,
@@ -661,9 +680,14 @@
 				EB14FF9D22F790720045FB27 /* CDriver.hpp */,
 				E9D6EE5B23165FE400618E36 /* CDummyDriver.hpp */,
 				E9D6EE792317B8A100618E36 /* CFEAMeshElasticity.hpp */,
+				E96766B4237F8D5D009FBEE1 /* CFileReaderLUT.hpp */,
+				E96766B82380FC06009FBEE1 /* CFlameletSolver.hpp */,
+				E96766B92380FC14009FBEE1 /* CFlameletVariable.hpp */,
+				E96766B2237F8D5C009FBEE1 /* CFluidFlamelet.hpp */,
 				E9C2835A22A701B6007B4E59 /* CIncTGVSolution.hpp */,
 				E9C2835722A701B5007B4E59 /* CInviscidVortexSolution.hpp */,
 				E9E51AD722FA314F00773E0C /* CLinearPartitioner.hpp */,
+				E96766B3237F8D5C009FBEE1 /* CLookUpTable.hpp */,
 				E9D6EE7C2317B8CC00618E36 /* CMeshElement.hpp */,
 				E9E51ADA22FA604600773E0C /* CMeshReaderFVM.hpp */,
 				E9D6EE7B2317B8B000618E36 /* CMeshSolver.hpp */,
@@ -684,6 +708,7 @@
 				EB14FF9E22F790720045FB27 /* CSinglezoneDriver.hpp */,
 				E9D6EE5E2316655400618E36 /* CSU2ASCIIMeshReaderFVM.hpp */,
 				E9C2835922A701B5007B4E59 /* CTGVSolution.hpp */,
+				E92D8D7E2301DFAA00130878 /* CTrapezoidalMap.hpp */,
 				E9C2835422A701B5007B4E59 /* CUserDefinedSolution.hpp */,
 				E9C2835522A701B5007B4E59 /* CVerificationSolution.hpp */,
 				E941BB951B71D1AB005C6C06 /* datatype_structure.hpp */,
@@ -757,6 +782,7 @@
 		05F108951978D28F00F2F288 /* FluidModel */ = {
 			isa = PBXGroup;
 			children = (
+				E97C63A5238131D1003336A6 /* CFluidFlamelet.cpp */,
 				E90D35F6203F9C5800A3290D /* fluid_model_inc.cpp */,
 				05F108961978D2AE00F2F288 /* fluid_model_pig.cpp */,
 				05F108971978D2AE00F2F288 /* fluid_model_ppr.cpp */,
@@ -801,16 +827,19 @@
 				E9D85B4B1C3F1B9E0077122F /* ad_structure.cpp */,
 				E9FDF6E91D2DD0560066E49C /* adt_structure.cpp */,
 				E96FAF0F2189FE9C0046BF5D /* blas_structure.cpp */,
+				E92D8D772301DF8E00130878 /* CFileReaderLUT.cpp */,
 				E9E51AD522FA313800773E0C /* CLinearPartitioner.cpp */,
+				E92D8D792301DF8E00130878 /* CLookUpTable.cpp */,
 				05E6DB8917EB61E600FA1F7E /* config_structure.cpp */,
+				E92D8D762301DF8E00130878 /* CTrapezoidalMap.cpp */,
 				05E6DBBC17EB62A000FA1F7E /* definition_structure.cpp */,
 				EB14FF9322F790320045FB27 /* Driver */,
 				05AF9F1C1BE1E1770062E1F1 /* FEA */,
 				05F108951978D28F00F2F288 /* FluidModel */,
 				0530E57317FDF97F00733CE8 /* Geometry */,
 				052D51AA17A22E15003BE8B2 /* Integration */,
-				05E6DBC017EB62A100FA1F7E /* iteration_structure.cpp */,
 				4040B249235FB87300843C83 /* Interfaces */,
+				05E6DBC017EB62A100FA1F7E /* iteration_structure.cpp */,
 				E90B501322DFE060000ED392 /* LinearSolver */,
 				E90B4FE522DFDF9C000ED392 /* MMS */,
 				E941BB911B71D124005C6C06 /* mpi_structure.cpp */,
@@ -972,6 +1001,7 @@
 				E90B4FEF22DFDFE3000ED392 /* CEulerVariable.cpp */,
 				E90B4FF622DFDFE4000ED392 /* CFEABoundVariable.cpp */,
 				E90B4FF422DFDFE4000ED392 /* CFEAVariable.cpp */,
+				E96766BA2380FC45009FBEE1 /* CFlameletVariable.cpp */,
 				E90B4FEE22DFDFE3000ED392 /* CHeatFVMVariable.cpp */,
 				E90B4FE722DFDFE2000ED392 /* CIncEulerVariable.cpp */,
 				E90B4FED22DFDFE3000ED392 /* CIncNSVariable.cpp */,
@@ -1147,6 +1177,7 @@
 				E90B4FE222DFDF94000ED392 /* CMMSNSTwoHalfCirclesSolution.cpp in Sources */,
 				E90B500722DFDFE4000ED392 /* CNSVariable.cpp in Sources */,
 				05E6DB9217EB61E600FA1F7E /* config_structure.cpp in Sources */,
+				E97C63A6238131D2003336A6 /* CFluidFlamelet.cpp in Sources */,
 				E96FAF142189FECA0046BF5D /* graph_coloring_structure.cpp in Sources */,
 				E96766A9237B4EE9009FBEE1 /* CPassiveScalarVariable.cpp in Sources */,
 				4040B27F235FBFF200843C83 /* CTecplotBinaryFileWriter.cpp in Sources */,
@@ -1171,9 +1202,11 @@
 				E96766A4237B31E0009FBEE1 /* numerics_direct_scalar.cpp in Sources */,
 				4040B25E235FBEFD00843C83 /* CDisplacementsInterfaceLegacy.cpp in Sources */,
 				E90B4FDF22DFDF94000ED392 /* CInviscidVortexSolution.cpp in Sources */,
+				E96766BD2380FC5D009FBEE1 /* CFlameletSolver.cpp in Sources */,
 				4040B280235FBFF200843C83 /* CSU2FileWriter.cpp in Sources */,
 				05E6DB9917EB61E600FA1F7E /* primal_grid_structure.cpp in Sources */,
 				E90B4FDC22DFDF94000ED392 /* CIncTGVSolution.cpp in Sources */,
+				E92D8D7D2301DF8F00130878 /* CLookUpTable.cpp in Sources */,
 				05AF9F201BE1E1830062E1F1 /* element_linear.cpp in Sources */,
 				E90B500622DFDFE4000ED392 /* CFEAVariable.cpp in Sources */,
 				05F8F2682008A1C8000FEA01 /* python_wrapper_structure.cpp in Sources */,
@@ -1231,6 +1264,7 @@
 				E90B4FFA22DFDFE4000ED392 /* CAdjTurbVariable.cpp in Sources */,
 				E90B4FD822DFDF94000ED392 /* CMMSIncNSSolution.cpp in Sources */,
 				4040B267235FBEFD00843C83 /* CInterface.cpp in Sources */,
+				E96766BB2380FC45009FBEE1 /* CFlameletVariable.cpp in Sources */,
 				E9D6EE752317B88F00618E36 /* CDiscAdjFEABoundVariable.cpp in Sources */,
 				E9D885A92303F8E400917362 /* CBoxMeshReaderFVM.cpp in Sources */,
 				4040B284235FBFF200843C83 /* CTecplotFileWriter.cpp in Sources */,
@@ -1241,10 +1275,12 @@
 				403426ED235F8E29005B5215 /* CDiscAdjMultizoneDriver.cpp in Sources */,
 				E9D6EE6A2317B86300618E36 /* CFEAMeshElasticity.cpp in Sources */,
 				E96FAF102189FE9C0046BF5D /* blas_structure.cpp in Sources */,
+				E92D8D7B2301DF8F00130878 /* CFileReaderLUT.cpp in Sources */,
 				E90B4FFC22DFDFE4000ED392 /* CDiscAdjVariable.cpp in Sources */,
 				05E6DC1817EB62A100FA1F7E /* numerics_structure.cpp in Sources */,
 				05E6DC1917EB62A100FA1F7E /* numerics_template.cpp in Sources */,
 				E9C830822061E60E004417A9 /* fem_wall_distance.cpp in Sources */,
+				E92D8D7A2301DF8F00130878 /* CTrapezoidalMap.cpp in Sources */,
 				E90B4FF922DFDFE4000ED392 /* CIncEulerVariable.cpp in Sources */,
 				E90B500122DFDFE4000ED392 /* CEulerVariable.cpp in Sources */,
 				E90B501022DFE043000ED392 /* CSysMatrix.cpp in Sources */,

@@ -39,6 +39,7 @@
 #include "../../Common/include/toolboxes/printing_toolbox.hpp"
 #include "../include/variables/CIncEulerVariable.hpp"
 #include "../include/variables/CIncNSVariable.hpp"
+#include "../include/CFluidFlamelet.hpp"
 
 CIncEulerSolver::CIncEulerSolver(void) : CSolver() {
   /*--- Basic array initialization ---*/
@@ -827,6 +828,7 @@ void CIncEulerSolver::SetNondimensionalization(CConfig *config, unsigned short i
   ModVel_FreeStream = sqrt(ModVel_FreeStream); config->SetModVel_FreeStream(ModVel_FreeStream);
 
   /*--- Depending on the density model chosen, select a fluid model. ---*/
+  su2double dummy[2] = {0,0};
 
   switch (config->GetKind_FluidModel()) {
 
@@ -859,6 +861,19 @@ void CIncEulerSolver::SetNondimensionalization(CConfig *config, unsigned short i
       }
       FluidModel->SetTDState_T(Temperature_FreeStream);
       Pressure_Thermodynamic = FluidModel->GetPressure();
+      config->SetPressure_Thermodynamic(Pressure_Thermodynamic);
+      break;
+
+    case FLAMELET_FLUID_MODEL:
+
+      config->SetGas_Constant(UNIVERSAL_GAS_CONSTANT/(config->GetMolecular_Weight()/1000.0));
+      
+      Pressure_Thermodynamic = Density_FreeStream*Temperature_FreeStream*config->GetGas_Constant();
+
+      FluidModel = new CFluidFlamelet(config,Pressure_Thermodynamic);
+
+      FluidModel->SetTDState_T(Temperature_FreeStream,dummy);
+
       config->SetPressure_Thermodynamic(Pressure_Thermodynamic);
       break;
 
@@ -1020,6 +1035,10 @@ void CIncEulerSolver::SetNondimensionalization(CConfig *config, unsigned short i
       FluidModel->SetTDState_T(Temperature_FreeStreamND);
       break;
       
+    case FLAMELET_FLUID_MODEL:
+      FluidModel = new CFluidFlamelet(config,Pressure_Thermodynamic);
+      FluidModel->SetTDState_T(Temperature_FreeStream,dummy);
+      break;
   }
   
   Energy_FreeStreamND = FluidModel->GetStaticEnergy() + 0.5*ModVel_FreeStreamND*ModVel_FreeStreamND;
@@ -1398,7 +1417,7 @@ void CIncEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solve
         /* Set the pointers to the coordinates and solution of this DOF. */
         const su2double *coor = geometry[iMesh]->node[iPoint]->GetCoord();
         su2double *solDOF     = solver_container[iMesh][FLOW_SOL]->GetNodes()->GetSolution(iPoint);
-        
+
         /* Set the solution in this DOF to the initial condition provided by
            the verification solution class. This can be the exact solution,
            but this is not necessary. */
@@ -1995,10 +2014,39 @@ void CIncEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_cont
   bool boussinesq     = (config->GetKind_DensityModel() == BOUSSINESQ);
   bool viscous        = config->GetViscous();
 
+  unsigned short flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
 
   /*--- Initialize the source residual to zero ---*/
 
-  for (iVar = 0; iVar < nVar; iVar++) Residual[iVar] = 0.0;
+  for (iVar = 0; iVar < nVar; iVar++) 
+    Residual[iVar] = 0.0;
+
+  if (flamelet_thermo_system != ADIABATIC) {
+
+      su2double source=73;
+      su2double temperature_dummy=73;
+      su2double scalars[2] = {73,37};
+      CFluidModel *FluidModel_local;
+
+      for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+
+        /*--- Compute the production term. ---*/
+
+        scalars[0]       = solver_container[SCALAR_SOL]->GetNodes()->GetSolution(iPoint, 0);
+        scalars[1]       = solver_container[SCALAR_SOL]->GetNodes()->GetSolution(iPoint, 1);
+        FluidModel_local = solver_container[FLOW_SOL]->GetFluidModel();
+
+        FluidModel_local->SetTDState_T(temperature_dummy, scalars);
+
+        source = FluidModel_local->GetSourceEnergy();
+
+        /*---  set energy source for paraview viewing ---*/
+
+        nodes->SetSourceEnergy(iPoint, source);
+    }
+  }
+
+
 
   if (body_force) {
 
@@ -4318,9 +4366,6 @@ void CIncEulerSolver::Evaluate_ObjFunc(CConfig *config) {
     case SURFACE_PRESSURE_DROP:
       Total_ComboObj+=Weight_ObjFunc*config->GetSurface_PressureDrop(0);
       break;
-    case CUSTOM_OBJFUNC:
-      Total_ComboObj+=Weight_ObjFunc*Total_Custom_ObjFunc;
-      break;
     default:
       break;
   }
@@ -4382,6 +4427,8 @@ void CIncEulerSolver::SetPreconditioner(CConfig *config, unsigned long iPoint) {
   bool implicit         = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
   bool energy           = config->GetEnergy_Equation();
 
+  unsigned short flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
+
   /*--- Access the primitive variables at this node. ---*/
 
   Density     = nodes->GetDensity(iPoint);
@@ -4415,14 +4462,19 @@ void CIncEulerSolver::SetPreconditioner(CConfig *config, unsigned long iPoint) {
     for (iDim = 0; iDim < nDim; iDim++)
       Preconditioner[iDim+1][0] = Velocity[iDim]/BetaInc2;
 
-    if (energy) Preconditioner[nDim+1][0] = Cp*Temperature/BetaInc2;
-    else        Preconditioner[nDim+1][0] = 0.0;
+    // FIXME daniel: Remove flamelet_thermosystem
+    if (energy && flamelet_thermo_system != ADIABATIC) 
+      Preconditioner[nDim+1][0] = Cp*Temperature/BetaInc2;
+    else        
+      Preconditioner[nDim+1][0] = 0.0;
 
     for (jDim = 0; jDim < nDim; jDim++) {
       Preconditioner[0][jDim+1] = 0.0;
       for (iDim = 0; iDim < nDim; iDim++) {
-        if (iDim == jDim) Preconditioner[iDim+1][jDim+1] = Density;
-        else Preconditioner[iDim+1][jDim+1] = 0.0;
+        if (iDim == jDim) 
+          Preconditioner[iDim+1][jDim+1] = Density;
+        else 
+          Preconditioner[iDim+1][jDim+1] = 0.0;
       }
       Preconditioner[nDim+1][jDim+1] = 0.0;
     }
@@ -4431,8 +4483,10 @@ void CIncEulerSolver::SetPreconditioner(CConfig *config, unsigned long iPoint) {
     for (iDim = 0; iDim < nDim; iDim++)
       Preconditioner[iDim+1][nDim+1] = Velocity[iDim]*dRhodT;
 
-    if (energy) Preconditioner[nDim+1][nDim+1] = Cp*(dRhodT*Temperature + Density);
-    else        Preconditioner[nDim+1][nDim+1] = 1.0;
+    if (energy && flamelet_thermo_system != ADIABATIC) 
+      Preconditioner[nDim+1][nDim+1] = Cp*(dRhodT*Temperature + Density);
+    else
+      Preconditioner[nDim+1][nDim+1] = 1.0;
 
   } else {
 
@@ -4445,8 +4499,10 @@ void CIncEulerSolver::SetPreconditioner(CConfig *config, unsigned long iPoint) {
     for (iDim = 0; iDim < nDim; iDim ++)
       Preconditioner[iDim+1][0] = -1.0*Velocity[iDim]/Density;
 
-    if (energy) Preconditioner[nDim+1][0] = -1.0*Temperature/Density;
-    else        Preconditioner[nDim+1][0] = 0.0;
+    if (energy && flamelet_thermo_system != ADIABATIC)
+      Preconditioner[nDim+1][0] = -1.0*Temperature/Density;
+    else
+      Preconditioner[nDim+1][0] = 0.0;
 
 
     for (jDim = 0; jDim < nDim; jDim++) {
@@ -4462,8 +4518,10 @@ void CIncEulerSolver::SetPreconditioner(CConfig *config, unsigned long iPoint) {
     for (iDim = 0; iDim < nDim; iDim ++)
       Preconditioner[iDim+1][nDim+1] = 0.0;
 
-    if (energy) Preconditioner[nDim+1][nDim+1] = oneOverCp/Density;
-    else        Preconditioner[nDim+1][nDim+1] = 0.0;
+    if (energy)
+      Preconditioner[nDim+1][nDim+1] = oneOverCp/Density;
+    else      
+      Preconditioner[nDim+1][nDim+1] = 0.0;
     
   }
   
@@ -5575,10 +5633,9 @@ void CIncEulerSolver::BC_Custom(CGeometry      *geometry,
     }
     
   } else {
-    
+  
     /* The user must specify the custom BC's here. */
     SU2_MPI::Error("Implement customized boundary conditions here.", CURRENT_FUNCTION);
-    
   }
   
 }
@@ -5599,6 +5656,7 @@ void CIncEulerSolver::SetResidual_DualTime(CGeometry *geometry, CSolver **solver
   
   bool implicit = (config->GetKind_TimeIntScheme_Flow() == EULER_IMPLICIT);
   bool energy   = config->GetEnergy_Equation();
+  unsigned short flamelet_thermo_system = config->GetKind_FlameletThermoSystem();
   
   /*--- Store the physical time step ---*/
   
@@ -5670,7 +5728,7 @@ void CIncEulerSolver::SetResidual_DualTime(CGeometry *geometry, CSolver **solver
                             +1.0*U_time_nM1[iVar])*Volume_nP1 / (2.0*TimeStep);
       }
       
-      if (!energy) Residual[nDim+1] = 0.0;
+      if (!energy || flamelet_thermo_system == ADIABATIC) Residual[nDim+1] = 0.0;
       
       /*--- Store the residual and compute the Jacobian contribution due
        to the dual time source term. ---*/
@@ -5695,7 +5753,7 @@ void CIncEulerSolver::SetResidual_DualTime(CGeometry *geometry, CSolver **solver
           }
         }
 
-        if (!energy) {
+        if (!energy || flamelet_thermo_system == ADIABATIC) {
             for (iVar = 0; iVar < nVar; iVar++) {
               Jacobian_i[iVar][nDim+1] = 0.0;
               Jacobian_i[nDim+1][iVar] = 0.0;
@@ -8031,16 +8089,16 @@ void CIncNSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
   /*--- Update the total coefficients per surface (note that all the nodes have the same value)---*/
 
   for (iMarker_Monitoring = 0; iMarker_Monitoring < config->GetnMarker_Monitoring(); iMarker_Monitoring++) {
-    Surface_CL[iMarker_Monitoring]      += Surface_CL_Visc[iMarker_Monitoring];
-    Surface_CD[iMarker_Monitoring]      += Surface_CD_Visc[iMarker_Monitoring];
-    Surface_CSF[iMarker_Monitoring] += Surface_CSF_Visc[iMarker_Monitoring];
-    Surface_CEff[iMarker_Monitoring]       = Surface_CL[iMarker_Monitoring] / (Surface_CD[iMarker_Monitoring] + EPS);
-    Surface_CFx[iMarker_Monitoring]        += Surface_CFx_Visc[iMarker_Monitoring];
-    Surface_CFy[iMarker_Monitoring]        += Surface_CFy_Visc[iMarker_Monitoring];
-    Surface_CFz[iMarker_Monitoring]        += Surface_CFz_Visc[iMarker_Monitoring];
-    Surface_CMx[iMarker_Monitoring]        += Surface_CMx_Visc[iMarker_Monitoring];
-    Surface_CMy[iMarker_Monitoring]        += Surface_CMy_Visc[iMarker_Monitoring];
-    Surface_CMz[iMarker_Monitoring]        += Surface_CMz_Visc[iMarker_Monitoring];
+    Surface_CL  [iMarker_Monitoring] += Surface_CL_Visc[iMarker_Monitoring];
+    Surface_CD  [iMarker_Monitoring] += Surface_CD_Visc[iMarker_Monitoring];
+    Surface_CSF [iMarker_Monitoring] += Surface_CSF_Visc[iMarker_Monitoring];
+    Surface_CEff[iMarker_Monitoring]  = Surface_CL[iMarker_Monitoring] / (Surface_CD[iMarker_Monitoring] + EPS);
+    Surface_CFx [iMarker_Monitoring] += Surface_CFx_Visc[iMarker_Monitoring];
+    Surface_CFy [iMarker_Monitoring] += Surface_CFy_Visc[iMarker_Monitoring];
+    Surface_CFz [iMarker_Monitoring] += Surface_CFz_Visc[iMarker_Monitoring];
+    Surface_CMx [iMarker_Monitoring] += Surface_CMx_Visc[iMarker_Monitoring];
+    Surface_CMy [iMarker_Monitoring] += Surface_CMy_Visc[iMarker_Monitoring];
+    Surface_CMz [iMarker_Monitoring] += Surface_CMz_Visc[iMarker_Monitoring];
   }
 
 }
@@ -8119,7 +8177,7 @@ void CIncNSSolver::BC_HeatFlux_Wall(CGeometry *geometry, CSolver **solver_contai
         LinSysRes.SetBlock_Zero(iPoint, iDim+1);
       nodes->SetVel_ResTruncError_Zero(iPoint);
       
-      if (energy) {
+      if (energy && config->GetKind_FlameletThermoSystem() != ADIABATIC) {
 
         /*--- Apply a weak boundary condition for the energy equation.
         Compute the residual due to the prescribed heat flux. ---*/
@@ -8215,7 +8273,7 @@ void CIncNSSolver::BC_Isothermal_Wall(CGeometry *geometry, CSolver **solver_cont
         LinSysRes.SetBlock_Zero(iPoint, iDim+1);
       nodes->SetVel_ResTruncError_Zero(iPoint);
       
-      if (energy) {
+      if (energy && config->GetKind_FlameletThermoSystem() != ADIABATIC) {
 
         /*--- Compute dual grid area and boundary normal ---*/
         

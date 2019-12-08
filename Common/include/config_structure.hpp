@@ -201,6 +201,7 @@ private:
   nMarker_CHTInterface,     /*!< \brief Number of conjugate heat transfer interface markers. */
   nMarker_Dirichlet,				/*!< \brief Number of interface boundary markers. */
   nMarker_Inlet,					/*!< \brief Number of inlet flow markers. */
+  nMarker_Inlet_Scalar,   /*!< \brief Number of inlet scalar markers. */
   nMarker_Riemann,					/*!< \brief Number of Riemann flow markers. */
   nMarker_Giles,					/*!< \brief Number of Giles flow markers. */
   nRelaxFactor_Giles,                                   /*!< \brief Number of relaxation factors for Giles markers. */
@@ -247,6 +248,7 @@ private:
   *Marker_ActDiskOutlet,
   *Marker_Dirichlet,				/*!< \brief Interface boundaries markers. */
   *Marker_Inlet,					/*!< \brief Inlet flow markers. */
+  *Marker_Inlet_Scalar,   /*!< \brief Inlet Scalar markers. */
   *Marker_Riemann,					/*!< \brief Riemann markers. */
   *Marker_Giles,					/*!< \brief Giles markers. */
   *Marker_Shroud,                                       /*!< \brief Shroud markers. */
@@ -277,10 +279,11 @@ private:
   su2double *Giles_Var1, *Giles_Var2, *RelaxFactorAverage, *RelaxFactorFourier;    /*!< \brief Specified values for Giles BC. */
   su2double **Giles_FlowDir;  /*!< \brief Specified flow direction vector (unit vector) for Giles BC. */
   su2double *Inlet_Ptotal;    /*!< \brief Specified total pressures for inlet boundaries. */
+  su2double **Inlet_ScalarVal; /*!< \brief Specified scalar vector for inlet boundaries. */
   su2double **Inlet_FlowDir;  /*!< \brief Specified flow direction vector (unit vector) for inlet boundaries. */
   su2double *Inlet_Temperature;    /*!< \brief Specified temperatures for a supersonic inlet boundaries. */
   su2double *Inlet_Pressure;    /*!< \brief Specified static pressures for supersonic inlet boundaries. */
-  su2double **Inlet_Velocity;  /*!< \brief Specified flow velocity vectors for supersonic inlet boundaries. */
+  su2double **Inlet_Velocity;  /*!< \brief Specified flow velocity vectors for supersonic inlet boundaries. */  
   su2double *EngineInflow_Target;    /*!< \brief Specified fan face mach for nacelle boundaries. */
   su2double *Inflow_Mach;    /*!< \brief Specified fan face mach for nacelle boundaries. */
   su2double *Inflow_Pressure;    /*!< \brief Specified fan face mach for nacelle boundaries. */
@@ -461,6 +464,7 @@ private:
   Kind_InitOption,			/*!< \brief Kind of Init option to choose if initializing with Reynolds number or with thermodynamic conditions   */
   Kind_GasModel,				/*!< \brief Kind of the Gas Model. */
   Kind_DensityModel,				/*!< \brief Kind of the density model for incompressible flows. */
+  kind_flamelet_thermo_system,
   Kind_GridMovement,    /*!< \brief Kind of the static mesh movement. */
   *Kind_SurfaceMovement,    /*!< \brief Kind of the static mesh movement. */
   nKind_SurfaceMovement,    /*!< \brief Kind of the dynamic mesh movement. */  
@@ -731,6 +735,7 @@ private:
   unsigned short nRefOriginMoment_X,    /*!< \brief Number of X-coordinate moment computation origins. */
   nRefOriginMoment_Y,           /*!< \brief Number of Y-coordinate moment computation origins. */
   nRefOriginMoment_Z;           /*!< \brief Number of Z-coordinate moment computation origins. */
+  string file_name_lut;  /*!< \brief file name of the look up table. */
   unsigned short nMesh_Box_Size;
   short *Mesh_Box_Size;     /*!< \brief Array containing the number of grid points in the x-, y-, and z-directions for the analytic RECTANGLE and BOX grid formats. */
   su2double* Mesh_Box_Length;       /*!< \brief Array containing the length in the x-, y-, and z-directions for the analytic RECTANGLE and BOX grid formats. */
@@ -792,7 +797,7 @@ private:
   Inc_Density_Init,    /*!< \brief Initial density for incompressible flows. */
   *Inc_Velocity_Init,    /*!< \brief Initial velocity vector for incompressible flows. */
   Inc_Temperature_Init,    /*!< \brief Initial temperature for incompressible flows w/ heat transfer. */
-  Scalar_Init,    /*!< \brief Initial uniform value for scalar transport. */
+  *Scalar_Init,    /*!< \brief Initial uniform value for scalar transport. */
   Heat_Flux_Ref,  /*!< \brief Reference heat flux for non-dim. */
   Gas_Constant_Ref, /*!< \brief Reference specific gas constant. */
   Temperature_Critical,   /*!< \brief Critical Temperature for real fluid model.  */
@@ -997,6 +1002,7 @@ private:
   unsigned short Kind_RoeLowDiss;    /*!< \brief Kind of Roe scheme with low dissipation for unsteady flows. */
   bool QCR;                   /*!< \brief Spalart-Allmaras with Quadratic Constitutive Relation, 2000 version (SA-QCR2000) . */
   su2double *default_vel_inf, /*!< \brief Default freestream velocity array for the COption class. */
+  *default_scalar_init,
   *default_eng_cyl,           /*!< \brief Default engine box array for the COption class. */
   *default_eng_val,           /*!< \brief Default engine box array values for the COption class. */
   *default_cfl_adapt,         /*!< \brief Default CFL adapt param array for the COption class. */
@@ -1043,9 +1049,11 @@ private:
   su2double Restart_Bandwidth_Agg; /*!< \brief The aggregate of the bandwidth for writing binary restarts (to be averaged later). */
   su2double Max_Vel2; /*!< \brief The maximum velocity^2 in the domain for the incompressible preconditioner. */
   bool Scalar_Clipping;            /*!< \brief Boolean that activates clipping for scalar transport. */
-  su2double Scalar_Clipping_Max,   /*!< \brief Maximum value of clipping for scalar transport. */
-  Scalar_Clipping_Min;             /*!< \brief Minimum value of clipping for scalar transport. */
-  
+  su2double *Scalar_Clipping_Max,   /*!< \brief Maximum value of clipping for scalar transport. */
+  *Scalar_Clipping_Min;             /*!< \brief Minimum value of clipping for scalar transport. */
+  su2double flame_offset; /*!< \brief Flame offset for flamelet model initial conditions */
+  su2double flame_thickness;  /*!< \brief Flame thickness for flamelet model initial conditions */
+  su2double burnt_thickness;  /*!< \brief Thickness of burnt region for flamelet model initial conditions */
   bool topology_optimization; /*!< \brief If the structural solver should consider a variable density field to penalize element stiffness. */
   string top_optim_output_file; /*!< \brief File to where the derivatives w.r.t. element densities will be written to. */
   su2double simp_exponent; /*!< \brief Exponent for the density-based stiffness penalization of the SIMP method. */
@@ -1096,10 +1104,12 @@ private:
   bool Wrt_ZoneHist;            /*!< \brief Write the convergence history of each individual zone to file. */
   bool SpecialOutput,           /*!< \brief Determines if the special output is written. */
   Wrt_ForcesBreakdown;          /*!< \brief Determines if the forces breakdown file is written. */
-  string *ScreenOutput,    /*!< \brief Kind of the screen output. */
+  string *ScreenOutput,         /*!< \brief Kind of the screen output. */
   *HistoryOutput, *VolumeOutput;                  /*!< \brief Kind of the output printed to the history file. */
+  string *FlameletTableOutput;  /*!< \brief Kind of the flamelet table output to the solution file. */
   unsigned short nScreenOutput,         /*!< \brief Number of screen output variables (max: 6). */
   nHistoryOutput, nVolumeOutput;                       /*!< \brief Number of variables printed to the history file. */
+  unsigned short nFlameletTableOutput;  /*!< \brief Number of flamelet table variables printed to the solution file. */
   bool Multizone_Residual;      /*!< \brief Determines if memory should be allocated for the multizone residual. */
   
   bool using_uq;                /*!< \brief Using uncertainty quantification with SST model */
@@ -1342,6 +1352,14 @@ private:
     assert(option_map.find(name) == option_map.end());
     all_options.insert(pair<string, bool>(name, true));
     COptionBase* val = new COptionInlet(name, nMarker_Inlet, Marker_Inlet, Ttotal, Ptotal, FlowDir);
+    option_map.insert(pair<string, COptionBase *>(name, val));
+  }
+
+  void addInletScalarOption(const string name, unsigned short & nMarker_Inlet_Scalar, string * & Marker_Inlet_Scalar,
+                      su2double** & inlet_scalar_val) {
+    assert(option_map.find(name) == option_map.end());
+    all_options.insert(pair<string, bool>(name, true));
+    COptionBase* val = new COptionInletScalar(name, nMarker_Inlet_Scalar, Marker_Inlet_Scalar, inlet_scalar_val);
     option_map.insert(pair<string, COptionBase *>(name, val));
   }
   
@@ -2137,7 +2155,7 @@ public:
    * \brief Get the initial value for a scalar transport.
    * \return Initial value for scalar transport.
    */
-  su2double GetScalar_Init(void);
+  su2double* GetScalar_Init(void);
   
   /*!
    * \brief Get the flag for activating scalar transport clipping
@@ -2149,14 +2167,32 @@ public:
    * \brief Get the maximum bound for scalar transport clipping
    * \return Maximum value for scalar clipping
    */
-  su2double GetScalar_Clipping_Max(void);
+  su2double *GetScalar_Clipping_Max(void);
   
   /*!
    * \brief Get the minimum bound for scalar transport clipping
    * \return Minimum value for scalar clipping
    */
-  su2double GetScalar_Clipping_Min(void);
+  su2double *GetScalar_Clipping_Min(void);
   
+  /*!
+   * \brief Get the flame offset for flamelet mdoel initialization
+   * \return flame offset for flamelet mdoel initialization
+   */
+  su2double GetFlameOffset(void);
+
+    /*!
+   * \brief Get the flame thickness for flamelet mdoel initialization
+   * \return flame thickness for flamelet mdoel initialization
+   */
+  su2double GetFlameThickness(void);
+
+    /*!
+   * \brief Get the burnt region thickness for flamelet mdoel initialization
+   * \return flame thickness for flamelet mdoel initialization
+   */
+  su2double GetBurntThickness(void);
+
   /*!
    * \brief Get the Young's modulus of elasticity.
    * \return Value of the Young's modulus of elasticity.
@@ -2269,6 +2305,12 @@ public:
     */
   
   void Set_CrossTerm(bool needCrossTerm);
+
+  /**
+   * \brief Get the file name of the look up table
+   * \return File name of the look up table 
+   */
+  string GetFileNameLUT(void);
 
   /*!
    * \brief Get the name of the file with the element properties for structural problems.
@@ -3805,6 +3847,12 @@ public:
    * \return Density model option
    */
   unsigned short GetKind_DensityModel(void);
+  
+  /*!
+   * \brief Option to define the thermodynamic system for flamelet model calculations.
+   * \return Flamelet thermodynamics system we are using.
+   */
+  unsigned short GetKind_FlameletThermoSystem(void);
   
   /*!
    * \brief Flag for whether to solve the energy equation for incompressible flows.
@@ -6629,6 +6677,13 @@ public:
    * \return The total temperature.
    */
   su2double GetInlet_Ttotal(string val_index);
+
+    /*!
+   * \brief Get the scalar values at an inlet boundary.
+   * \param[in] val_index - Index corresponding to the inlet boundary.
+   * \return The inlet scalar values.
+   */
+  su2double* GetInlet_ScalarVal(string val_index);
   
   /*!
    * \brief Get the temperature at a supersonic inlet boundary.
@@ -9309,10 +9364,20 @@ public:
    */
   unsigned short GetnHistoryOutput(void);
 
+  /*!
+   * \brief Get the number of flamelet table output variables requested
+   */
+  unsigned short GetnFlameletTableOutput(void);
+
   /*
   * \brief Get the history output field iField
   */
   string GetHistoryOutput_Field(unsigned short iField);
+
+  /*
+  * \brief Get the flamelet table output field iField
+  */
+  string GetFlameletTableOutput_Field(unsigned short iField);
 
   /*!
    * \brief Get the number of history output variables requested

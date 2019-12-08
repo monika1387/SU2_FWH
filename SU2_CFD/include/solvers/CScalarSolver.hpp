@@ -1,8 +1,7 @@
 /*!
- * \file CMeshSolver.hpp
- * \brief Declaration and inlines of the class to compute the deformation of
- *        the volumetric numerical grid using the linear elasticity solver.
- * \author Ruben Sanchez, based on CVolumetricMovement developments (F. Palacios, A. Bueno, T. Economon, S. Padron)
+ * \file CScalarSolver.hpp
+ * \brief Declaration and inlines of the scalar transport solver base class.
+ * \author T. Economon
  * \version 6.2.0 "Falcon"
  *
  * The current SU2 release has been coordinated by the
@@ -39,6 +38,7 @@
 #pragma once
 
 #include "../solver_structure.hpp"
+#include "../variables/CScalarVariable.hpp"
 
 /*!
  * \class CScalarSolver
@@ -146,7 +146,7 @@ public:
                     CNumerics *visc_numerics,
                     CConfig *config,
                     unsigned short val_marker);
-  
+
   /*!
    * \brief Impose via the residual the Euler wall boundary condition.
    * \param[in] geometry - Geometrical definition of the problem.
@@ -160,7 +160,7 @@ public:
                      CNumerics *numerics,
                      CConfig *config,
                      unsigned short val_marker);
-  
+
   /*!
    * \brief Impose the Navier-Stokes wall boundary condition.
    * \param[in] geometry - Geometrical definition of the problem.
@@ -173,20 +173,7 @@ public:
   void BC_HeatFlux_Wall(CGeometry *geometry, CSolver **solver_container,
                         CNumerics *conv_numerics, CNumerics *visc_numerics,
                         CConfig *config, unsigned short val_marker);
-  
-  /*!
-   * \brief Impose the Navier-Stokes wall boundary condition.
-   * \param[in] geometry - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] conv_numerics - Description of the numerical method.
-   * \param[in] visc_numerics - Description of the numerical method.
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_marker - Surface marker where the boundary condition is applied.
-   */
-  void BC_Isothermal_Wall(CGeometry *geometry, CSolver **solver_container,
-                          CNumerics *conv_numerics, CNumerics *visc_numerics,
-                          CConfig *config, unsigned short val_marker);
-  
+
   /*!
    * \brief Impose the Far Field boundary condition.
    * \param[in] geometry - Geometrical definition of the problem.
@@ -199,32 +186,7 @@ public:
   void BC_Far_Field(CGeometry *geometry, CSolver **solver_container,
                     CNumerics *conv_numerics, CNumerics *visc_numerics,
                     CConfig *config, unsigned short val_marker);
-  
-  /*!
-   * \brief Impose the inlet boundary condition.
-   * \param[in] geometry - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] conv_numerics - Description of the numerical method.
-   * \param[in] visc_numerics - Description of the numerical method.
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_marker - Surface marker where the boundary condition is applied.
-   */
-  void BC_Inlet(CGeometry *geometry, CSolver **solver_container,
-                CNumerics *conv_numerics, CNumerics *visc_numerics,
-                CConfig *config, unsigned short val_marker);
-  
-  /*!
-   * \brief Impose the outlet boundary condition.
-   * \param[in] geometry - Geometrical definition of the problem.
-   * \param[in] solver_container - Container vector with all the solutions.
-   * \param[in] conv_numerics - Description of the numerical method.
-   * \param[in] visc_numerics - Description of the numerical method.
-   * \param[in] config - Definition of the particular problem.
-   * \param[in] val_marker - Surface marker where the boundary condition is applied.
-   */
-  void BC_Outlet(CGeometry *geometry, CSolver **solver_container,
-                 CNumerics *conv_numerics, CNumerics *visc_numerics,
-                 CConfig *config, unsigned short val_marker);
+
   /*!
    * \brief Impose a periodic boundary condition by summing contributions from the complete control volume.
    * \param[in] geometry - Geometrical definition of the problem.

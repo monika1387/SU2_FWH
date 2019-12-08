@@ -52,6 +52,7 @@ private:
   VectorType StrainMag;    /*!< \brief Magnitude of rate of strain tensor. */
 
   VectorType DES_LengthScale;
+  VectorType source_energy;
 
 public:
   /*!
@@ -147,5 +148,22 @@ public:
    * \return Value of the DES length Scale.
    */
   inline su2double GetDES_LengthScale(unsigned long iPoint) const override { return DES_LengthScale(iPoint); }
+
+    /*!
+   * \brief Set the value of the energy source term
+   * \param[in] val_source_energy - the .
+   * \param[in] val_ivar          - eqn. index to the .
+   */
+  inline void SetSourceEnergy(unsigned long iPoint, su2double val_source_energy) override {
+    source_energy(iPoint) = val_source_energy;
+  }
+  
+  /*!
+   * \brief Get the value of the progress variable source term
+   * \return Pointer to the progress variable source term 
+   */
+  inline su2double GetSourceEnergy(unsigned long iPoint) override {
+    return source_energy(iPoint);
+  }
 
 };

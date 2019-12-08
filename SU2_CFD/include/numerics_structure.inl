@@ -336,6 +336,11 @@ inline void CNumerics::SetScalarVar(su2double *val_scalarvar_i, su2double *val_s
   ScalarVar_j = val_scalarvar_j;
 }
 
+inline void CNumerics::SetScalarVar(su2double val_scalarvar_i, int val_ix_i, su2double val_scalarvar_j, int val_ix_j) {
+  ScalarVar_i[val_ix_i] = val_scalarvar_i;
+  ScalarVar_j[val_ix_j] = val_scalarvar_j;
+}
+
 inline void CNumerics::SetTransVar(su2double *val_transvar_i, su2double *val_transvar_j) {
   TransVar_i = val_transvar_i;
   TransVar_j = val_transvar_j;

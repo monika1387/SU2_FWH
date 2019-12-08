@@ -444,7 +444,8 @@ enum RUNTIME_TYPE {
   RUNTIME_HEAT_SYS = 21,		/*!< \brief One-physics case, the code is solving the heat equation. */
   RUNTIME_ADJHEAT_SYS = 31, /*!< \brief One-physics case, the code is solving the adjoint heat equation. */
   RUNTIME_TRANS_SYS = 22,			/*!< \brief One-physics case, the code is solving the turbulence model. */
-  RUNTIME_SCALAR_SYS = 23,      /*!< \brief One-physics case, the code is solving the turbulence model. */
+  RUNTIME_SCALAR_SYS = 23,      /*!< \brief One-physics case, the code is solving the scalar model. */
+  RUNTIME_ADJSCALAR_SYS = 24,   /*!< \brief One-physics case, the code is solving the scalar model. */
 };
 
 const int FLOW_SOL = 0;		/*!< \brief Position of the mean flow solution in the solver container array. */
@@ -457,7 +458,8 @@ const int TRANS_SOL = 4;	/*!< \brief Position of the transition model solution i
 const int HEAT_SOL = 5;		/*!< \brief Position of the heat equation in the solution solver array. */
 const int ADJHEAT_SOL = 6;  /*!< \brief Position of the adjoint heat equation in the solution solver array. */
 
-const int SCALAR_SOL = 5;    /*!< \brief Position of the scalar transport solution in the solver container array. */
+const int SCALAR_SOL = 5;     /*!< \brief Position of the scalar transport solution in the solver container array. */
+const int ADJSCALAR_SOL = 6;  /*!< \brief Position of the adjoint scalar transport solution in the solver container array. */
 
 const int FEA_SOL = 0;			/*!< \brief Position of the FEA equation in the solution solver array. */
 const int ADJFEA_SOL = 1;		/*!< \brief Position of the FEA adjoint equation in the solution solver array. */
@@ -533,7 +535,8 @@ enum ENUM_FLUIDMODEL {
 	PR_GAS = 3,
   CONSTANT_DENSITY = 4,
   INC_IDEAL_GAS = 5,
-  INC_IDEAL_GAS_POLY = 6
+  INC_IDEAL_GAS_POLY = 6,
+  FLAMELET_FLUID_MODEL = 7
 };
 
 static const map<string, ENUM_FLUIDMODEL> FluidModel_Map = CCreateMap<string, ENUM_FLUIDMODEL>
@@ -543,7 +546,21 @@ static const map<string, ENUM_FLUIDMODEL> FluidModel_Map = CCreateMap<string, EN
 ("PR_GAS", PR_GAS)
 ("CONSTANT_DENSITY", CONSTANT_DENSITY)
 ("INC_IDEAL_GAS", INC_IDEAL_GAS)
-("INC_IDEAL_GAS_POLY", INC_IDEAL_GAS_POLY);
+("INC_IDEAL_GAS_POLY", INC_IDEAL_GAS_POLY)
+("FLAMELET_FLUID_MODEL", FLAMELET_FLUID_MODEL)
+;
+
+/*!
+ * \brief types of density models
+ */
+enum ENUM_FLAMELET_THERMO_SYSTEM {
+	ADIABATIC = 0,
+  HEAT_LOSS = 1
+};
+
+static const map<string, ENUM_FLAMELET_THERMO_SYSTEM> flamelet_thermo_system_map = CCreateMap<string, ENUM_FLAMELET_THERMO_SYSTEM>
+("ADIABATIC", ADIABATIC)
+("HEAT_LOSS", HEAT_LOSS);
 
 /*!
  * \brief types of density models
@@ -591,9 +608,10 @@ static const map<string, ENUM_FREESTREAM_OPTION> FreeStreamOption_Map = CCreateM
  * \brief types of viscosity model
  */
 enum ENUM_VISCOSITYMODEL {
-	CONSTANT_VISCOSITY = 0, /*!< \brief _____. */
-	SUTHERLAND = 1,
-  POLYNOMIAL_VISCOSITY = 2
+  CONSTANT_VISCOSITY   = 0, /*!< \brief _____. */
+  SUTHERLAND           = 1,
+  POLYNOMIAL_VISCOSITY = 2,
+  FLAMELET_VISC_MODEL  = 3
 };
 
 static const map<string, ENUM_VISCOSITYMODEL> ViscosityModel_Map = CCreateMap<string, ENUM_VISCOSITYMODEL>
@@ -605,9 +623,10 @@ static const map<string, ENUM_VISCOSITYMODEL> ViscosityModel_Map = CCreateMap<st
  * \brief types of thermal conductivity model
  */
 enum ENUM_CONDUCTIVITYMODEL {
-	CONSTANT_CONDUCTIVITY = 0, /*!< \brief _____. */
-	CONSTANT_PRANDTL = 1,
-  POLYNOMIAL_CONDUCTIVITY = 2
+  CONSTANT_CONDUCTIVITY   = 0, /*!< \brief _____. */
+  CONSTANT_PRANDTL        = 1,
+  POLYNOMIAL_CONDUCTIVITY = 2,
+  FLAMELET_CONDUCT_MODEL  = 3
 };
 
 static const map<string, ENUM_CONDUCTIVITYMODEL> ConductivityModel_Map = CCreateMap<string, ENUM_CONDUCTIVITYMODEL>
@@ -632,7 +651,8 @@ static const map<string, ENUM_CONDUCTIVITYMODEL_TURB> TurbConductivityModel_Map 
  */
 enum ENUM_DIFFUSIVITYMODEL {
   CONSTANT_DIFFUSIVITY = 0, /*!< \brief Constant mass diffusivity for scalar transport. */
-  CONSTANT_SCHMIDT = 1      /*!< \brief Constant Schmidt number for mass diffusion in scalar transport. */
+  CONSTANT_SCHMIDT     = 1,      /*!< \brief Constant Schmidt number for mass diffusion in scalar transport. */
+  FLAMELET_DIFF_MODEL  = 2
 };
 
 static const map<string, ENUM_DIFFUSIVITYMODEL> DiffusivityModel_Map = CCreateMap<string, ENUM_DIFFUSIVITYMODEL>
@@ -2138,6 +2158,11 @@ static const map<string, ENUM_VERIFICATION_SOLUTIONS> Verification_Solution_Map 
 ("MMS_INC_NS",               MMS_INC_NS)
 ("USER_DEFINED_SOLUTION",    USER_DEFINED_SOLUTION);
 
+enum SCALAR_VARIABLES {
+  I_PROG_VAR,
+  I_ENTHALPY,
+};
+
 /* END_CONFIG_ENUMS */
 
 class COptionBase {
@@ -3445,6 +3470,60 @@ public:
     this->size = 0; // There is no default value for list
   }
 };
+
+
+class COptionInletScalar : public COptionBase {
+  string name; // identifier for the option
+  unsigned short & size;
+  string * & marker;
+  su2double ** & inletscalarval; 
+
+public:
+  COptionInletScalar(string option_field_name, unsigned short & nMarker_Inlet_Scalar, string* & Marker_Inlet_Scalar, su2double** & option_field) : size(nMarker_Inlet_Scalar), marker(Marker_Inlet_Scalar), inletscalarval(option_field) {
+    this->name = option_field_name;
+  }
+
+  ~COptionInletScalar() {};
+  string SetValue(vector<string> option_value) {
+    COptionBase::SetValue(option_value);
+    unsigned short option_size = option_value.size();
+    if ((option_size == 1) && (option_value[0].compare("NONE") == 0)) {
+      this->size = 0;
+      this->marker = NULL;
+      this->inletscalarval = NULL;     
+      return "";
+    }
+
+    unsigned short nVals = option_size / 3;
+    this->size = nVals;
+    this->marker = new string[nVals];
+    this->inletscalarval = new su2double*[nVals];
+    for (unsigned long i = 0; i < nVals; i++) {
+      this->inletscalarval[i] = new su2double[2];
+    }    
+
+    for (unsigned long i = 0; i < nVals; i++) {
+      this->marker[i].assign(option_value[3*i]);
+      istringstream ss_1st(option_value[3*i + 1]);
+      if (!(ss_1st >> this->inletscalarval[i][0])) {
+        return badValue(option_value, "inlet", this->name);
+      }
+      istringstream ss_2nd(option_value[3*i + 2]);
+      if (!(ss_2nd >> this->inletscalarval[i][1])) {
+        return badValue(option_value, "inlet", this->name);
+      }      
+    }
+
+    return "";
+  }
+
+  void SetDefault() {
+    this->marker = NULL;    
+    this->inletscalarval = NULL;
+    this->size = 0; // There is no default value for list
+  }
+};
+
 
 template <class Tenum>
 class COptionRiemann : public COptionBase {

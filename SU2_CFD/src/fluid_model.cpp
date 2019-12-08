@@ -41,21 +41,23 @@ CFluidModel::CFluidModel(void) {
 
   /*--- Attributes initialization ---*/
 
-  StaticEnergy = 0.0;
-  Entropy = 0.0;
-  Density = 0.0;
-  Pressure = 0.0;
-  SoundSpeed2 = 0.0;
-  Temperature = 0.0;
-  dPdrho_e = 0.0;
-  dPde_rho = 0.0;
-  dTdrho_e = 0.0;
-  dTde_rho = 0.0;
-  Cp       = 0.0;
-  Cv       = 0.0;
-  Mu       = 0.0;
-  Mu_Turb  = 0.0;
-
+  StaticEnergy        = 0.0;
+  Entropy             = 0.0;
+  Density             = 0.0;
+  Pressure            = 0.0;
+  SoundSpeed2         = 0.0;
+  Temperature         = 0.0;
+  dPdrho_e            = 0.0;
+  dPde_rho            = 0.0;
+  dTdrho_e            = 0.0;
+  dTde_rho            = 0.0;
+  Cp                  = 0.0;
+  Cv                  = 0.0;
+  Mu                  = 0.0;
+  Mu_Turb             = 0.0;
+  dDensitydPV         = 0.0;
+  dSourcePVdPV        = 0.0;
+  dDensitydEnth       = 0.0;
   LaminarViscosity    = NULL;
   ThermalConductivity = NULL;
   MassDiffusivity     = NULL;
@@ -79,6 +81,9 @@ void CFluidModel::SetLaminarViscosityModel (CConfig *config) {
       break;
     case POLYNOMIAL_VISCOSITY:
       LaminarViscosity = new CPolynomialViscosity(config->GetnPolyCoeffs(), config->GetMu_PolyCoeffND());
+      break;
+    case FLAMELET_VISC_MODEL:
+      /* do nothing. Viscosity is obtained from the table and set in setTDState_T */
       break;
     default:
       SU2_MPI::Error("Viscosity model not available.", CURRENT_FUNCTION);
@@ -111,6 +116,9 @@ void CFluidModel::SetThermalConductivityModel (CConfig *config) {
         ThermalConductivity = new CPolynomialConductivity(config->GetnPolyCoeffs(), config->GetKt_PolyCoeffND());
       }
       break;
+    case FLAMELET_CONDUCT_MODEL:
+      /* do nothing. Conductivity is obtained from the table and set in setTDState_T */
+      break;
     default:
       SU2_MPI::Error("Conductivity model not available.", CURRENT_FUNCTION);
       break;
@@ -130,6 +138,12 @@ void CFluidModel::SetMassDiffusivityModel (CConfig *config) {
       } else {
         MassDiffusivity = new CConstantSchmidt(config->GetSchmidt_Lam());
       }
+      break;
+    case FLAMELET_DIFF_MODEL:
+      /* do nothing. Diffusivity is obtained from the table and set in setTDState_T */
+      break;
+    default:
+      SU2_MPI::Error("Diffusivity model not available.", CURRENT_FUNCTION);
       break;
   }
   

@@ -410,6 +410,15 @@ public:
    * \param[in] val_scalarvar_j - Value of the scalar transport variables at point j.
    */
   void SetScalarVar(su2double *val_scalarvar_i, su2double *val_scalarvar_j);
+
+  /*!
+   * \brief Set the value of the scalar transport variables.
+   * \param[in] val_scalarvar_i - Value of the scalar transport variables at point i.
+   * \param[in] val_ix_i        - Index of the scalar transport variable at point j.
+   * \param[in] val_scalarvar_j - Value of the scalar transport variables at point j.
+   * \param[in] val_ix_j        - Index of the scalar transport variable at point j.
+   */
+  void SetScalarVar(su2double val_scalarvar_i, int val_ix_i, su2double val_scalarvar_j, int val_ix_j);
   
   /*!
    * \brief Set the value of the turbulent variable.
@@ -1861,7 +1870,8 @@ private:
   bool implicit, /*!< \brief Implicit calculation. */
   dynamic_grid, /*!< \brief Modification for grid movement. */
   variable_density, /*!< \brief Variable density incompressible flows. */
-  energy; /*!< \brief computation with the energy equation. */
+  energy, /*!< \brief computation with the energy equation. */
+  flamelet_thermo_system;
   su2double *Diff_V;
   su2double *Velocity_i, *Velocity_j, *MeanVelocity;
   su2double *ProjFlux_i, *ProjFlux_j;
@@ -2918,8 +2928,8 @@ private:
   bool implicit, /*!< \brief Implicit calculation. */
   dynamic_grid, /*!< \brief Modification for grid movement. */
   variable_density, /*!< \brief Variable density incompressible flows. */
-  energy; /*!< \brief computation with the energy equation. */
-
+  energy, /*!< \brief computation with the energy equation. */
+  flamelet_thermo_system;
 public:
   
   /*!
@@ -3066,7 +3076,8 @@ private:
   bool implicit, /*!< \brief Implicit calculation. */
   dynamic_grid, /*!< \brief Modification for grid movement. */
   variable_density, /*!< \brief Variable density incompressible flows. */
-  energy; /*!< \brief computation with the energy equation. */
+  energy, /*!< \brief computation with the energy equation. */
+  flamelet_thermo_system;
   
 public:
   
@@ -3509,7 +3520,8 @@ public:
 class CAvgGradInc_Flow : public CAvgGrad_Base {
 private:
   su2double Mean_Thermal_Conductivity; /*!< \brief Mean value of the effective thermal conductivity. */
-  bool energy;    /*!< \brief computation with the energy equation. */
+  bool energy,    /*!< \brief computation with the energy equation. */
+  flamelet_thermo_system;
 
   /*
    * \brief Compute the projection of the viscous fluxes into a direction
@@ -5314,10 +5326,11 @@ public:
  * \author T. Economon
  */
 class CSourceAxisymmetric_Scalar : public CNumerics {
+
   bool implicit, /*!< \brief Implicit calculation. */
   viscous, /*!< \brief Viscous incompressible flows. */
   energy; /*!< \brief computation with the energy equation. */
-  
+
 public:
   
   /*!
@@ -5515,7 +5528,8 @@ public:
 class CSourceIncAxisymmetric_Flow : public CNumerics {
   bool implicit, /*!< \brief Implicit calculation. */
   viscous, /*!< \brief Viscous incompressible flows. */
-  energy; /*!< \brief computation with the energy equation. */
+  energy, /*!< \brief computation with the energy equation. */
+  flamelet_thermo_system;
 
 public:
 

@@ -1,8 +1,8 @@
 /*!
- * \file CScalarVariable.cpp
- * \brief Definition of the scalar equation variables at each vertex.
- * \author T. Economon
- * \version 6.1.0 "Falcon"
+ * \file CFlameletVariable.cpp
+ * \brief Definition of the variable fields for the flamelet class.
+ * \author D. Mayer, T. Economon, N.Beishuizen, G. Tamanampudi
+ * \version 6.2.0 "Falcon"
  *
  * The current SU2 release has been coordinated by the
  * SU2 International Developers Society <www.su2devsociety.org>
@@ -18,7 +18,7 @@
  *  - Prof. Edwin van der Weide's group at the University of Twente.
  *  - Lab. of New Concepts in Aeronautics at Tech. Institute of Aeronautics.
  *
- * Copyright 2012-2018, Francisco D. Palacios, Thomas D. Economon,
+ * Copyright 2012-2019, Francisco D. Palacios, Thomas D. Economon,
  *                      Tim Albring, and the SU2 contributors.
  *
  * SU2 is free software; you can redistribute it and/or
@@ -35,44 +35,36 @@
  * License along with SU2. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../include/variables/CScalarVariable.hpp"
+#include "../../include/variables/CFlameletVariable.hpp"
 
-CScalarVariable::CScalarVariable(unsigned long npoint,
-                                 unsigned long ndim,
-                                 unsigned long nvar,
-                                 CConfig       *config)
-: CVariable(npoint, ndim, nvar, config) {
+CFlameletVariable::CFlameletVariable(su2double     *val_scalar_inf,
+                                     unsigned long npoint,
+                                     unsigned long ndim,
+                                     unsigned long nvar,
+                                     CConfig       *config)
+: CScalarVariable(npoint, ndim, nvar, config) {
   
-  /*--- Gradient related fields ---*/
-  
-  Gradient.resize(nPoint,nVar,nDim,0.0);
-  
-  if (config->GetKind_Gradient_Method() == WEIGHTED_LEAST_SQUARES) {
-    Rmatrix.resize(nPoint,nDim,nDim,0.0);
+  for (unsigned long iPoint=0; iPoint<nPoint; ++iPoint) {
+    for (unsigned short iVar = 0; iVar < nVar; iVar++) {
+      Solution(iPoint,iVar) = val_scalar_inf[iVar];
+    }
   }
+
+  Solution_Old = Solution;
   
-  /*--- Allocate residual structures ---*/
-  
-  Res_TruncError.resize(nPoint,nVar) = su2double(0.0);
-  
-  /*--- Always allocate the slope limiter, and the auxiliar
-   variables (check the logic - JST with 2nd order Turb model) ---*/
-  
-  Limiter.resize(nPoint,nVar) = su2double(0.0);
-  Solution_Max.resize(nPoint,nVar) = su2double(0.0);
-  Solution_Min.resize(nPoint,nVar) = su2double(0.0);
-  
-  Delta_Time.resize(nPoint) = su2double(0.0);
-  
-  /*--- Allocate space for the mass diffusivity. ---*/
-  
-  Diffusivity.resize(nPoint,nVar) = su2double(0.0);
-  
-  /*--- If axisymmetric and viscous, we need an auxiliary gradient. ---*/
-  
-  if (config->GetAxisymmetric() && config->GetViscous()) {
-    AuxVar.resize(nPoint);
-    Grad_AuxVar.resize(nPoint,nDim);
+  /*--- Allocate and initialize solution for the dual time strategy ---*/
+  bool dual_time = ((config->GetTime_Marching() == DT_STEPPING_1ST) ||
+                    (config->GetTime_Marching() == DT_STEPPING_2ND));
+
+  if (dual_time) {
+    Solution_time_n  = Solution;
+    Solution_time_n1 = Solution;
   }
+
+  /* Allocate space for the source and scalars for visualization */
+  
+  source_prog.resize(nPoint,nVar) = su2double(0.0);
+  if(config->GetnFlameletTableOutput()>0)
+  scalar_table_paraview.resize(nPoint,config->GetnFlameletTableOutput()) = su2double(0.0);
 
 }

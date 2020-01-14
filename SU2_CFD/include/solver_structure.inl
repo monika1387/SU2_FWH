@@ -2,24 +2,14 @@
  * \file solver_structure.inl
  * \brief In-Line subroutines of the <i>solver_structure.hpp</i> file.
  * \author F. Palacios, T. Economon
- * \version 6.2.0 "Falcon"
+ * \version 7.0.0 "Blackbird"
  *
- * The current SU2 release has been coordinated by the
- * SU2 International Developers Society <www.su2devsociety.org>
- * with selected contributions from the open-source community.
+ * SU2 Project Website: https://su2code.github.io
  *
- * The main research teams contributing to the current release are:
- *  - Prof. Juan J. Alonso's group at Stanford University.
- *  - Prof. Piero Colonna's group at Delft University of Technology.
- *  - Prof. Nicolas R. Gauger's group at Kaiserslautern University of Technology.
- *  - Prof. Alberto Guardone's group at Polytechnic University of Milan.
- *  - Prof. Rafael Palacios' group at Imperial College London.
- *  - Prof. Vincent Terrapon's group at the University of Liege.
- *  - Prof. Edwin van der Weide's group at the University of Twente.
- *  - Lab. of New Concepts in Aeronautics at Tech. Institute of Aeronautics.
+ * The SU2 Project is maintained by the SU2 Foundation 
+ * (http://su2foundation.org)
  *
- * Copyright 2012-2019, Francisco D. Palacios, Thomas D. Economon,
- *                      Tim Albring, and the SU2 contributors.
+ * Copyright 2012-2019, SU2 Contributors (cf. AUTHORS.md)
  *
  * SU2 is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +28,8 @@
 #pragma once
 
 inline void CSolver::SetIterLinSolver(unsigned short val_iterlinsolver) { IterLinSolver = val_iterlinsolver; }
+
+inline void CSolver::SetResLinSolver(su2double val_reslinsolver) { ResLinSolver = val_reslinsolver; }
 
 inline void CSolver::SetNondimensionalization(CConfig *config, unsigned short iMesh) { }
 
@@ -104,9 +96,9 @@ inline su2double* CSolver::GetPsiRhos_Inf(void) { return NULL; }
 
 inline su2double CSolver::GetPsiE_Inf(void) { return 0; }
 
-inline void CSolver::SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config) { }
+inline void CSolver::SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config, bool reconstruction) { }
 
-inline void CSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config) { }
+inline void CSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config, bool reconstruction) { }
 
 inline void CSolver::SetPrimitive_Limiter_MPI(CGeometry *geometry, CConfig *config) { }
 
@@ -781,6 +773,18 @@ inline void CSolver::GetEllipticSpanLoad_Diff(CGeometry *geometry, CConfig *conf
 inline void CSolver::SetFarfield_AoA(CGeometry *geometry, CSolver **solver_container,
                                      CConfig *config, unsigned short iMesh, bool Output) { }
 
+inline bool CSolver::FixedCL_Convergence(CConfig *config, bool convergence) { return false; }
+
+inline bool CSolver::GetStart_AoA_FD(void) { return false; }
+
+inline bool CSolver::GetEnd_AoA_FD(void) { return false; }
+
+inline unsigned long CSolver::GetIter_Update_AoA(void) { return 0; }
+
+inline su2double CSolver::GetPrevious_AoA(void) { return 0.0; }
+
+inline su2double CSolver::GetAoA_inc(void) { return 0.0; }
+
 inline void CSolver::SetActDisk_BCThrust(CGeometry *geometry, CSolver **solver_container,
                                          CConfig *config, unsigned short iMesh, bool Output) { }
 
@@ -860,6 +864,8 @@ inline void CSolver::ClassicalRK4_Iteration(CGeometry *geometry, CSolver **solve
 inline void CSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **solver_container, CConfig *config) { }
 
 inline void CSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solver_container, CConfig *config) { }
+
+inline void CSolver::ComputeUnderRelaxationFactor(CSolver **solver_container, CConfig *config) { }
 
 inline void CSolver::ImplicitNewmark_Iteration(CGeometry *geometry, CSolver **solver_container, CConfig *config) { }
 
@@ -1640,6 +1646,16 @@ inline CFluidModel* CEulerSolver::GetFluidModel(void) { return FluidModel;}
 inline void CEulerSolver::SetPressure_Inf(su2double p_inf) {Pressure_Inf = p_inf;}
 
 inline void CEulerSolver::SetTemperature_Inf(su2double t_inf) {Temperature_Inf = t_inf;}
+
+inline bool CEulerSolver::GetStart_AoA_FD(void) { return Start_AoA_FD; }
+
+inline bool CEulerSolver::GetEnd_AoA_FD(void) { return End_AoA_FD; }
+
+inline unsigned long CEulerSolver::GetIter_Update_AoA(void) { return Iter_Update_AoA; }
+
+inline su2double CEulerSolver::GetPrevious_AoA(void) { return AoA_Prev; }
+
+inline su2double CEulerSolver::GetAoA_inc(void) { return AoA_inc; }
 
 inline su2double CNSSolver::GetViscosity_Inf(void) { return Viscosity_Inf; }
 

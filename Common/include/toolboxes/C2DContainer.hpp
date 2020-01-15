@@ -91,13 +91,6 @@ protected:
     EXTRA;                                                              \
     m_data = MemoryAllocation::aligned_alloc<Scalar_t>(AlignSize,sz);   \
   }
-#else
-#define REAL_ALLOCATOR(EXTRA)                                             \
-  void m_allocate(size_t sz, Index_t rows, Index_t cols) noexcept {       \
-    EXTRA;                                                                \
-    m_data = static_cast<Scalar_t*>(malloc(sz));                          \
-  }
-#endif
 
   DUMMY_ALLOCATOR
 

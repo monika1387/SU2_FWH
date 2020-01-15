@@ -1447,6 +1447,8 @@ void COutput::Postprocess_HistoryData(CConfig *config){
       Average[currentField.outputGroup].second++;
 
 
+    }
+
     if (currentField.fieldType == HistoryFieldType::COEFFICIENT){
       if(SetUpdate_Averages(config)){
         if (config->GetTime_Domain()){

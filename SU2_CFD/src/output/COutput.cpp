@@ -306,7 +306,19 @@ void COutput::SetCFL_Number(CSolver ****solver_container, CConfig *config) {
         rhoResNew = solver_container[INST_0][FinestMesh][FLOW_SOL]->GetRes_RMS(0);
       }
       break;
-    case ADJ_EULER : case ADJ_NAVIER_STOKES: case ADJ_RANS:
+  case TNE2_EULER : case TNE2_NAVIER_STOKES : case TNE2_RANS:
+    if (energy) {
+      nVar = solver_container[INST_0][FinestMesh][FLOW_SOL]->GetnVar();
+      rhoResNew = solver_container[INST_0][FinestMesh][TNE2_SOL]->GetRes_RMS(nVar-1);
+    }
+    else if (weakly_coupled_heat) {
+      rhoResNew = solver_container[INST_0][FinestMesh][HEAT_SOL]->GetRes_RMS(0);
+    }
+    else {
+      rhoResNew = solver_container[INST_0][FinestMesh][TNE2_SOL]->GetRes_RMS(0);
+    }
+    break;
+  case ADJ_EULER : case ADJ_NAVIER_STOKES: case ADJ_RANS:
       rhoResNew = solver_container[INST_0][FinestMesh][ADJFLOW_SOL]->GetRes_RMS(0);
       break;
     case HEAT_EQUATION_FVM:

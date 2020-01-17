@@ -95,7 +95,7 @@ CAdjTNE2CompOutput::CAdjTNE2CompOutput(CConfig *config, unsigned short nDim) : C
 
   /*--- Set the default convergence field --- */
 
-  if (convFields.empty() ) convFields.emplace_back("RMS_ADJ_DENSITY");
+  if (convFields.empty() ) convFields.emplace_back("RMS_ADJ_DENSITY_N2");
 
 }
 
@@ -346,8 +346,6 @@ void CAdjTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
     /// DESCRIPTION: O Adjoint density.
     AddVolumeOutput("ADJ_DENSITY_O",    "Adjoint_Density_O",   "SOLUTION", "Adjoint density O");
   }
-  /// DESCRIPTION: Adjoint density.
-  AddVolumeOutput("ADJ_DENSITY",    "Adjoint_Density",    "SOLUTION", "Adjoint density");
   /// DESCRIPTION: Adjoint momentum x-component.
   AddVolumeOutput("ADJ_MOMENTUM-X", "Adjoint_Momentum_x", "SOLUTION", "x-component of the adjoint momentum vector");
   /// DESCRIPTION: Adjoint momentum y-component.

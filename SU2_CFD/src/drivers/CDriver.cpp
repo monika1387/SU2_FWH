@@ -1574,10 +1574,6 @@ void CDriver::Solver_Restart(CSolver ***solver, CGeometry **geometry,
 
   /*--- Load restarts for any of the active solver containers. Note that
    these restart routines fill the fine grid and interpolate to all MG levels. ---*/
-  if (config->GetKind_Solver() == DISC_ADJ_TNE2_EULER){
-    cout << "delete me 1577,   : " << (restart || restart_flow)<< endl;
-    restart_flow = true;
-  }
   if (restart || restart_flow) {
     if (euler || ns) {
       solver[MESH_0][FLOW_SOL]->LoadRestart(geometry, solver, config, val_iter, update_geo);
@@ -3552,14 +3548,12 @@ void CDriver::Iteration_Preprocessing(CConfig* config, CIteration *&iteration) {
     case DISC_ADJ_EULER: case DISC_ADJ_NAVIER_STOKES: case DISC_ADJ_RANS:
     case DISC_ADJ_INC_EULER: case DISC_ADJ_INC_NAVIER_STOKES: case DISC_ADJ_INC_RANS:
       if (rank == MASTER_NODE)
-        cout << "delete me wtf" << endl;
         cout << "Discrete adjoint Euler/Navier-Stokes/RANS fluid iteration." << endl;
       iteration = new CDiscAdjFluidIteration(config);
       break;
 
     case DISC_ADJ_TNE2_EULER: case DISC_ADJ_TNE2_NAVIER_STOKES: case DISC_ADJ_TNE2_RANS:
       if (rank == MASTER_NODE)
-        cout << "delete me this should be called" << endl;
         cout << "Discrete adjoint TNE2 Euler/Navier-Stokes/RANS fluid iteration." << endl;
       iteration = new CDiscAdjTNE2Iteration(config);
       break;

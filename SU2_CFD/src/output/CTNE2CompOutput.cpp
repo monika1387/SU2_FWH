@@ -315,7 +315,7 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
     AddVolumeOutput("DENSITY_N2",  "Density_N2",  "SOLUTION", "Density_N2");
     AddVolumeOutput("DENSITY_N",   "Density_N",   "SOLUTION", "Density_N");
   }
-  if (nSpecies == 2){
+  if (nSpecies == 5){
     AddVolumeOutput("DENSITY_N2",  "Density_N2",  "SOLUTION", "Density_N2");
     AddVolumeOutput("DENSITY_O2",  "Density_O2",  "SOLUTION", "Density_N");
     AddVolumeOutput("DENSITY_NO",  "Density_NO",  "SOLUTION", "Density_NO");
@@ -327,8 +327,8 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
   AddVolumeOutput("MOMENTUM-Y", "Momentum_y", "SOLUTION", "y-component of the momentum vector");
   if (nDim == 3)
     AddVolumeOutput("MOMENTUM-Z", "Momentum_z", "SOLUTION", "z-component of the momentum vector");
-  AddVolumeOutput("ENERGY",     "Energy",     "SOLUTION", "Energy");
-  AddVolumeOutput("ENERGY_VE",  "Energy_ve",  "SOLUTION", "Energy_ve");
+  AddVolumeOutput("ENERGY",       "Energy",     "SOLUTION", "Energy");
+  AddVolumeOutput("ENERGY_VE",    "Energy_ve",  "SOLUTION", "Energy_ve");
   // Turbulent Residuals
   switch(config->GetKind_Turb_Model()){
   case SST: case SST_SUST:
@@ -352,8 +352,10 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
   }
 
   // Primitive variables
-  AddVolumeOutput("PRESSURE",    "Pressure",                "PRIMITIVE", "Pressure");
-  AddVolumeOutput("TEMPERATURE", "Temperature",             "PRIMITIVE", "Temperature");
+  AddVolumeOutput("PRESSURE",       "Pressure",                "PRIMITIVE", "Pressure");
+  AddVolumeOutput("TEMPERATURE",    "Temperature",             "PRIMITIVE", "Temperature");
+  AddVolumeOutput("TEMPERATURE_VE", "Temperature_ve",          "PRIMITIVE", "Temperature_ve");
+
   AddVolumeOutput("MACH",        "Mach",                    "PRIMITIVE", "Mach number");
   AddVolumeOutput("PRESSURE_COEFF", "Pressure_Coefficient", "PRIMITIVE", "Pressure coefficient");
 

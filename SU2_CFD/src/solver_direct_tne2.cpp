@@ -3127,7 +3127,7 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
   bool viscous            = config->GetViscous();
   bool grid_movement      = config->GetGrid_Movement();
   bool gravity            = config->GetGravityForce();
-  bool turbulent          = (config->GetKind_Solver() == RANS) || (config->GetKind_Solver() == DISC_ADJ_RANS);
+  bool turbulent          = (config->GetKind_Solver() == TNE2_RANS) || (config->GetKind_Solver() == DISC_ADJ_TNE2_RANS);
   bool tkeNeeded          = ((turbulent) && (config->GetKind_Turb_Model() == SST));
   bool reynolds_init      = (config->GetKind_InitOption() == REYNOLDS);
   bool ionization         = config->GetIonization();
@@ -3351,7 +3351,7 @@ void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *co
 
   /*--- Initialize the dimensionless Fluid Model that will be used to solve the dimensionless problem ---*/
 
-  Energy_FreeStreamND = Pressure_FreeStream/(Density_FreeStream*Gamma_Minus_One)+0.5*ModVel_FreeStream *ModVel_FreeStream;
+  Energy_FreeStreamND = Pressure_FreeStreamND/(Density_FreeStreamND*Gamma_Minus_One)+0.5*ModVel_FreeStreamND *ModVel_FreeStreamND;
 
   if (viscous) {
 
@@ -5224,7 +5224,7 @@ void CTNE2EulerSolver::LoadRestart(CGeometry **geometry, CSolver ***solver, CCon
                      (config->GetFSI_Simulation()));
   bool steady_restart = config->GetSteadyRestart();
   bool time_stepping = config->GetTime_Marching() == TIME_STEPPING;
-  bool turbulent     = (config->GetKind_Solver() == RANS) || (config->GetKind_Solver() == DISC_ADJ_RANS);
+  bool turbulent     = (config->GetKind_Solver() == TNE2_RANS) || (config->GetKind_Solver() == DISC_ADJ_TNE2_RANS);
 
   string UnstExt, text_line;
   ifstream restart_file;

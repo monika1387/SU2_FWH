@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file solution_direct_mean.cpp
  * \brief Main subrotuines for solving direct problems (Euler, Navier-Stokes, etc.).
  * \author F. Palacios, T. Economon
@@ -5049,6 +5049,7 @@ void CEulerSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **solver
   /*--- Update the solution ---*/
   
   for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+
     Vol = (geometry->node[iPoint]->GetVolume() +
            geometry->node[iPoint]->GetPeriodicVolume());
     Delta = nodes->GetDelta_Time(iPoint) / Vol;
@@ -5063,7 +5064,6 @@ void CEulerSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **solver
         AddRes_Max(iVar, fabs(Res), geometry->node[iPoint]->GetGlobalIndex(), geometry->node[iPoint]->GetCoord());
       }
     }
-    
   }
   
   /*--- MPI solution ---*/
@@ -5072,7 +5072,7 @@ void CEulerSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **solver
   CompleteComms(geometry, config, SOLUTION);
   
   /*--- Compute the root mean square residual ---*/
-  
+
   SetResidual_RMS(geometry, config);
   
   /*--- For verification cases, compute the global error metrics. ---*/

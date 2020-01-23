@@ -6635,7 +6635,6 @@ void CConfig::SetOutput(unsigned short val_software, unsigned short val_izone) {
       if (Kind_ConvNumScheme_TNE2 == SPACE_UPWIND) {
         if (Kind_Upwind_TNE2 == ROE)   cout << "Roe (with entropy fix = "<< EntropyFix_Coeff <<") solver for the flow inviscid terms."<< endl;
         if (Kind_Upwind_TNE2 == AUSM)  cout << "AUSM solver for the flow inviscid terms."<< endl;
-        if (Kind_Upwind_TNE2 == AUSM)  cout << "AUSM solver for the flow inviscid terms."<< endl;
         if (Kind_Upwind_TNE2 == AUSMPLUSUP2)  cout << "AUSM+ -Up2 solver for the flow inviscid terms."<< endl;
         if (Kind_Upwind_TNE2 == MSW)  cout << "Modified Steger-Warming solver for the flow inviscid terms."<< endl;
         if (Kind_Upwind_TNE2 == CUSP)  cout << "CUSP solver for the flow inviscid terms."<< endl;

@@ -1563,13 +1563,9 @@ void CTNE2EulerSolver::Source_Residual(CGeometry *geometry, CSolver **solution_c
   eVib_global = eVib_local;
 
   //THIS IS NO FUN
-  if ((rank != MASTER_NODE) &&
-      (
-        (eAxi_global != 0) ||
-        (eChm_global != 0) ||
-        (eVib_global != 0)
-        )
-      ) {
+  if ((eAxi_global != 0) ||
+      (eChm_global != 0) ||
+      (eVib_global != 0)) {
     cout << "Warning!! Instances of NaN in the following source terms: " << endl;
     cout << "Axisymmetry: " << eAxi_global << endl;
     cout << "Chemical:    " << eChm_global << endl;
@@ -4617,8 +4613,8 @@ void CTNE2EulerSolver::BC_Outlet(CGeometry *geometry, CSolver **solution_contain
 
           // Mixture total Energy
           U_outlet[nVar-2] += U_outlet[iSpecies] * ((3.0/2.0+xi[iSpecies]/2.0) * Ru/Ms[iSpecies]*
-                  (V_outlet[T_INDEX]-Tref[iSpecies]) + Ev + Ee + Ef +
-                  0.5*Velocity2);
+                              (V_outlet[T_INDEX]-Tref[iSpecies]) + Ev + Ee + Ef +
+                              0.5*Velocity2);
 
           // Mixture vibrational-electronic energy
           U_outlet[nVar-1] += U_outlet[iSpecies] * (Ev + Ee);

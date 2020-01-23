@@ -320,6 +320,7 @@ void CUpwMSW_TNE2::ComputeResidual(su2double *val_residual,
   /*--- Set parameters in the numerical method ---*/
   alpha   = 5.0;
   epsilon = 0.0;
+
   /*--- Calculate supporting geometry parameters ---*/
   Area = 0;
   for (iDim = 0; iDim < nDim; iDim++)
@@ -3332,6 +3333,9 @@ void CSource_TNE2::ComputeChemistry(su2double *val_residual,
   /*--- Rename for convenience ---*/
   RuSI    = UNIVERSAL_GAS_CONSTANT;
   Ru      = 1000.0*RuSI;
+  cout << "delete me : "<< V_i[T_INDEX] << endl;
+  cout << "delete me : "<< V_i[TVE_INDEX] << endl;
+  cout << "delete me : "<< V_i[P_INDEX] << endl;
   rho     = V_i[RHO_INDEX];
   P       = V_i[P_INDEX];
   T       = V_i[T_INDEX];

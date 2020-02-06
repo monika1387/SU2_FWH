@@ -2551,15 +2551,15 @@ CAvgGradCorrected_TNE2::CAvgGradCorrected_TNE2(unsigned short val_nDim,
   Edge_Vector = new su2double[3];
 
   /*--- Other vectors ---*/
-  dFdVi = new double*[nVar];
-  dFdVj = new double*[nVar];
-  dVdUi = new double*[nVar];
-  dVdUj = new double*[nVar];
+  dFdVi = new su2double*[nVar];
+  dFdVj = new su2double*[nVar];
+  dVdUi = new su2double*[nVar];
+  dVdUj = new su2double*[nVar];
   for (unsigned short iVar = 0; iVar < nVar; iVar++) {
-    dFdVi[iVar] = new double[nVar];
-    dFdVj[iVar] = new double[nVar];
-    dVdUi[iVar] = new double[nVar];
-    dVdUj[iVar] = new double[nVar];
+    dFdVi[iVar] = new su2double[nVar];
+    dFdVj[iVar] = new su2double[nVar];
+    dVdUi[iVar] = new su2double[nVar];
+    dVdUj[iVar] = new su2double[nVar];
   }
 }
 

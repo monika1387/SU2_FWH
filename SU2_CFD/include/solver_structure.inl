@@ -2288,7 +2288,7 @@ inline su2double CTNE2EulerSolver::GetModVelocity_Inf(void) {
 	return sqrt(Vel2);
 }
 
-inline su2double CTNE2EulerSolver::GetCPressure(unsigned short val_marker, unsigned short val_vertex) { return CPressure[val_marker][val_vertex]; }
+inline su2double CTNE2EulerSolver::GetCPressure(unsigned short val_marker, unsigned long val_vertex) { return CPressure[val_marker][val_vertex]; }
 
 inline su2double CTNE2EulerSolver::GetCL_Inv(unsigned short val_marker) { return CL_Inv[val_marker]; }
 
@@ -2345,13 +2345,13 @@ inline su2double CTNE2NSSolver::GetCD_Visc(unsigned short val_marker) { return C
 
 inline su2double CTNE2NSSolver::GetCL_Visc(unsigned short val_marker) { return CL_Visc[val_marker]; }
 
-inline su2double CTNE2NSSolver::GetCSkinFriction(unsigned short val_marker, unsigned short val_vertex, unsigned short val_dim) { return CSkinFriction[val_marker][val_dim][val_vertex]; }
+inline su2double CTNE2NSSolver::GetCSkinFriction(unsigned short val_marker, unsigned long val_vertex, unsigned short val_dim) { return CSkinFriction[val_marker][val_dim][val_vertex]; }
 
 inline su2double CTNE2NSSolver::GetViscosity_Inf(void) { return Viscosity_Inf; }
 
-inline su2double CTNE2NSSolver::GetHeatFlux(unsigned short val_marker, unsigned short val_vertex) { return HeatFlux[val_marker][val_vertex]; }
+inline su2double CTNE2NSSolver::GetHeatFlux(unsigned short val_marker, unsigned long val_vertex) { return HeatFlux[val_marker][val_vertex]; }
 
-inline su2double CTNE2NSSolver::GetYPlus(unsigned short val_marker, unsigned short val_vertex) { return YPlus[val_marker][val_vertex]; }
+inline su2double CTNE2NSSolver::GetYPlus(unsigned short val_marker, unsigned long val_vertex) { return YPlus[val_marker][val_vertex]; }
 
 inline su2double CTNE2NSSolver::GetAllBound_CL_Visc() { return AllBound_CL_Visc; }
 

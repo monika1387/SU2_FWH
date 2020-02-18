@@ -9632,7 +9632,7 @@ public:
      * \param[in] val_vertex - Vertex of the marker <i>val_marker</i> where the coefficient is evaluated.
      * \return Value of the pressure coefficient.
      */
-  su2double GetCPressure(unsigned short val_marker, unsigned short val_vertex);
+  su2double GetCPressure(unsigned short val_marker, unsigned long val_vertex);
 
   /*!
      * \brief Set the total residual adding the term that comes from the Dual Time Strategy.
@@ -9940,7 +9940,7 @@ public:
    * \param[in] val_vertex - Vertex of the marker <i>val_marker</i> where the coefficient is evaluated.
    * \return Value of the skin friction coefficient.
    */
-  su2double GetCSkinFriction(unsigned short val_marker, unsigned short val_vertex, unsigned short val_dim);
+  su2double GetCSkinFriction(unsigned short val_marker, unsigned long val_vertex, unsigned short val_dim);
 
   /*!
    * \brief Get the local heat flux.
@@ -9948,7 +9948,7 @@ public:
    * \param[in] val_vertex - Vertex of the marker <i>val_marker</i> where the coefficient is evaluated.
    * \return Value of the heat flux.
    */
-  su2double GetHeatFlux(unsigned short val_marker, unsigned short val_vertex);
+  su2double GetHeatFlux(unsigned short val_marker, unsigned long val_vertex);
 
   /*!
    * \brief Get the local y+ value.
@@ -9956,7 +9956,7 @@ public:
    * \param[in] val_vertex - Vertex of the marker <i>val_marker</i> where the coefficient is evaluated.
    * \return Value of y+.
    */
-  su2double GetYPlus(unsigned short val_marker, unsigned short val_vertex);
+  su2double GetYPlus(unsigned short val_marker, unsigned long val_vertex);
 
 };
 

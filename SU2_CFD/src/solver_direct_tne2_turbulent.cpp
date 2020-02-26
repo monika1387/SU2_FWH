@@ -41,12 +41,12 @@
 
 CTNE2TurbSolver::CTNE2TurbSolver(void) : CSolver() {
 
-  FlowPrimVar_i = NULL;
-  FlowPrimVar_j = NULL;
-  lowerlimit    = NULL;
-  upperlimit    = NULL;
-  nVertex       = NULL;
-  nMarker       = 0;
+  FlowPrimVar_i  = NULL;
+  FlowPrimVar_j  = NULL;
+  lowerlimit     = NULL;
+  upperlimit     = NULL;
+  nVertex        = NULL;
+  nMarker        = 0;
   Inlet_TurbVars = NULL;
 
 }
@@ -85,9 +85,9 @@ CTNE2TurbSolver::~CTNE2TurbSolver(void) {
 
   if (FlowPrimVar_i != NULL) delete [] FlowPrimVar_i;
   if (FlowPrimVar_j != NULL) delete [] FlowPrimVar_j;
-  if (lowerlimit != NULL) delete [] lowerlimit;
-  if (upperlimit != NULL) delete [] upperlimit;
-  if (nVertex != NULL) delete [] nVertex;
+  if (lowerlimit    != NULL) delete [] lowerlimit;
+  if (upperlimit    != NULL) delete [] upperlimit;
+  if (nVertex       != NULL) delete [] nVertex;
 
 }
 

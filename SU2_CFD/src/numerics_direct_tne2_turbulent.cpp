@@ -270,9 +270,9 @@ void CSourcePieceWise_TNE2TurbSA::ComputeResidual(su2double *val_residual, su2do
   Density_i = V_i[RHO_INDEX];
   Laminar_Viscosity_i = V_i[LAM_VISC_INDEX];
 
-  val_residual[0] = 0.0;
-  Production      = 0.0;
-  Destruction     = 0.0;
+  val_residual[0]      = 0.0;
+  Production           = 0.0;
+  Destruction          = 0.0;
   CrossProduction      = 0.0;
   val_Jacobian_i[0][0] = 0.0;
 

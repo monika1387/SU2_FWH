@@ -920,6 +920,7 @@ public:
   void GetViscousProjFlux(su2double *val_primvar, su2double **val_gradprimvar,
                           su2double *val_eve, su2double *val_normal,
                           su2double *val_diffusioncoeff, su2double val_viscosity,
+                          su2double val_eddy_viscosity,
                           su2double val_therm_conductivity,
                           su2double val_therm_conductivity_ve, CConfig *config);
   /*!
@@ -4510,6 +4511,8 @@ private:
   **Mean_GradPrimVar,						/*!< \brief Mean value of the gradient. */
   *Mean_Diffusion_Coeff, /*!< \brief Mean value of the species diffusion coefficient. */
   Mean_Laminar_Viscosity, /*!< \brief Mean value of the viscosity. */
+  Mean_Eddy_Viscosity,         /*!< \brief Mean value of the eddy viscosity. */
+
   Mean_Thermal_Conductivity, /*!< \brief Mean value of the thermal conductivity. */
   Mean_Thermal_Conductivity_ve, /*!< \brief Mean value of the vib-el. thermal conductivity. */
 
@@ -4556,6 +4559,7 @@ public:
                           su2double *val_normal,
                           su2double *val_diffusioncoeff,
                           su2double val_viscosity,
+                          su2double val_eddy_viscosity,
                           su2double val_therm_conductivity,
                           su2double val_therm_conductivity_ve,
                           CConfig *config);
@@ -4621,6 +4625,7 @@ private:
   *Proj_Mean_GradPrimVar_Edge,         /*!< \brief Mean value of the gradient. */
   *Mean_Diffusion_Coeff,               /*!< \brief Mean value of the species diffusion coefficient. */
   Mean_Laminar_Viscosity,              /*!< \brief Mean value of the viscosity. */
+  Mean_Eddy_Viscosity,                 /*!< \brief Mean value of the eddy viscosity. */
   Mean_Thermal_Conductivity,           /*!< \brief Mean value of the thermal conductivity. */
   Mean_Thermal_Conductivity_ve,        /*!< \brief Mean value of the vib-el. thermal conductivity. */
 

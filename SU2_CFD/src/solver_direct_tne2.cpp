@@ -3091,23 +3091,23 @@ void CTNE2EulerSolver::SetPrimitive_Limiter(CGeometry *geometry,
 void CTNE2EulerSolver::SetNondimensionalization(CGeometry *geometry, CConfig *config, unsigned short iMesh) {
 
   unsigned short iSpecies, iEl, iVar;
-  su2double Temperature_FreeStream = 0.0, Mach2Vel_FreeStream = 0.0, ModVel_FreeStream = 0.0,
-      Energy_FreeStream      = 0.0, ModVel_FreeStreamND = 0.0, Velocity_Reynolds = 0.0,
-      Omega_FreeStream       = 0.0, Omega_FreeStreamND = 0.0, Viscosity_FreeStream = 0.0,
-      Density_FreeStream     = 0.0, Pressure_FreeStream = 0.0, Tke_FreeStream = 0.0;
+  su2double Temperature_FreeStream = 0.0, Mach2Vel_FreeStream = 0.0, ModVel_FreeStream    = 0.0,
+            Energy_FreeStream      = 0.0, ModVel_FreeStreamND = 0.0, Velocity_Reynolds    = 0.0,
+            Omega_FreeStream       = 0.0, Omega_FreeStreamND  = 0.0, Viscosity_FreeStream = 0.0,
+            Density_FreeStream     = 0.0, Pressure_FreeStream = 0.0, Tke_FreeStream       = 0.0;
 
   su2double Length_Ref       = 0.0, Density_Ref   = 0.0, Pressure_Ref     = 0.0, Velocity_Ref = 0.0,
-      Temperature_Ref  = 0.0, Time_Ref      = 0.0, Omega_Ref        = 0.0, Force_Ref    = 0.0,
-      Gas_Constant_Ref = 0.0, Viscosity_Ref = 0.0, Conductivity_Ref = 0.0, Energy_Ref   = 0.0;
+            Temperature_Ref  = 0.0, Time_Ref      = 0.0, Omega_Ref        = 0.0, Force_Ref    = 0.0,
+            Gas_Constant_Ref = 0.0, Viscosity_Ref = 0.0, Conductivity_Ref = 0.0, Energy_Ref   = 0.0;
 
   su2double Pressure_FreeStreamND    = 0.0, Density_FreeStreamND = 0.0, Energy_FreeStreamND = 0.0,
-      Temperature_FreeStreamND = 0.0, Gas_Constant         = 0.0, Gas_ConstantND      = 0.0,
-      Viscosity_FreeStreamND   = 0.0, Tke_FreeStreamND     = 0.0,
-      Total_UnstTimeND         = 0.0, Delta_UnstTimeND     = 0.0,
-      Velocity_FreeStreamND[3] = {0.0, 0.0, 0.0};
+            Temperature_FreeStreamND = 0.0, Gas_Constant         = 0.0, Gas_ConstantND      = 0.0,
+            Viscosity_FreeStreamND   = 0.0, Tke_FreeStreamND     = 0.0,
+            Total_UnstTimeND         = 0.0, Delta_UnstTimeND     = 0.0,
+            Velocity_FreeStreamND[3] = {0.0, 0.0, 0.0};
 
   su2double Mass    = 0.0, soundspeed = 0.0, GasConstant_Inf = 0.0, Froude = 0.0,
-      rhoCvtr = 0.0, rhoE       = 0.0, sqvel           = 0.0;
+            rhoCvtr = 0.0, rhoE       = 0.0, sqvel           = 0.0;
 
   unsigned short iDim,nEl,nHeavy;
 
@@ -3877,10 +3877,13 @@ void CTNE2EulerSolver::BC_Far_Field(CGeometry *geometry, CSolver **solution_cont
   su2double Gas_Constant     = config->GetGas_ConstantND();
 
   /*--- Getting info from config ---*/
-  unsigned short VEL_INDEX     = node[0]->GetVelIndex();
-  unsigned short RHOCVTR_INDEX = node[0]->GetRhoCvtrIndex() ;
-  unsigned short RHO_INDEX     = node[0]->GetRhoIndex();
-  unsigned short A_INDEX       = node[0]->GetAIndex();
+  unsigned short VEL_INDEX       = node[0]->GetVelIndex();
+  unsigned short RHOCVTR_INDEX   = node[0]->GetRhoCvtrIndex() ;
+  unsigned short RHO_INDEX       = node[0]->GetRhoIndex();
+  unsigned short A_INDEX         = node[0]->GetAIndex();
+  unsigned short LAM_VISC_INDEX  = node[0]->GetLamViscIndex();
+  unsigned short EDDY_VISC_INDEX = node[0]->GetEddyViscIndex();
+
 
   /*--- Set booleans from configuration parameters ---*/
   bool implicit = (config->GetKind_TimeIntScheme_TNE2() == EULER_IMPLICIT);
@@ -3965,13 +3968,16 @@ void CTNE2EulerSolver::BC_Far_Field(CGeometry *geometry, CSolver **solution_cont
                                 geometry->node[Point_Normal]->GetCoord() );
         visc_numerics->SetNormal(Normal);
 
+
+        /*--- Set eddy viscosity at the infinity ---*/
+        V_infty[EDDY_VISC_INDEX] = V_domain[EDDY_VISC_INDEX];
+
         /*--- Primitive variables, and gradient ---*/
         visc_numerics->SetConservative(node[iPoint]->GetSolution(),
                                        node_infty->GetSolution() );
         visc_numerics->SetConsVarGradient(node[iPoint]->GetGradient(),
                                           node_infty->GetGradient() );
-        visc_numerics->SetPrimitive(node[iPoint]->GetPrimVar(),
-                                    node_infty->GetPrimVar() );
+        visc_numerics->SetPrimitive(V_domain,V_infty);
         visc_numerics->SetPrimVarGradient(node[iPoint]->GetGradient_Primitive(),
                                           node_infty->GetGradient_Primitive() );
 
@@ -6261,9 +6267,10 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
   bool limiter_turb     = ((config->GetKind_SlopeLimit_Turb() != NO_LIMITER) && (ExtIter <= config->GetLimiterIter()) && !(disc_adjoint && config->GetFrozen_Limiter_Disc()));
   bool van_albada       = (config->GetKind_SlopeLimit_TNE2() == VAN_ALBADA_EDGE);
   bool nonPhys;
-
+  su2double eddy_visc;
   su2double *errU, *errV;
   su2double StrainMag = 0.0, Omega = 0.0, *Vorticity;
+  unsigned short turb_model = config->GetKind_Turb_Model();
 
   errU = new su2double[nVar];
   errV = new su2double[nPrimVar];
@@ -6273,6 +6280,12 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
     /*--- Set the primitive variables incompressible (dens, vx, vy, vz, beta)
           and compressible (temp, vx, vy, vz, press, dens, enthal, sos)---*/
     nonPhys = node[iPoint]->SetPrimVar_Compressible(config, FluidModel);
+
+    if (turb_model != NONE){
+      eddy_visc = solver_container[TURB_SOL]->node[iPoint]->GetmuT();
+      node[iPoint]->SetEddyViscosity(eddy_visc);
+    }
+
     if (nonPhys) {
       ErrorCounter++;
     }
@@ -6366,13 +6379,14 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
                                  unsigned long Iteration) {
 
   unsigned short iDim, iMarker, iSpecies;
-  unsigned short VEL_INDEX, RHO_INDEX, RHOS_INDEX, A_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX, LAM_VISC_INDEX, K_INDEX, KVE_INDEX;
+  unsigned short VEL_INDEX, RHO_INDEX, RHOS_INDEX, A_INDEX, RHOCVTR_INDEX,
+                 RHOCVVE_INDEX, LAM_VISC_INDEX, EDDY_VISC_INDEX, K_INDEX, KVE_INDEX;
   unsigned long iEdge, iVertex, iPoint, jPoint;
   su2double *Normal, Area, Vol;
   su2double Mean_SoundSpeed, Mean_ProjVel;
   su2double Lambda, Local_Delta_Time, Local_Delta_Time_Visc, Global_Delta_Time;
-  su2double Mean_LaminarVisc, Mean_ThermalCond, Mean_ThermalCond_ve, Mean_Density, Mean_Tve;
-  su2double cp, cv, cvve, RuSI, Ru, *xi, *Ms, Na, Mmix, Rmix;
+  su2double Mean_LaminarVisc, Mean_EddyVisc, Mean_ThermalCond, Mean_ThermalCond_ve, Mean_Density, Mean_Tve;
+  su2double Cp, Cv, Cvve, RuSI, Ru, *xi, *Ms, Na, Mmix, Rmix;
   su2double Lambda_1, Lambda_2, K_v, Global_Delta_UnstTimeND;
   su2double *V_i, *V_j, *X;
   su2double UnitNormal[3];
@@ -6389,23 +6403,23 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
   K_v    = 0.5;
   iPoint = 0;
   jPoint = 0;
-  RuSI = UNIVERSAL_GAS_CONSTANT;
-  Ru   = 1000.0*RuSI;
-  Na   = AVOGAD_CONSTANT;
+  RuSI   = UNIVERSAL_GAS_CONSTANT;
+  Ru     = 1000.0*RuSI;
+  Na     = AVOGAD_CONSTANT;
 
-  A_INDEX = node_infty->GetAIndex();
-  VEL_INDEX  = node_infty->GetVelIndex();
-  RHO_INDEX  = node_infty->GetRhoIndex();
-  RHOS_INDEX = node_infty->GetRhosIndex();
-  RHOCVTR_INDEX = node_infty->GetRhoCvtrIndex();
-  RHOCVVE_INDEX = node_infty->GetRhoCvveIndex();
-  LAM_VISC_INDEX = node_infty->GetLamViscIndex();
-  K_INDEX = node_infty->GetKIndex();
-  KVE_INDEX = node_infty->GetKveIndex();
+  /*--- Initializing Indices ---*/
+  A_INDEX         = node_infty->GetAIndex();
+  VEL_INDEX       = node_infty->GetVelIndex();
+  RHO_INDEX       = node_infty->GetRhoIndex();
+  RHOS_INDEX      = node_infty->GetRhosIndex();
+  RHOCVTR_INDEX   = node_infty->GetRhoCvtrIndex();
+  RHOCVVE_INDEX   = node_infty->GetRhoCvveIndex();
+  LAM_VISC_INDEX  = node_infty->GetLamViscIndex();
+  EDDY_VISC_INDEX = node_infty->GetEddyViscIndex();
+  K_INDEX         = node_infty->GetKIndex();
+  KVE_INDEX       = node_infty->GetKveIndex();
 
-  X = new su2double[nSpecies];
-
-  /*--- Get from config ---*/
+  /*--- Read from Fluidmodel ---*/
   xi = FluidModel->GetRotationModes();
   Ms = FluidModel->GetMolar_Mass();
 
@@ -6422,10 +6436,12 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
     iPoint = geometry->edge[iEdge]->GetNode(0);
     jPoint = geometry->edge[iEdge]->GetNode(1);
     Normal = geometry->edge[iEdge]->GetNormal();
+
     Area   = 0;
     for (iDim = 0; iDim < nDim; iDim++)
       Area += Normal[iDim]*Normal[iDim];
     Area = sqrt(Area);
+
     for (iDim = 0; iDim < nDim; iDim++)
       UnitNormal[iDim] = Normal[iDim]/Area;
 
@@ -6434,35 +6450,38 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
     V_j = node[jPoint]->GetPrimVar();
 
     /*--- Calculate the required mean values ---*/
+    Mean_ProjVel = 0.0;
     for (iDim = 0; iDim < nDim; iDim++)
-      Mean_ProjVel      = 0.5*( V_i[VEL_INDEX+iDim]
-          +V_j[VEL_INDEX+iDim] )*UnitNormal[iDim];
-    Mean_SoundSpeed     = 0.5*(V_i[A_INDEX]   + V_j[A_INDEX]);
-    Mean_Density        = 0.5*(V_i[RHO_INDEX] + V_j[RHO_INDEX]);
+      Mean_ProjVel   = 0.5*( V_i[VEL_INDEX+iDim]
+                            +V_j[VEL_INDEX+iDim] )*UnitNormal[iDim];
+    Mean_SoundSpeed  = 0.5*(V_i[A_INDEX]   + V_j[A_INDEX]);
+    Mean_Density     = 0.5*(V_i[RHO_INDEX] + V_j[RHO_INDEX]);
 
     /*--- Calculate the maximum spectral radius from convection ---*/
     Lambda = (fabs(Mean_ProjVel) + Mean_SoundSpeed)*Area;
-    if (geometry->node[iPoint]->GetDomain())
-      node[iPoint]->AddMax_Lambda_Inv(Lambda);
-    if (geometry->node[jPoint]->GetDomain())
-      node[jPoint]->AddMax_Lambda_Inv(Lambda);
+    if (geometry->node[iPoint]->GetDomain())  node[iPoint]->AddMax_Lambda_Inv(Lambda);
+    if (geometry->node[jPoint]->GetDomain())  node[jPoint]->AddMax_Lambda_Inv(Lambda);
 
     /*--- Calculate mean viscous quantities ---*/
     Mean_LaminarVisc    = 0.5*(V_i[LAM_VISC_INDEX] + V_j[LAM_VISC_INDEX]);
-    Mean_ThermalCond    = 0.5*(V_i[K_INDEX] + V_j[K_INDEX]);
+    Mean_EddyVisc       = 0.5*(V_i[EDDY_VISC_INDEX]+ V_j[EDDY_VISC_INDEX]);
+    Mean_ThermalCond    = 0.5*(V_i[K_INDEX]   + V_j[K_INDEX]);
     Mean_ThermalCond_ve = 0.5*(V_i[KVE_INDEX] + V_j[KVE_INDEX]);
 
-    cv = 0.5*(node[iPoint]->GetRhoCv_tr() + node[iPoint]->GetRhoCv_ve() +
-              node[jPoint]->GetRhoCv_tr() + node[jPoint]->GetRhoCv_ve()  )/ Mean_Density;
+    /*--- Compute mean total Cv ---*/
+    Cv = 0.5*(V_i[RHOCVTR_INDEX] + V_i[RHOCVVE_INDEX] +
+              V_j[RHOCVTR_INDEX] + V_j[RHOCVVE_INDEX])/ Mean_Density;
+
+
+    // DELETE ME, SCALE THERMAL COND for TURBULENCE
 
     /*--- Determine the viscous spectral radius and apply it to the control volume ---*/
-    Lambda_1 = (4.0/3.0)*(Mean_LaminarVisc);
-    Lambda_2 = (Mean_ThermalCond+Mean_ThermalCond_ve)/cv;
+    Lambda_1 = (4.0/3.0)*(Mean_LaminarVisc + Mean_EddyVisc);
+    Lambda_2 = (Mean_ThermalCond+Mean_ThermalCond_ve)/Cv;
     Lambda   = (Lambda_1 + Lambda_2)*Area*Area/Mean_Density;
-    if (geometry->node[iPoint]->GetDomain())
-      node[iPoint]->AddMax_Lambda_Visc(Lambda);
-    if (geometry->node[jPoint]->GetDomain())
-      node[jPoint]->AddMax_Lambda_Visc(Lambda);
+
+    if (geometry->node[iPoint]->GetDomain()) node[iPoint]->AddMax_Lambda_Visc(Lambda);
+    if (geometry->node[jPoint]->GetDomain()) node[jPoint]->AddMax_Lambda_Visc(Lambda);
   }
 
   /*--- Loop boundary edges ---*/
@@ -6472,10 +6491,12 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
       /*--- Point identification, Normal vector and area ---*/
       iPoint = geometry->vertex[iMarker][iVertex]->GetNode();
       Normal = geometry->vertex[iMarker][iVertex]->GetNormal();
+
       Area   = 0;
       for (iDim = 0; iDim < nDim; iDim++)
         Area += Normal[iDim]*Normal[iDim];
       Area = sqrt(Area);
+
       for (iDim = 0; iDim < nDim; iDim++)
         UnitNormal[iDim] = Normal[iDim]/Area;
 
@@ -6483,6 +6504,7 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
       V_i = node[iPoint]->GetPrimVar();
 
       /*--- Calculate the required mean values ---*/
+      Mean_ProjVel = 0.0;
       for (iDim = 0; iDim < nDim; iDim++)
         Mean_ProjVel      = V_i[VEL_INDEX+iDim]*UnitNormal[iDim];
       Mean_SoundSpeed     = V_i[A_INDEX];
@@ -6495,18 +6517,21 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
 
       /*--- Calculate viscous mean quantities ---*/
       Mean_LaminarVisc    = V_i[LAM_VISC_INDEX];
+      Mean_EddyVisc       = V_i[EDDY_VISC_INDEX];
       Mean_ThermalCond    = V_i[K_INDEX];
       Mean_ThermalCond_ve = V_i[KVE_INDEX];
       Mean_Density        = node[iPoint]->GetDensity();
-      cv = (node[iPoint]->GetRhoCv_tr() +
-            node[iPoint]->GetRhoCv_ve()  ) / Mean_Density;
 
-      Lambda_1 = (4.0/3.0)*(Mean_LaminarVisc);
-      Lambda_2 = (Mean_ThermalCond+Mean_ThermalCond_ve)/cv;
+      Cv = (V_i[RHOCVTR_INDEX] + V_i[RHOCVVE_INDEX]) / Mean_Density;
+
+      // DELETE ME, SCALE THERMAL COND for TURBULENCE
+
+      /*--- Determine the viscous spectral radius and apply it to the control volume ---*/
+      Lambda_1 = (4.0/3.0)*(Mean_LaminarVisc + Mean_EddyVisc);
+      Lambda_2 = (Mean_ThermalCond+Mean_ThermalCond_ve)/Cv;
       Lambda   = (Lambda_1 + Lambda_2)*Area*Area/Mean_Density;
 
-      if (geometry->node[iPoint]->GetDomain())
-        node[iPoint]->AddMax_Lambda_Visc(Lambda);
+      if (geometry->node[iPoint]->GetDomain()) node[iPoint]->AddMax_Lambda_Visc(Lambda);
     }
   }
 
@@ -6589,7 +6614,6 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
         node[iPoint]->SetDelta_Time(Local_Delta_Time);
       }
     }
-  delete [] X;
 }
 
 void CTNE2NSSolver::Viscous_Residual(CGeometry *geometry,
@@ -6985,10 +7009,11 @@ void CTNE2NSSolver::Source_Residual(CGeometry *geometry,
 void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
 
   unsigned short Boundary, Monitoring, iMarker, iMarker_Monitoring, iDim, jDim;
-  unsigned short VEL_INDEX, T_INDEX, TVE_INDEX, LAM_VISC_INDEX, K_INDEX, KVE_INDEX;
+  unsigned short VEL_INDEX, T_INDEX, TVE_INDEX, LAM_VISC_INDEX,
+      K_INDEX, KVE_INDEX, RHOCVTR_INDEX;
   unsigned long iVertex, iPoint, iPointNormal;
   su2double **Grad_PrimVar, *PrimVar;
-  su2double Delta, Viscosity, ThermalCond, ThermalCond_ve;
+  su2double Delta, Viscosity, Eddy_Viscosity, ThermalCond, ThermalCond_ve;
   su2double TauNormal;
   su2double FrictionVel;
   su2double *Normal, *Coord, *Coord_Normal, Area;
@@ -6996,7 +7021,7 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
   su2double MomentDist[3];
   su2double RefDensity, Density;
   su2double div_vel, RefVel2;
-  su2double dTn, dTven, pnorm;
+  su2double dTn, dTven;
   su2double Alpha, Beta, RefLength, RefArea, *Origin;
   su2double factor;
   su2double MaxNorm = 8.0;
@@ -7004,7 +7029,7 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
   su2double WallShearStress, WallDistMod, WallDist[3];
 
   su2double Vel[3], Velocity_Inf[3];
-
+  su2double *Ms = FluidModel->GetMolar_Mass();
   su2double UnitNormal[3];
   su2double TauElem[3];
   su2double TauTangent[3];
@@ -7013,16 +7038,23 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
   string Marker_Tag, Monitoring_Tag;
 
 #ifdef HAVE_MPI
-  su2double MyAllBound_CD_Visc, MyAllBound_CL_Visc, MyAllBound_CSF_Visc, MyAllBound_CMx_Visc, MyAllBound_CMy_Visc, MyAllBound_CMz_Visc, MyAllBound_CoPx_Visc, MyAllBound_CoPy_Visc, MyAllBound_CoPz_Visc, MyAllBound_CFx_Visc, MyAllBound_CFy_Visc, MyAllBound_CFz_Visc, MyAllBound_CT_Visc, MyAllBound_CQ_Visc, MyAllBound_HF_Visc, MyAllBound_MaxHF_Visc, *MySurface_CL_Visc = NULL, *MySurface_CD_Visc = NULL, *MySurface_CSF_Visc = NULL, *MySurface_CEff_Visc = NULL, *MySurface_CFx_Visc = NULL, *MySurface_CFy_Visc = NULL, *MySurface_CFz_Visc = NULL, *MySurface_CMx_Visc = NULL, *MySurface_CMy_Visc = NULL, *MySurface_CMz_Visc = NULL, *MySurface_HF_Visc = NULL, *MySurface_MaxHF_Visc;
+  su2double MyAllBound_CD_Visc, MyAllBound_CL_Visc, MyAllBound_CSF_Visc, MyAllBound_CMx_Visc,
+  MyAllBound_CMy_Visc, MyAllBound_CMz_Visc, MyAllBound_CoPx_Visc, MyAllBound_CoPy_Visc,
+  MyAllBound_CoPz_Visc, MyAllBound_CFx_Visc, MyAllBound_CFy_Visc, MyAllBound_CFz_Visc, MyAllBound_CT_Visc,
+  MyAllBound_CQ_Visc, MyAllBound_HF_Visc, MyAllBound_MaxHF_Visc,
+  *MySurface_CL_Visc = NULL, *MySurface_CD_Visc = NULL, *MySurface_CSF_Visc = NULL, *MySurface_CEff_Visc = NULL,
+  *MySurface_CFx_Visc = NULL, *MySurface_CFy_Visc = NULL, *MySurface_CFz_Visc = NULL, *MySurface_CMx_Visc = NULL,
+  *MySurface_CMy_Visc = NULL, *MySurface_CMz_Visc = NULL, *MySurface_HF_Visc = NULL, *MySurface_MaxHF_Visc;
 #endif
 
   /*--- Retrieve index information from CVariable ---*/
-  VEL_INDEX = node[0]->GetVelIndex();
-  T_INDEX   = node[0]->GetTIndex();
-  TVE_INDEX = node[0]->GetTveIndex();
-  LAM_VISC_INDEX = node[0]->GetLamViscIndex();
-  K_INDEX   = node[0]->GetKIndex();
-  KVE_INDEX = node[0]->GetKveIndex();
+  VEL_INDEX       = node[0]->GetVelIndex();
+  T_INDEX         = node[0]->GetTIndex();
+  TVE_INDEX       = node[0]->GetTveIndex();
+  LAM_VISC_INDEX  = node[0]->GetLamViscIndex();
+  K_INDEX         = node[0]->GetKIndex();
+  KVE_INDEX       = node[0]->GetKveIndex();
+  RHOCVTR_INDEX   = node[0]->GetRhoCvtrIndex();
 
   /*--- Calculate angle of attack & sideslip ---*/
   Alpha = config->GetAoA()*PI_NUMBER/180.0;
@@ -7134,8 +7166,8 @@ void CTNE2NSSolver::Friction_Forces(CGeometry *geometry, CConfig *config) {
           for (jDim = 0 ; jDim < nDim; jDim++) {
             Delta = 0.0; if (iDim == jDim) Delta = 1.0;
             Tau[iDim][jDim] = Viscosity*(Grad_PrimVar[VEL_INDEX+jDim][iDim] +
-                Grad_PrimVar[VEL_INDEX+iDim][jDim]  )
-                - TWO3*Viscosity*div_vel*Delta;
+                              Grad_PrimVar[VEL_INDEX+iDim][jDim])
+                              - TWO3*Viscosity*div_vel*Delta;
           }
           TauElem[iDim] = 0.0;
           for (jDim = 0; jDim < nDim; jDim++)
@@ -7455,7 +7487,7 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
   /*--- Local variables ---*/
   bool implicit;
   unsigned short iDim, iVar;
-  unsigned short T_INDEX, TVE_INDEX;
+  unsigned short T_INDEX, TVE_INDEX, RHOCVTR_INDEX;
   unsigned long iVertex, iPoint, total_index;
   su2double Wall_HeatFlux, dTdn, dTvedn, ktr, kve, pcontrol;
   su2double *Normal, Area;
@@ -7474,8 +7506,9 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
   Wall_HeatFlux = config->GetWall_HeatFlux(Marker_Tag);
 
   /*--- Get the locations of the primitive variables ---*/
-  T_INDEX    = node[0]->GetTIndex();
-  TVE_INDEX  = node[0]->GetTveIndex();
+  T_INDEX       = node[0]->GetTIndex();
+  TVE_INDEX     = node[0]->GetTveIndex();
+  RHOCVTR_INDEX = node[0]->GetRhoCvtrIndex();
 
   /*--- Loop over all of the vertices on this boundary marker ---*/
   for(iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
@@ -7508,6 +7541,26 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
       }
       ktr = node[iPoint]->GetThermalConductivity();
       kve = node[iPoint]->GetThermalConductivity_ve();
+
+      /*--- Scale thermal conductivity with turb ---*/
+      //delete me
+      // Need to determine proper way to incorporate eddy viscosity
+      // This is only scaling Kve by same factor as ktr
+      su2double Mass = 0.0;
+      su2double *Ms = FluidModel->GetMolar_Mass();
+      su2double tmp1, scl, Cptr;
+      su2double Ru=1000.0*UNIVERSAL_GAS_CONSTANT;
+      su2double *V = node[iPoint]->GetPrimVar();
+      su2double eddy_viscosity=node[iPoint]->GetEddyViscosity();
+      for (unsigned short iSpecies=0; iSpecies<nSpecies; iSpecies++)
+        Mass += V[iSpecies]*Ms[iSpecies];
+      Cptr = V[RHOCVTR_INDEX]+Ru/Mass;
+      tmp1 = Cptr*(eddy_viscosity/Prandtl_Turb);
+      scl  = tmp1/ktr;
+      ktr += Cptr*(eddy_viscosity/Prandtl_Turb);
+      kve  = kve*(1.0+scl);
+      //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+      //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
 
       Res_Visc[nSpecies+nDim]   += pcontrol*(ktr*dTdn+kve*dTvedn) +
                                    Wall_HeatFlux*Area;
@@ -7645,7 +7698,7 @@ void CTNE2NSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
   /*--- Local variables ---*/
   bool implicit, catalytic;
   unsigned short iDim, iSpecies, iVar;
-  unsigned short T_INDEX, TVE_INDEX, RHOS_INDEX, RHO_INDEX;
+  unsigned short T_INDEX, TVE_INDEX, RHOS_INDEX, RHO_INDEX, RHOCVTR_INDEX;
   unsigned long iVertex, iPoint, total_index;
   su2double Wall_HeatFlux, dTdn, dTvedn, ktr, kve, pcontrol;
   su2double rho, Ys, eves, hs;
@@ -7667,10 +7720,11 @@ void CTNE2NSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
   Wall_HeatFlux = config->GetWall_HeatFlux(Marker_Tag);
 
   /*--- Get the locations of the primitive variables ---*/
-  T_INDEX    = node[0]->GetTIndex();
-  TVE_INDEX  = node[0]->GetTveIndex();
-  RHOS_INDEX = node[0]->GetRhosIndex();
-  RHO_INDEX  = node[0]->GetRhoIndex();
+  T_INDEX       = node[0]->GetTIndex();
+  TVE_INDEX     = node[0]->GetTveIndex();
+  RHOS_INDEX    = node[0]->GetRhosIndex();
+  RHO_INDEX     = node[0]->GetRhoIndex();
+  RHOCVTR_INDEX = node[0]->GetRhoCvtrIndex();
 
   /*--- Allocate arrays ---*/
   dYdn = new su2double[nSpecies];
@@ -7767,6 +7821,26 @@ void CTNE2NSSolver::BC_HeatFluxCatalytic_Wall(CGeometry *geometry,
       /*--- Get node thermal conductivity ---*/
       ktr = node[iPoint]->GetThermalConductivity();
       kve = node[iPoint]->GetThermalConductivity_ve();
+
+      /*--- Scale thermal conductivity with turb ---*/
+      //delete me
+      // Need to determine proper way to incorporate eddy viscosity
+      // This is only scaling Kve by same factor as ktr
+      su2double Mass = 0.0;
+      su2double *Ms = FluidModel->GetMolar_Mass();
+      su2double tmp1, scl, Cptr;
+      su2double Ru=1000.0*UNIVERSAL_GAS_CONSTANT;
+      su2double *V = node[iPoint]->GetPrimVar();
+      su2double eddy_viscosity=node[iPoint]->GetEddyViscosity();
+      for (unsigned short iSpecies=0; iSpecies<nSpecies; iSpecies++)
+        Mass += V[iSpecies]*Ms[iSpecies];
+      Cptr = V[RHOCVTR_INDEX]+Ru/Mass;
+      tmp1 = Cptr*(eddy_viscosity/Prandtl_Turb);
+      scl  = tmp1/ktr;
+      ktr += Cptr*(eddy_viscosity/Prandtl_Turb);
+      kve  = kve*(1.0+scl);
+      //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+      //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
 
       /*--- Set the residual on the boundary with the specified heat flux ---*/
       // Note: Contributions from qtr and qve are used for proportional control
@@ -7915,6 +7989,26 @@ void CTNE2NSSolver::BC_Isothermal_Wall(CGeometry *geometry,
       /*--- Rename variables for convenience ---*/
       ktr     = node[iPoint]->GetThermalConductivity();
       kve     = node[iPoint]->GetThermalConductivity_ve();
+
+      /*--- Scale thermal conductivity with turb ---*/
+      //delete me
+      // Need to determine proper way to incorporate eddy viscosity
+      // This is only scaling Kve by same factor as ktr
+      su2double Mass = 0.0;
+      su2double *Ms = FluidModel->GetMolar_Mass();
+      su2double tmp1, scl, Cptr;
+      su2double Ru=1000.0*UNIVERSAL_GAS_CONSTANT;
+      su2double *V = node[iPoint]->GetPrimVar();
+      su2double eddy_viscosity=node[iPoint]->GetEddyViscosity();
+      for (unsigned short iSpecies=0; iSpecies<nSpecies; iSpecies++)
+        Mass += V[iSpecies]*Ms[iSpecies];
+      Cptr = V[RHOCVTR_INDEX]+Ru/Mass;
+      tmp1 = Cptr*(eddy_viscosity/Prandtl_Turb);
+      scl  = tmp1/ktr;
+      ktr += Cptr*(eddy_viscosity/Prandtl_Turb);
+      kve  = kve*(1.0+scl);
+      //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+      //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
 
       /*--- Apply to the linear system ---*/
       Res_Visc[nSpecies+nDim]   = ((ktr*(Ti-Tj)    + kve*(Tvei-Tvej)) +

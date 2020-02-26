@@ -1650,7 +1650,7 @@ enum ENUM_OUTPUT_VARS {
   VEL_X = 2,        /*!< \brief X-component of velocity. */
   VEL_Y = 3,        /*!< \brief Y-component of velocity. */
   VEL_Z = 4,        /*!< \brief Z-component of velocity. */
-  PRESSURE = 5, 		/*!< \brief Static pressure. */
+  PRESSURE = 5, 	/*!< \brief Static pressure. */
   MACH = 6,         /*!< \brief Mach number. */
   TEMPERATURE = 7,  /*!< \brief Temperature. */
   LAM_VISC = 8,     /*!< \brief Laminar viscosity. */

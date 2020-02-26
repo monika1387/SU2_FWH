@@ -138,6 +138,18 @@ public:
   inline su2double *GetVorticity(void) {return Vorticity; }
 
   /*!
+   * \brief Get the laminar viscosity of the flow.
+   * \return Value of the laminar viscosity of the flow.
+   */
+  inline su2double GetLaminarViscosity(void) {return Primitive[LAM_VISC_INDEX]; }
+
+  /*!
+   * \overload
+   * \param[in] eddy_visc - Value of the eddy viscosity.
+   */
+  inline void SetEddyViscosity(su2double eddy_visc) {Primitive[EDDY_VISC_INDEX] = eddy_visc; }
+
+  /*!
    * \brief Get the value of the magnitude of rate of strain.
    * \return Value of the rate of strain magnitude.
    */

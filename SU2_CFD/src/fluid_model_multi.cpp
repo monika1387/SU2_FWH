@@ -1164,7 +1164,6 @@ void CTNE2Gas::CalcdTvedU(su2double *V, su2double *val_eves, su2double *val_dTve
 void CTNE2Gas::Calc_TransportCoeff(CConfig *config, su2double *V){
 
   switch (config->GetKind_TransCoeffModel()) {
-
   case WILKE:{
 
     su2double Xs[nSpecies], conc;
@@ -1635,7 +1634,6 @@ void CTNE2Gas::Calc_ThermalConductivity_GY(su2double *V) {
     ThermalCond_ve += kb*Cvve/R*gam_i / denom_r;
   }
 }
-
 
 CMutationGas::CMutationGas(string Mixfile, string Transport, unsigned short val_nSpecies,
                            unsigned short val_nDim, bool val_ionization, bool val_viscous):

@@ -2040,8 +2040,8 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
     UnitNormal[iDim] = Normal[iDim]/Area;
 
   /*--- Mean gradient approximation ---*/
-  // Mass fraction
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+    // Mass fractions
     PrimVar_i[iSpecies] = V_i[iSpecies]/V_i[RHO_INDEX];
     PrimVar_j[iSpecies] = V_j[iSpecies]/V_j[RHO_INDEX];
     Mean_PrimVar[iSpecies] = 0.5*(PrimVar_i[iSpecies] + PrimVar_j[iSpecies]);
@@ -2058,6 +2058,7 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
     }
   }
 
+  /*--- Finish mean primitive gradient ---*/
   for (iVar = nSpecies; iVar < nPrimVar; iVar++) {
     PrimVar_i[iVar] = V_i[iVar];
     PrimVar_j[iVar] = V_j[iVar];
@@ -2068,15 +2069,19 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++)
     Mean_Diffusion_Coeff[iSpecies] = Mean_PrimVar[DIFF_COEFF_INDEX+iSpecies];
   Mean_Laminar_Viscosity           = Mean_PrimVar[LAM_VISC_INDEX];
+  Mean_Eddy_Viscosity              = Mean_PrimVar[EDDY_VISC_INDEX];
   Mean_Thermal_Conductivity        = Mean_PrimVar[K_INDEX];
   Mean_Thermal_Conductivity_ve     = Mean_PrimVar[KVE_INDEX];
 
+  /*---Finish mean gradient approximation ---*/
   for (iVar = nSpecies; iVar < nPrimVarGrad; iVar++) {
     for (iDim = 0; iDim < nDim; iDim++) {
       Mean_GradPrimVar[iVar][iDim] = 0.5*(PrimVar_Grad_i[iVar][iDim] +
                                           PrimVar_Grad_j[iVar][iDim]);
     }
   }
+
+  /*--- Mean v-e mode quantities ---*/
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
     Mean_Eve[iSpecies]  = 0.5*(eve_i[iSpecies]  + eve_j[iSpecies]);
     Mean_Cvve[iSpecies] = 0.5*(Cvve_i[iSpecies] + Cvve_j[iSpecies]);
@@ -2084,7 +2089,7 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
 
   /*--- Get projected flux tensor ---*/
   GetViscousProjFlux(Mean_PrimVar, Mean_GradPrimVar, Mean_Eve, Normal,
-                     Mean_Diffusion_Coeff, Mean_Laminar_Viscosity,
+                     Mean_Diffusion_Coeff, Mean_Laminar_Viscosity, Mean_Eddy_Viscosity,
                      Mean_Thermal_Conductivity, Mean_Thermal_Conductivity_ve,
                      config);
 
@@ -2114,6 +2119,7 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
                                        su2double *val_normal,
                                        su2double *val_diffusioncoeff,
                                        su2double val_viscosity,
+                                       su2double val_eddy_viscosity,
                                        su2double val_therm_conductivity,
                                        su2double val_therm_conductivity_ve,
                                        CConfig *config) {
@@ -2126,8 +2132,9 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
   bool ionization;
   unsigned short iSpecies, iVar, iDim, jDim, nHeavy, nEl;
   su2double *Ds, *V, **GV, mu, ktr, kve, div_vel;
-  su2double Ru, RuSI;
+  su2double Ru, RuSI, Cptr,Cpve, Mass;
   su2double rho, T, Tve;
+  su2double *Ms = FluidModel->GetMolar_Mass();
 
   /*--- Initialize ---*/
   for (iVar = 0; iVar < nVar; iVar++) {
@@ -2143,7 +2150,7 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
 
   /*--- Rename for convenience ---*/
   Ds  = val_diffusioncoeff;
-  mu  = val_viscosity;
+  mu  = val_viscosity+val_eddy_viscosity;
   ktr = val_therm_conductivity;
   kve = val_therm_conductivity_ve;
   rho = val_primvar[RHO_INDEX];
@@ -2176,17 +2183,33 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
   for (iDim = 0 ; iDim < nDim; iDim++) {
     for (jDim = 0 ; jDim < nDim; jDim++) {
       tau[iDim][jDim] += mu * (val_gradprimvar[VEL_INDEX+jDim][iDim] +
-          val_gradprimvar[VEL_INDEX+iDim][jDim]);
+                               val_gradprimvar[VEL_INDEX+iDim][jDim]);
     }
     tau[iDim][iDim] -= TWO3*mu*div_vel;
   }
+
+  /*--- Scale thermal conductivity with turb visc ---*/
+  //delete me
+  // Need to determine proper way to incorporate eddy viscosity
+  // This is only scaling Kve by same factor as ktr
+  Mass = 0.0;
+  su2double tmp1, scl;
+  for (iSpecies=0;iSpecies<nSpecies;iSpecies++)
+    Mass += V[iSpecies]*Ms[iSpecies];
+  Cptr = V[RHOCVTR_INDEX]+Ru/Mass;
+  tmp1 = Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  scl  = tmp1/ktr;
+  ktr += Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  kve  = kve*(1.0+scl);
+  //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+  //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
 
   /*--- Populate entries in the viscous flux vector ---*/
   for (iDim = 0; iDim < nDim; iDim++) {
     /*--- Species diffusion velocity ---*/
     for (iSpecies = 0; iSpecies < nHeavy; iSpecies++) {
       Flux_Tensor[iSpecies][iDim] = rho*Ds[iSpecies]*GV[RHOS_INDEX+iSpecies][iDim]
-          - V[RHOS_INDEX+iSpecies]*Vector[iDim];
+                                    - V[RHOS_INDEX+iSpecies]*Vector[iDim];
     }
     if (ionization) {
       cout << "GetViscProjFlux -- NEED TO IMPLEMENT IONIZED FUNCTIONALITY!!!" << endl;
@@ -2207,7 +2230,7 @@ void CAvgGrad_TNE2::GetViscousProjFlux(su2double *val_primvar,
 
     /*--- Heat transfer terms ---*/
     Flux_Tensor[nSpecies+nDim][iDim]   += ktr*GV[T_INDEX][iDim] +
-        kve*GV[TVE_INDEX][iDim];
+                                          kve*GV[TVE_INDEX][iDim];
     Flux_Tensor[nSpecies+nDim+1][iDim] += kve*GV[TVE_INDEX][iDim];
   }
 
@@ -2224,6 +2247,7 @@ void CAvgGrad_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
                                        su2double *val_Mean_Cvve,
                                        su2double *val_diffusion_coeff,
                                        su2double val_laminar_viscosity,
+                                       su2double val_eddy_viscosity,
                                        su2double val_thermal_conductivity,
                                        su2double val_thermal_conductivity_ve,
                                        su2double val_dist_ij, su2double *val_normal,
@@ -2306,6 +2330,23 @@ void CAvgGrad_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
   }
   for (iDim = 0; iDim < nDim; iDim++)
     vel[iDim] = val_Mean_PrimVar[VEL_INDEX+iDim];
+
+  /*--- Scale thermal conductivity with turb visc ---*/
+  //delete me
+  // Need to determine proper way to incorporate eddy viscosity
+  // This is only scaling Kve by same factor as ktr
+  su2double Mass = 0.0;
+  su2double Cptr;
+  su2double tmp1, scl;
+  for (iSpecies=0;iSpecies<nSpecies;iSpecies++)
+    Mass += 0.5*(V_i[iSpecies]+V_j[iSpecies])*Ms[iSpecies];
+  Cptr = 0.5*(V_i[RHOCVTR_INDEX]+V_j[RHOCVTR_INDEX])+Ru/Mass;
+  tmp1 = Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  scl  = tmp1/ktr;
+  ktr += Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  kve  = kve*(1.0+scl);
+  //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+  //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
 
   /*--- Calculate useful diffusion parameters ---*/
   // Summation term of the diffusion fluxes
@@ -2610,6 +2651,7 @@ void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,
                                                 su2double *val_normal,
                                                 su2double *val_diffusioncoeff,
                                                 su2double val_viscosity,
+                                                su2double val_eddy_viscosity,
                                                 su2double val_therm_conductivity,
                                                 su2double val_therm_conductivity_ve,
                                                 CConfig *config) {
@@ -2621,7 +2663,7 @@ void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,
 
   bool ionization;
   unsigned short iSpecies, iVar, iDim, jDim, nHeavy, nEl;
-  su2double *Ds, *V, **GV, mu, ktr, kve, div_vel;
+  su2double *Ds, *V, **GV, *Ms, mu, ktr, kve, div_vel;
   su2double Ru, RuSI;
   su2double rho, T, Tve;
 
@@ -2636,6 +2678,7 @@ void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,
   ionization = config->GetIonization();
   if (ionization) { nHeavy = nSpecies-1; nEl = 1; }
   else            { nHeavy = nSpecies;   nEl = 0; }
+  Ms         = FluidModel->GetMolar_Mass();
 
   /*--- Rename for convenience ---*/
   Ds  = val_diffusioncoeff;
@@ -2676,6 +2719,23 @@ void CAvgGradCorrected_TNE2::GetViscousProjFlux(su2double *val_primvar,
     }
     tau[iDim][iDim] -= TWO3*mu*div_vel;
   }
+
+  /*--- Scale thermal conductivity with turb visc ---*/
+  //delete me
+  // Need to determine proper way to incorporate eddy viscosity
+  // This is only scaling Kve by same factor as ktr
+  su2double Mass = 0.0;
+  su2double tmp1, scl, Cptr;
+  for (iSpecies=0;iSpecies<nSpecies;iSpecies++)
+    Mass += V[iSpecies]*Ms[iSpecies];
+  Cptr = V[RHOCVTR_INDEX]+Ru/Mass;
+  tmp1 = Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  scl  = tmp1/ktr;
+  ktr += Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  kve  = kve*(1.0+scl);
+  //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+  //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
+
 
   /*--- Populate entries in the viscous flux vector ---*/
   for (iDim = 0; iDim < nDim; iDim++) {
@@ -2720,6 +2780,7 @@ void CAvgGradCorrected_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
                                                 su2double *val_Mean_Cvve,
                                                 su2double *val_diffusion_coeff,
                                                 su2double val_laminar_viscosity,
+                                                su2double val_eddy_viscosity,
                                                 su2double val_thermal_conductivity,
                                                 su2double val_thermal_conductivity_ve,
                                                 su2double val_dist_ij, su2double *val_normal,
@@ -2804,6 +2865,22 @@ void CAvgGradCorrected_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
   for (iDim = 0; iDim < nDim; iDim++)
     vel[iDim] = val_Mean_PrimVar[VEL_INDEX+iDim];
 
+  /*--- Scale thermal conductivity with turb visc ---*/
+  //delete me
+  // Need to determine proper way to incorporate eddy viscosity
+  // This is only scaling Kve by same factor as ktr
+  su2double Mass = 0.0;
+  su2double tmp1, scl, Cptr;
+  for (iSpecies=0;iSpecies<nSpecies;iSpecies++)
+    Mass += val_Mean_PrimVar[iSpecies]*Ms[iSpecies];
+  Cptr = val_Mean_PrimVar[RHOCVTR_INDEX]+Ru/Mass;
+  tmp1 = Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  scl  = tmp1/ktr;
+  ktr += Cptr*(val_eddy_viscosity/Prandtl_Turb);
+  kve  = kve*(1.0+scl);
+  //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
+  //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
+
   /*--- Calculate useful diffusion parameters ---*/
   // Summation term of the diffusion fluxes
   sumY = 0.0;
@@ -2814,7 +2891,6 @@ void CAvgGradCorrected_TNE2::GetViscousProjJacs(su2double *val_Mean_PrimVar,
     sumY_j += Ds[iSpecies]*theta/dij*Ys_j[iSpecies];
     sumY   += Ds[iSpecies]*theta/dij*(Ys_j[iSpecies]-Ys_i[iSpecies]);
   }
-
 
   for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
     for (jSpecies  = 0; jSpecies < nSpecies; jSpecies++) {

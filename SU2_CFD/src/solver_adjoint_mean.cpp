@@ -2852,9 +2852,39 @@ void CAdjEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_cont
   bool axisymmetric   = config->GetAxisymmetric();
   //  bool gravity        = (config->GetGravityForce() == YES);
   bool harmonic_balance  = (config->GetUnsteady_Simulation() == HARMONIC_BALANCE);
+  bool body_force       = config->GetBody_Force();
+  cout << "at solver_adjoint_source_residual" << endl;
   
   /*--- Initialize the source residual to zero ---*/
   for (iVar = 0; iVar < nVar; iVar++) Residual[iVar] = 0.0;
+
+  if (body_force) {
+
+      /*--- Loop over all points ---*/
+      for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+
+          /*--- Load the adjoint variables ---*/
+          numerics->SetAdjointVar(node[iPoint]->GetSolution(),
+                  node[iPoint]->GetSolution());
+
+          /*--- Load the volume of the dual mesh cell ---*/
+          numerics->SetVolume(geometry->node[iPoint]->GetVolume());
+
+          /*--- Set coordinates ---*/
+          numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[iPoint]->GetCoord());
+
+          /*--- Load the primitive variables ---*/
+          numerics->SetPrimitive(node[iPoint]->GetPrimitive(), node[iPoint]->GetPrimitive());
+
+          cout << "at bf_solver_adjoint" << endl;
+          /*--- Compute the adjoint body force source residual ---*/
+          numerics->ComputeResidual(Residual, config);
+
+          /*--- Add the source residual to the total ---*/
+          LinSysRes.AddBlock(iPoint, Residual);
+
+      }
+  }
   
   if (rotating_frame) {
     

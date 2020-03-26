@@ -45,7 +45,10 @@ CDiscAdjVariable::CDiscAdjVariable() : CVariable() {
   Sensitivity    = NULL;
 
   DualTime_Derivative   = NULL;
-  DualTime_Derivative_n = NULL; 
+  DualTime_Derivative_n = NULL;
+
+  BFSource_Direct = NULL;
+  Adjoint_BFSource = NULL;
 
 }
 
@@ -54,15 +57,18 @@ CDiscAdjVariable::CDiscAdjVariable(su2double* val_solution, unsigned short val_n
 
   bool dual_time = (config->GetUnsteady_Simulation() == DT_STEPPING_1ST)
       || (config->GetUnsteady_Simulation() == DT_STEPPING_2ND);
+  bool body_force = config->GetBody_Force();
 
   bool fsi = config->GetFSI_Simulation();
   /*--- Initialize arrays to NULL ---*/
 
-  Solution_Direct = NULL;
-  Sensitivity    = NULL;
+  Solution_Direct   = NULL;
+  Sensitivity       = NULL;
+  BFSource_Direct   = NULL;
 
   DualTime_Derivative   = NULL;
   DualTime_Derivative_n = NULL;
+  Adjoint_BFSource      = NULL;
 
   if (dual_time) {
     DualTime_Derivative = new su2double[nVar];
@@ -70,7 +76,6 @@ CDiscAdjVariable::CDiscAdjVariable(su2double* val_solution, unsigned short val_n
   }
 
   Solution_Direct = new su2double[nVar];
-
   Sensitivity = new su2double[nDim];
 
   unsigned short iVar,iDim;
@@ -90,6 +95,17 @@ CDiscAdjVariable::CDiscAdjVariable(su2double* val_solution, unsigned short val_n
       Solution_time_n1[iVar] = 0.0;
       DualTime_Derivative[iVar] = 0.0;
       DualTime_Derivative_n[iVar] = 0.0;
+    }
+  }
+
+  if (body_force) {
+    BFSource_Direct = new su2double[nDim];
+    Adjoint_BFSource = new su2double[nVar];
+    for (iDim = 0; iDim < nDim; iDim++) {
+      BFSource_Direct[iDim] = 0.0;
+    }
+    for (iVar = 0; iVar < nVar; iVar++){
+      Adjoint_BFSource[iVar] = 0.0;
     }
   }
 
@@ -146,5 +162,8 @@ CDiscAdjVariable::~CDiscAdjVariable() {
 
   if (DualTime_Derivative   != NULL) delete [] DualTime_Derivative;
   if (DualTime_Derivative_n != NULL) delete [] DualTime_Derivative_n;
+
+  if (BFSource_Direct != NULL) delete [] BFSource_Direct;
+  if (Adjoint_BFSource != NULL) delete [] Adjoint_BFSource;
 
 }

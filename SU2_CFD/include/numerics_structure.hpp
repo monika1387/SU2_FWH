@@ -1062,7 +1062,15 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   virtual void ComputeResidual(su2double *val_residual, CConfig *config);
-  
+
+  /*!
+   * \brief Compute the numerical residual.
+   * \param[out] val_residual - Pointer to the total residual.
+   * \param[in] config - Definition of the particular problem.
+   * \param[in] val_bodyforceturbo - Pointer to turbo body force vector
+   */
+  virtual void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo);
+
   /*!
    * \overload
    * \param[out] val_residual_i - Pointer to the total residual at point i.
@@ -5193,8 +5201,9 @@ public:
    * \brief Source term integration for a body force.
    * \param[out] val_residual - Pointer to the residual vector.
    * \param[in] config - Definition of the particular problem.
+   * \param[in] Coord_i - Coordinates of iPoint.
    */
-  void ComputeResidual(su2double *val_residual, CConfig *config);
+  void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo);
 
 };
 
@@ -5458,6 +5467,39 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   void ComputeResidual(su2double *val_residual, su2double **val_Jacobian_i, CConfig *config);
+};
+
+/*!
+ * \class CSourceBodyForce_AdjFlow
+ * \brief Class for the source term integration of an adjoint body force.
+ * \ingroup SourceDiscr
+ * \author T. Economon
+ */
+class CSourceBodyForce_AdjFlow : public CNumerics {
+    su2double *Body_Force_Vector;
+
+public:
+
+    /*!
+     * \param[in] val_nDim - Number of dimensions of the problem.
+     * \param[in] val_nVar - Number of variables of the problem.
+     * \param[in] config - Definition of the particular problem.
+     */
+    CSourceBodyForce_AdjFlow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config);
+
+    /*!
+     * \brief Destructor of the class.
+     */
+    ~CSourceBodyForce_AdjFlow(void);
+
+    /*!
+     * \brief Source term integration for an adjoint body force.
+     * \param[out] val_residual - Pointer to the residual vector.
+     * \param[in] config - Definition of the particular problem.
+     * \param[in] Coord_i - Coordinates of iPoint.
+     */
+    void ComputeResidual(su2double *val_residual, CConfig *config);
+
 };
 
 /*!

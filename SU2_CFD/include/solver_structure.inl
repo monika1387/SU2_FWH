@@ -592,6 +592,8 @@ inline void CSolver::Source_Residual(CGeometry *geometry, CSolver **solver_conta
 inline void CSolver::Source_Template(CGeometry *geometry, CSolver **solver_container, 
                           CNumerics *numerics, CConfig *config, unsigned short iMesh) { }
 
+inline void CSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) {}
+
 inline su2double CSolver::GetTotal_Sens_Geo() { return 0; }
 
 inline su2double CSolver::GetTotal_Sens_Mach() { return 0; }

@@ -36,6 +36,7 @@
  */
 
 #include "../include/solver_structure.hpp"
+using namespace std;
 
 CSolver::CSolver(void) {
 
@@ -62,6 +63,7 @@ CSolver::CSolver(void) {
   Vector             = NULL;
   Vector_i           = NULL;
   Vector_j           = NULL;
+  Vector_BF          = NULL;
   Res_Conv           = NULL;
   Res_Visc           = NULL;
   Res_Sour           = NULL;
@@ -88,6 +90,9 @@ CSolver::CSolver(void) {
   nRow_InletFile    = NULL;
   nCol_InletFile    = NULL;
   Inlet_Data        = NULL;
+
+  /*--- Camber normal data structure ---*/
+  Camber_Normals_Data = NULL;
 
   /*--- Variable initialization to avoid valgrid warnings when not used. ---*/
   IterLinSolver = 0;
@@ -144,6 +149,7 @@ CSolver::~CSolver(void) {
   if (Vector != NULL) delete [] Vector;
   if (Vector_i != NULL) delete [] Vector_i;
   if (Vector_j != NULL) delete [] Vector_j;
+  if (Vector_BF!= NULL) delete [] Vector_BF;
   if (Res_Conv != NULL) delete [] Res_Conv;
   if (Res_Visc != NULL) delete [] Res_Visc;
   if (Res_Sour != NULL) delete [] Res_Sour;
@@ -207,6 +213,7 @@ CSolver::~CSolver(void) {
   if (nRow_InletFile    != NULL) {delete [] nRow_InletFile;    nRow_InletFile    = NULL;}
   if (nCol_InletFile    != NULL) {delete [] nCol_InletFile;    nCol_InletFile    = NULL;}
   if (Inlet_Data        != NULL) {delete [] Inlet_Data;        Inlet_Data        = NULL;}
+  if (Camber_Normals_Data !=NULL) {delete [] Camber_Normals_Data; Camber_Normals_Data = NULL;}
 
 }
 
@@ -3048,6 +3055,54 @@ void CSolver::Read_SU2_Restart_Metadata(CGeometry *geometry, CConfig *config, bo
   if ((config->GetDiscard_InFiles() == false) && (!adjoint || (adjoint && config->GetRestart())))
     config->SetExtIter_OffSet(ExtIter_);
 
+}
+
+void CSolver::Load_BFCamberNormals(CGeometry *geometry, CConfig *config) {
+//    nDim = geometry->GetnDim();
+//    string cambers_filename = config->GetBF_Normals_Filename();
+//
+//    /*--- Read body force camber normal file in ASCII format ---*/
+//    ifstream normals_file;
+//    string text_line;
+//    int numRows = 0, numColumns = 0, row = 0;
+//
+//    /*--- Open the normals file ---*/
+//    normals_file.open(cambers_filename, ios::in);
+//
+//    /*--- Read normals file and determine length ---*/
+//    while (!normals_file.eof()) {
+//        if (numRows == 0) {
+//            while (getline(normals_file, text_line)) {
+//                stringstream linestream(text_line);
+//                string data;
+//                getline(linestream, data, ' ');
+//                numColumns++;
+//            }
+//            numRows++;
+//        }
+//        else {
+//            getline(normals_file, text_line);
+//            numRows++;
+//        }
+//    }
+//
+//    /*--- Create arrays for data (x, y, z, Nx, Ny, Nz) ---*/
+//    su2double Camber_Normals_Data[numRows][numColumns] = { {0} };
+//
+//    /*--- Extract data from normals file ---*/
+//    if (nDim == 2) {
+//        while (!normals_file.eof()) {
+//            normals_file >> Camber_Normals_Data[row][0] >> Camber_Normals_Data[row][1] >> Camber_Normals_Data[row][2];
+//            row++;
+//        }
+//    }
+//    else if (nDim == 3) {
+//        while (!normals_file.eof()) {
+//            normals_file >> Camber_Normals_Data[row][0] >> Camber_Normals_Data[row][1] >> Camber_Normals_Data[row][2] >> Camber_Normals_Data[row][3] >> Camber_Normals_Data[row][4] >> Camber_Normals_Data[row][5];
+//            row++;
+//        }
+//    }
+//    normals_file.close();
 }
 
 void CSolver::Read_InletFile_ASCII(CGeometry *geometry, CConfig *config, string val_filename) {

@@ -4558,7 +4558,7 @@ void CDiscAdjFluidDriver::Run() {
 
     /*--- Store the computational graph of one direct iteration with the mesh coordinates as input. ---*/
 
-    SetRecording(MESH_COORDS);
+    SetRecording(CAMB_NORM);
 
     /*--- Initialize the adjoint of the output variables of the iteration with the adjoint solution
      *    of the current iteration. The values are passed to the AD tool. ---*/
@@ -4576,6 +4576,9 @@ void CDiscAdjFluidDriver::Run() {
     /*--- Interpret the stored information by calling the corresponding routine of the AD tool. ---*/
 
     AD::ComputeAdjoint();
+
+//    /*--- Output total gradient to console ---*/
+//    config_container[iZone]->TotalGrad_Camb_Norm(config_container[iZone]->GetBody_Force_Camb_Norm());
 
     /*--- Extract the computed sensitivity values. ---*/
 

@@ -682,6 +682,17 @@ static const map<string, ENUM_GRIDMOVEMENT> GridMovement_Map = CCreateMap<string
 ("FLUID_STRUCTURE_STATIC", FLUID_STRUCTURE_STATIC);
 
 /*!
+ * \brief Type of body force model
+ */
+enum ENUM_BODY_FORCE_TYPE {
+    CONSTANT_BF = 0,			/*!< \brief Constant body force over domain using vector. */
+    VARIABLE_BF = 1,				/*!< \brief Body force model that is spatially varying. */
+};
+static const map<string, ENUM_BODY_FORCE_TYPE> Body_Force_Map = CCreateMap<string, ENUM_BODY_FORCE_TYPE>
+        ("CONSTANT_BF", CONSTANT_BF)
+        ("VARIABLE_BF", VARIABLE_BF);
+
+/*!
  * \brief type of wind gusts
  */
 enum ENUM_GUST_TYPE {
@@ -1924,7 +1935,8 @@ enum ENUM_RECORDING {
   FLOW_CROSS_TERM = 5,
   FEM_CROSS_TERM_GEOMETRY = 6,
   GEOMETRY_CROSS_TERM = 7,
-  ALL_VARIABLES = 8
+  ALL_VARIABLES = 8,
+  CAMB_NORM = 9
 };
 
 /*!

@@ -68,6 +68,7 @@ protected:
   su2double *Limiter;        /*!< \brief Limiter of the solution of the problem. */
   su2double *Solution_Max;    /*!< \brief Max solution for limiter computation. */
   su2double *Solution_Min;    /*!< \brief Min solution for limiter computation. */
+  su2double *Body_Force_Turbo; /*!< \brief Turbomachinery body force vector. */
   su2double AuxVar;      /*!< \brief Auxiliar variable for gradient computation. */
   su2double *Grad_AuxVar;  /*!< \brief Gradient of the auxiliar variable. */
   su2double Delta_Time;  /*!< \brief Time step. */
@@ -241,6 +242,16 @@ public:
    * \param[in] val_vector - Pointer to the vector.
    */
   void SetVelSolutionOldVector(su2double *val_vector);
+
+  /*!
+   * \brief Specify body force vector at node.
+   */
+  void SetBodyForceVector_Turbo(su2double *val_bodyforceturbo);
+
+  /*!
+   * \brief Get body force vector at node.
+   */
+  virtual su2double *GetBodyForceVector_Turbo(void);
   
   /*!
    * \brief Set to zero the solution.
@@ -1793,6 +1804,30 @@ public:
    * \brief A virtual member.
    */
   virtual su2double GetHarmonicBalance_Source(unsigned short val_var);
+//
+//  /*!
+//   * \brief A virtual member.
+//   * \param[in] val_var - Index of the variable.
+//   * \param[in] val_source - Value of the harmonic balance source.
+//   */
+//  virtual void SetBodyForce_Source(unsigned short val_var, su2double val_source);
+//
+//  /*!
+//   * \brief A virtual member.
+//   */
+//  virtual su2double GetBodyForce_Source(unsigned short val_var);
+//
+//  /*!
+//   * \brief A virtual member. Set the body force source for the adjoint solver.
+//   * \param[in] val_BFSource_Direct - Value of the direct solution.
+//   */
+//  virtual void SetBFSource_Direct(su2double *val_BFSource_Direct);
+//
+//  /*!
+//   * \brief A virtual member. Get the direct body force solution for the adjoint solver.
+//   * \return Pointer to the direct solution vector.
+//   */
+//  virtual su2double *GetBFSource_Direct(void);
   
   /*!
    * \brief Set the Eddy Viscosity Sensitivity of the problem.
@@ -2267,10 +2302,41 @@ public:
   virtual void GetAdjointSolution_Accel_time_n(su2double *adj_sol);
 
   /*!
+   * \brief A virtual member.
+   * \param[in] val_var - Index of the variable.
+   * \param[in] val_source - Value of the body force source.
+   */
+  virtual void SetBodyForce_Source(unsigned short val_var, su2double val_source);
+
+  /*!
+   * \brief Set the value of the bf source.
+   * \param[in] adj_bf - Pointer to the residual vector.
+   */
+  virtual void SetAdjoint_BFSource(su2double *adj_bf);
+
+  /*!
+   * \brief Get the value of the bf source.
+   * \param[in] adj_bf - Pointer to the residual vector.
+   */
+  virtual void GetAdjoint_BFSource(su2double* adj_bf);
+
+  /*!
+   * \brief A virtual member. Get the direct body force solution for the adjoint solver.
+   * \return Pointer to the direct solution vector.
+   */
+  virtual su2double *GetBFSource_Direct(void);
+
+  /*!
    * \brief Register the variables in the solution array as input/output variable.
    * \param[in] input - input or output variables.
    */
   void RegisterSolution(bool input);
+
+  /*!
+   * \brief Register the body force source variables in the solution array as input/output variable.
+   * \param[in] input - input or output variables.
+   */
+  void RegisterBFSource(bool input);
   
   /*!
    * \brief Register the variables in the solution_time_n array as input/output variable.
@@ -3161,6 +3227,25 @@ public:
   void SetSolution_New(void);
 
   /*!
+   * \brief Set the body force source term.
+   * \param[in] val_var - Index of the variable.
+   * \param[in] val_solution - Value of the body force source term. for the index <i>val_var</i>.
+   */
+  void SetBodyForce_Source(unsigned short val_var, su2double val_source);
+
+  /*!
+   * \brief Set the value of the hb source.
+   * \param[in] adj_bf - Pointer to the residual vector.
+   */
+  void SetAdjoint_BFSource(su2double *adj_bf);
+
+  /*!
+   * \brief Get the value of the hb source.
+   * \param[in] adj_bf - Pointer to the residual vector.
+   */
+  void GetAdjoint_BFSource(su2double* adj_bf);
+
+  /*!
    * \brief Add a value to the new solution container for Classical RK4.
    * \param[in] val_var - Number of the variable.
    * \param[in] val_solution - Value that we want to add to the solution.
@@ -3479,6 +3564,18 @@ public:
    * \return Value of the harmonic balance source term for the index <i>val_var</i>.
    */
   su2double GetHarmonicBalance_Source(unsigned short val_var);
+
+//  /*!
+//   * \brief A virtual member. Set the body force source for the adjoint solver.
+//   * \param[in] val_BFSource_Direct - Value of the direct solution.
+//   */
+//  virtual void SetBFSource_Direct(su2double *val_BFSource_Direct);
+//
+//  /*!
+//   * \brief A virtual member. Get the direct body force solution for the adjoint solver.
+//   * \return Pointer to the direct solution vector.
+//   */
+//  virtual su2double *GetBFSource_Direct(void);
   
   /*!
    * \brief Get the value of the preconditioner Beta.
@@ -4483,6 +4580,13 @@ public:
    * \return Value of the harmonic balance source term for the index <i>val_var</i>.
    */
   su2double GetHarmonicBalance_Source(unsigned short val_var);
+
+  /*!
+   * \brief Set the body force source term.
+   * \param[in] val_var - Index of the variable.
+   * \param[in] val_solution - Value of the body force source term. for the index <i>val_var</i>.
+   */
+  void SetBodyForce_Source(unsigned short val_var, su2double val_source);
 };
 
 /*! 
@@ -4658,6 +4762,9 @@ private:
   su2double* Solution_BGS;
   su2double* Solution_BGS_k;
   su2double* Solution_Geometry_BGS_k;
+
+  su2double* BFSource_Direct;
+  su2double* Adjoint_BFSource;
   
 public:
   /*!
@@ -4822,6 +4929,24 @@ public:
    * \brief Get the contribution of crossed terms into the derivative.
    */
   su2double GetCross_Term_Derivative(unsigned short iVar);
+
+  /*!
+   * \brief A virtual member. Get the direct body force solution for the adjoint solver.
+   * \return Pointer to the direct solution vector.
+   */
+  virtual su2double *GetBFSource_Direct(void);
+
+  /*!
+   * \brief Set the value of the hb source.
+   * \param[in] adj_bf - Pointer to the residual vector.
+   */
+  void SetAdjoint_BFSource(su2double *adj_bf);
+
+  /*!
+   * \brief Get the value of the hb source.
+   * \param[in] adj_bf - Pointer to the residual vector.
+   */
+  void GetAdjoint_BFSource(su2double* adj_bf);
 
 };
 

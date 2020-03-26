@@ -569,6 +569,8 @@ void CConfig::SetPointersNull(void) {
   default_inc_crit           = NULL;
   default_htp_axis           = NULL;
   default_body_force         = NULL;
+  default_camb_norm          = NULL;
+  totalgrad_camb_norm        = NULL;
   default_sineload_coeff     = NULL;
   default_nacelle_location   = NULL;
   
@@ -678,6 +680,9 @@ void CConfig::SetConfig_Options(unsigned short val_iZone, unsigned short val_nZo
   default_inc_crit           = new su2double[3];
   default_htp_axis           = new su2double[2];
   default_body_force         = new su2double[3];
+  default_camb_norm          = new su2double[4];
+  totalgrad_camb_norm        = new su2double[4];
+  for (unsigned short i = 0; i < 4; i++ ) { totalgrad_camb_norm[i] = 0.0; };
   default_sineload_coeff     = new su2double[3];
   default_nacelle_location   = new su2double[5];
   
@@ -741,7 +746,7 @@ void CConfig::SetConfig_Options(unsigned short val_iZone, unsigned short val_nZo
   /*!\brief WEAKLY_COUPLED_HEAT_EQUATION \n DESCRIPTION: Enable heat equation for incompressible flows. \ingroup Config*/
   addBoolOption("WEAKLY_COUPLED_HEAT_EQUATION", Weakly_Coupled_Heat, NO);
 
-  /*\brief AXISYMMETRIC \n DESCRIPTION: Axisymmetric simulation \n DEFAULT: false \ingroup Config */
+  /*!\brief AXISYMMETRIC \n DESCRIPTION: Axisymmetric simulation \n DEFAULT: false \ingroup Config */
   addBoolOption("AXISYMMETRIC", Axisymmetric, false);
   /* DESCRIPTION: Add the gravity force */
   addBoolOption("GRAVITY_FORCE", GravityForce, false);
@@ -750,6 +755,21 @@ void CConfig::SetConfig_Options(unsigned short val_iZone, unsigned short val_nZo
   default_body_force[0] = 0.0; default_body_force[1] = 0.0; default_body_force[2] = 0.0;
   /* DESCRIPTION: Vector of body force values (BodyForce_X, BodyForce_Y, BodyForce_Z) */
   addDoubleArrayOption("BODY_FORCE_VECTOR", 3, Body_Force_Vector, default_body_force);
+  /*!\brief BODY_FORCE_TYPE \n DESCRIPTION: Choose between constant and variable body force \n Options: CONSTANT, VARIABLE \ingroup Config */
+  addEnumOption("BODY_FORCE_TYPE", Body_Force_Type, Body_Force_Map, CONSTANT_BF);
+  /*!\brief BODY_FORCE_ZONE \n DESCRIPTION: Define the zone in which the body force is applied \ingroup Config */
+  addUnsignedShortOption("BODY_FORCE_ZONE", Body_Force_Zone, 1);
+  /*!\brief BODY_FORCE_BLADES \n DESCRIPTION: Define the number of blades used in body force calculation \ingroup Config */
+  addDoubleOption("BODY_FORCE_BLADES", Body_Force_Blades, 29);
+  /*!\brief BODY_FORCE_ROTATION \n DESCRIPTION: Define the angular velocity used in body force calculation \ingroup Config */
+  addDoubleOption("BODY_FORCE_ROTATION", Body_Force_Rotation, 0);
+  /*!\brief BODY_FORCE_RADIUS \n DESCRIPTION: Define the radius used in body force calculation \ingroup Config */
+  addDoubleOption("BODY_FORCE_RADIUS", Body_Force_Radius, 1);
+  /*!\brief BODY_FORCE_NORMALS \n DESCRIPTION: Input file for camber normals (w/ extension) \n DEFAULT: normals.dat \ingroup Config*/
+  addStringOption("BODY_FORCE_NORMALS", BF_Normals_Filename, string("normals.dat"));
+  default_camb_norm[0] = 0.0; default_camb_norm[1] = 1.0; default_camb_norm[2] = 0.0; default_camb_norm[3] = 1.0;
+  /* DESCRIPTION: Array of camber normal values (Nx,Ny,Nx,Ny) */
+  addDoubleArrayOption("BODY_FORCE_CAMB_NORM", 4, Body_Force_Camb_Norm, default_camb_norm);
   /*!\brief RESTART_SOL \n DESCRIPTION: Restart solution from native solution file \n Options: NO, YES \ingroup Config */
   addBoolOption("RESTART_SOL", Restart, false);
   /*!\brief BINARY_RESTART \n DESCRIPTION: Read / write binary SU2 native restart files. \n Options: YES, NO \ingroup Config */
@@ -7257,6 +7277,8 @@ CConfig::~CConfig(void) {
   if (default_inc_crit      != NULL) delete [] default_inc_crit;
   if (default_htp_axis      != NULL) delete [] default_htp_axis;
   if (default_body_force    != NULL) delete [] default_body_force;
+  if (default_camb_norm     != NULL) delete [] default_camb_norm;
+  if (totalgrad_camb_norm   != NULL) delete [] totalgrad_camb_norm;
   if (default_sineload_coeff!= NULL) delete [] default_sineload_coeff;
   if (default_nacelle_location    != NULL) delete [] default_nacelle_location;
   
@@ -9210,3 +9232,26 @@ void CConfig::SetMultizone(CConfig *driver_config, CConfig **config_container){
 
 }
 
+void CConfig::Register_Camb_Norm(void) {
+  cout << "CConfig::Register_Camb_Norm" << endl;
+  unsigned short iter;
+  for (iter = 0; iter < 4; iter++) {
+    AD::RegisterInput(Body_Force_Camb_Norm[iter]);
+  }
+}
+
+void CConfig::TotalGrad_Camb_Norm(void) {
+  su2double totalgrad[4];
+  unsigned short iter;
+
+  for (iter = 0; iter < 4; iter++) {
+    totalgrad[iter] = SU2_TYPE::GetDerivative(Body_Force_Camb_Norm[iter]);
+    AD::ResetInput(Body_Force_Camb_Norm[iter]);
+  }
+
+  cout << "Total Gradient[0] :: " << totalgrad[0] << endl;
+  cout << "Total Gradient[1] :: " << totalgrad[1] << endl;
+  cout << "Total Gradient[2] :: " << totalgrad[2] << endl;
+  cout << "Total Gradient[3] :: " << totalgrad[3] << endl;
+
+}

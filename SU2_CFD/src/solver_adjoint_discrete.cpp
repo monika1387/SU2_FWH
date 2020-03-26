@@ -59,6 +59,8 @@ CDiscAdjSolver::CDiscAdjSolver(CGeometry *geometry, CConfig *config, CSolver *di
   /*--- Initialize arrays to NULL ---*/
 
   CSensitivity = NULL;
+  Solution_bf = NULL;
+  Vector_BF = NULL;
 
   /*-- Store some information about direct solver ---*/
   this->KindDirect_Solver = Kind_Solver;
@@ -113,8 +115,12 @@ CDiscAdjSolver::CDiscAdjSolver(CGeometry *geometry, CConfig *config, CSolver *di
   /*--- Define some auxiliary vectors related to the solution ---*/
 
   Solution   = new su2double[nVar];
+  Solution_bf   = new su2double[nVar];
+  Vector_BF   = new su2double[nDim];
 
   for (iVar = 0; iVar < nVar; iVar++) Solution[iVar]   = 1e-16;
+  for (iVar = 0; iVar < nVar; iVar++) Solution_bf[iVar]   = 1e-16;
+  for (iDim = 0; iDim < nDim; iDim++) Vector_BF[iDim]   = 1e-16;
 
   /*--- Sensitivity definition and coefficient in all the markers ---*/
 
@@ -151,11 +157,10 @@ CDiscAdjSolver::~CDiscAdjSolver(void) {
 }
 
 void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
-
-
   bool time_n_needed  = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
       (config->GetUnsteady_Simulation() == DT_STEPPING_2ND)),
   time_n1_needed = config->GetUnsteady_Simulation() == DT_STEPPING_2ND;
+  bool body_force = config->GetBody_Force();
 
   unsigned long iPoint;
   unsigned short iVar;
@@ -177,6 +182,14 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
       for (iVar = 0; iVar < nVar; iVar++) {
         AD::ResetInput(direct_solver->node[iPoint]->GetSolution_time_n1()[iVar]);
+      }
+    }
+  }
+
+  if (body_force){
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+      for ( unsigned short iDim = 0; iDim < nDim; iDim++) {
+        direct_solver->node[iPoint]->SetBodyForce_Source(iDim, node[iPoint]->GetBFSource_Direct()[iDim]);
       }
     }
   }
@@ -251,6 +264,7 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
       (config->GetUnsteady_Simulation() == DT_STEPPING_2ND)),
   time_n1_needed = config->GetUnsteady_Simulation() == DT_STEPPING_2ND,
   input = true;
+  bool body_force = config->GetBody_Force();
 
   /*--- Register solution at all necessary time instances and other variables on the tape ---*/
 
@@ -265,6 +279,12 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
   if (time_n1_needed) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
       direct_solver->node[iPoint]->RegisterSolution_time_n1();
+    }
+  }
+
+  if (body_force) {
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+      direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
 }
@@ -371,11 +391,18 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
   /*--- Register variables as output of the solver iteration ---*/
 
   bool input = false;
+  bool body_force = config->GetBody_Force();
 
   /*--- Register output variables on the tape ---*/
 
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
     direct_solver->node[iPoint]->RegisterSolution(input);
+  }
+
+  if (body_force) {
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+      direct_solver->node[iPoint]->RegisterBFSource(input);
+    }
   }
 }
 
@@ -463,6 +490,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
       (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
 
   bool time_n1_needed = config->GetUnsteady_Simulation() == DT_STEPPING_2ND;
+  bool body_force = config->GetBody_Force();
 
   unsigned short iVar;
   unsigned long iPoint;
@@ -476,15 +504,12 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
   }
 
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
-
     /*--- Set the old solution ---*/
 
     node[iPoint]->Set_OldSolution();
-
     /*--- Extract the adjoint solution ---*/
 
     direct_solver->node[iPoint]->GetAdjointSolution(Solution);
-
     /*--- Store the adjoint solution ---*/
 
     node[iPoint]->SetSolution(Solution);
@@ -512,6 +537,17 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
       /*--- Store the adjoint solution at time n-1 ---*/
 
       node[iPoint]->Set_Solution_time_n1(Solution);
+    }
+  }
+
+  if (body_force) {
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+
+      /*--- Extract the adjoint solution ---*/
+      direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
+
+      /*--- Store the adjoint solution ---*/
+      node[iPoint]->SetAdjoint_BFSource(Vector_BF);
     }
   }
 
@@ -596,7 +632,6 @@ void CDiscAdjSolver::ExtractAdjoint_Variables(CGeometry *geometry, CConfig *conf
   /*--- Extract here the adjoint values of everything else that is registered as input in RegisterInput. ---*/
 
 }
-
 
 void CDiscAdjSolver::ExtractAdjoint_Geometry(CGeometry *geometry, CConfig *config) {
 
@@ -725,12 +760,11 @@ void CDiscAdjSolver::ExtractAdjoint_CrossTerm_Geometry_Flow(CGeometry *geometry,
 
 }
 
-
 void CDiscAdjSolver::SetAdjoint_Output(CGeometry *geometry, CConfig *config) {
 
   bool dual_time = (config->GetUnsteady_Simulation() == DT_STEPPING_1ST ||
       config->GetUnsteady_Simulation() == DT_STEPPING_2ND);
-  bool fsi = config->GetFSI_Simulation();
+  bool fsi = config->GetFSI_Simulation(), body_force = config->GetBody_Force();
 
   unsigned short iVar;
   unsigned long iPoint;
@@ -750,6 +784,11 @@ void CDiscAdjSolver::SetAdjoint_Output(CGeometry *geometry, CConfig *config) {
       }
     }
     direct_solver->node[iPoint]->SetAdjointSolution(Solution);
+    if (body_force) {
+      node[iPoint]->GetAdjoint_BFSource(Vector_BF);
+
+      direct_solver->node[iPoint]->SetAdjoint_BFSource(Vector_BF);
+    }
   }
 
 }
@@ -796,6 +835,13 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
   su2double *Coord, Sensitivity, eps;
 
   bool time_stepping = (config->GetUnsteady_Simulation() != STEADY);
+
+  /*--- Camber normal total gradient test ---*/
+  cout << "IN SETSENSITIVITY" << endl;
+  config->TotalGrad_Camb_Norm();
+
+
+  /*------*/
 
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
     Coord = geometry->node[iPoint]->GetCoord();

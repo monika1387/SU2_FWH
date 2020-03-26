@@ -1628,6 +1628,20 @@ inline bool CConfig::GetBody_Force(void) { return Body_Force; }
 
 inline su2double* CConfig::GetBody_Force_Vector(void) { return Body_Force_Vector; }
 
+inline su2double* CConfig::GetBody_Force_Camb_Norm(void) { return Body_Force_Camb_Norm; }
+
+inline unsigned short CConfig::GetBody_Force_Type(void) { return Body_Force_Type; }
+
+inline unsigned short CConfig::GetBody_Force_Zone(void) { return Body_Force_Zone; }
+
+inline su2double CConfig::GetBody_Force_Blades(void) { return Body_Force_Blades; }
+
+inline su2double CConfig::GetBody_Force_Rotation(void) { return Body_Force_Rotation; }
+
+inline su2double CConfig::GetBody_Force_Radius(void) { return Body_Force_Radius; }
+
+inline string CConfig::GetBF_Normals_Filename(void) { return BF_Normals_Filename; }
+
 inline bool CConfig::GetSmoothNumGrid(void) { return SmoothNumGrid; }
 
 inline void CConfig::SetSmoothNumGrid(bool val_smoothnumgrid) { SmoothNumGrid = val_smoothnumgrid; }

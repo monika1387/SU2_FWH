@@ -1368,6 +1368,7 @@ CSourceConservative_AdjFlow::~CSourceConservative_AdjFlow(void) {
   delete [] Mean_PrimVar_Grad;
 }
 
+
 void CSourceConservative_AdjFlow::ComputeResidual (su2double *val_residual, CConfig *config) {
   unsigned short iDim, jDim, iVar;
   su2double rho, nu, Ji, fv1, fv2, Omega, Shat, dist_sq, Ji_2, Ji_3, one_o_oneplusJifv1;
@@ -1502,6 +1503,43 @@ void CSourceConservative_AdjFlow::ComputeResidual (su2double *val_residual, CCon
   for (iVar = 0; iVar < nVar; iVar++)
     val_residual[iVar] = 0.5*(Residual_i[iVar] + Residual_j[iVar]);
   
+}
+
+CSourceBodyForce_AdjFlow::CSourceBodyForce_AdjFlow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) {
+
+    /*--- Store the pointer to the constant body force vector. ---*/
+
+    Body_Force_Vector = new su2double[nDim];
+    for (unsigned short iDim = 0; iDim < nDim; iDim++)
+        Body_Force_Vector[iDim] = config->GetBody_Force_Vector()[iDim];
+
+}
+
+CSourceBodyForce_AdjFlow::~CSourceBodyForce_AdjFlow(void) {
+
+    if (Body_Force_Vector != NULL) delete [] Body_Force_Vector;
+
+}
+
+void CSourceBodyForce_AdjFlow::ComputeResidual(su2double *val_residual, CConfig *config) {
+    cout << "at bf_computeresidual" << endl;
+    /*--- Load all relevant values from config file ---*/
+    unsigned short iDim;
+    su2double Force_Ref = config->GetForce_Ref();
+
+    /*--- Adding adjoint source terms to the governing equations ---*/
+    /*--- Zero the continuity contribution ---*/
+    val_residual[0] = 0.0;
+
+    /*--- Adjoint momentum contribution multiplied by adjoint state ---*/
+    for (iDim = 0; iDim < nDim; iDim++)
+        val_residual[iDim + 1] = -Volume * ( Body_Force_Vector[iDim] / Force_Ref ) * Psi_i[0];
+
+    /*--- Adjoint energy contribution multiplied by adjoint state ---*/
+    val_residual[nDim + 1] = 0.0;
+    for (iDim = 0; iDim < nDim; iDim++)
+        val_residual[nDim + 1] += -Volume * ( Body_Force_Vector[iDim] / Force_Ref ) * Psi_i[iDim + 1];
+
 }
 
 CSourceRotatingFrame_AdjFlow::CSourceRotatingFrame_AdjFlow(unsigned short val_nDim, unsigned short val_nVar, CConfig *config) : CNumerics(val_nDim, val_nVar, config) { }

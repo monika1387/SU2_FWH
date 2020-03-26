@@ -19025,6 +19025,7 @@ void COutput::SpecialOutput_AnalyzeSurface(CSolver *solver, CGeometry *geometry,
     
     su2double Mach = Surface_Mach_Total[iMarker_Analyze];
     config->SetSurface_Mach(iMarker_Analyze, Mach);
+    cout<<"At Set Surface Mach "<<endl;
     
     su2double Temperature = Surface_Temperature_Total[iMarker_Analyze] * config->GetTemperature_Ref();
     config->SetSurface_Temperature(iMarker_Analyze, Temperature);

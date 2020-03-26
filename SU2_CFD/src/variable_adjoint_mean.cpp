@@ -45,6 +45,7 @@ CAdjEulerVariable::CAdjEulerVariable(void) : CVariable() {
   ObjFuncSource = NULL;
   IntBoundary_Jump = NULL;
   HB_Source = NULL;
+  Body_Force_Turbo = NULL;
   
 }
 
@@ -61,6 +62,7 @@ CAdjEulerVariable::CAdjEulerVariable(su2double val_psirho, su2double *val_phi, s
   ObjFuncSource = NULL;
   IntBoundary_Jump = NULL;
   HB_Source = NULL;
+  Body_Force_Turbo = NULL;
   
   /*--- Allocate residual structures ---*/
   Res_TruncError = new su2double [nVar];
@@ -134,6 +136,14 @@ CAdjEulerVariable::CAdjEulerVariable(su2double val_psirho, su2double *val_phi, s
     for (iVar = 0; iVar < nVar; iVar++)
       HB_Source[iVar] = 0.0;
   }
+
+  /*--- Allocated space for body force source terms ---*/
+  if (config->GetBody_Force()) {
+    Body_Force_Turbo = new su2double[nDim];
+    for (iDim = 0; iDim < nDim; iDim++) {
+      Body_Force_Turbo[iDim] = 0.0;
+    }
+  }
   
 }
 
@@ -150,6 +160,7 @@ CAdjEulerVariable::CAdjEulerVariable(su2double *val_solution, unsigned short val
   ObjFuncSource = NULL;
   IntBoundary_Jump = NULL;
   HB_Source = NULL;
+  Body_Force_Turbo = NULL;
   
   /*--- Allocate residual structures ---*/
   Res_TruncError = new su2double [nVar];
@@ -218,6 +229,14 @@ CAdjEulerVariable::CAdjEulerVariable(su2double *val_solution, unsigned short val
     for (iVar = 0; iVar < nVar; iVar++)
       HB_Source[iVar] = 0.0;
   }
+
+  /*--- Allocated space for body force source terms ---*/
+  if (config->GetBody_Force()) {
+    Body_Force_Turbo = new su2double[nDim];
+    for (iDim = 0; iDim < nDim; iDim++) {
+      Body_Force_Turbo[iDim] = 0.0;
+    }
+  }
   
 }
 
@@ -228,6 +247,7 @@ CAdjEulerVariable::~CAdjEulerVariable(void) {
   if (ObjFuncSource     != NULL) delete [] ObjFuncSource;
   if (IntBoundary_Jump  != NULL) delete [] IntBoundary_Jump;
   if (HB_Source         != NULL) delete [] HB_Source;
+  if (Body_Force_Turbo  != NULL) delete [] Body_Force_Turbo;
   
 }
 

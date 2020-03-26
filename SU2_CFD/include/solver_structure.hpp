@@ -106,10 +106,12 @@ protected:
   su2double **Point_Max_Coord_BGS; /*!< \brief Vector with pointers to the coords of the maximal residual for each variable. */
   su2double *Solution,    /*!< \brief Auxiliary nVar vector. */
   *Solution_i,        /*!< \brief Auxiliary nVar vector for storing the solution at point i. */
-  *Solution_j;        /*!< \brief Auxiliary nVar vector for storing the solution at point j. */
+  *Solution_j,        /*!< \brief Auxiliary nVar vector for storing the solution at point j. */
+  *Solution_bf;        /*!< \brief Auxiliary nVar vector for storing the solution at point j. */
   su2double *Vector,  /*!< \brief Auxiliary nDim vector. */
   *Vector_i,      /*!< \brief Auxiliary nDim vector to do the reconstruction of the variables at point i. */
-  *Vector_j;      /*!< \brief Auxiliary nDim vector to do the reconstruction of the variables at point j. */
+  *Vector_j,      /*!< \brief Auxiliary nDim vector to do the reconstruction of the variables at point j. */
+  *Vector_BF;
   su2double *Res_Conv,  /*!< \brief Auxiliary nVar vector for storing the convective residual. */
   *Res_Visc,        /*!< \brief Auxiliary nVar vector for storing the viscous residual. */
   *Res_Sour,        /*!< \brief Auxiliary nVar vector for storing the viscous residual. */
@@ -139,6 +141,7 @@ protected:
   unsigned long maxCol_InletFile;       /*!< \brief Auxiliary structure for holding the maximum number of columns in all inlet marker profiles (for data structure size) */
   unsigned long *nCol_InletFile;       /*!< \brief Auxiliary structure for holding the number of columns for a particular marker in an inlet profile file. */
   passivedouble *Inlet_Data; /*!< \brief Auxiliary structure for holding the data values from an inlet profile file. */
+  passivedouble *Camber_Normals_Data; /*!< \brief Auxiliary structure for holding the data values from a body force camber normal definition file. */
 
 public:
   
@@ -3514,6 +3517,12 @@ public:
   void Read_SU2_Restart_Metadata(CGeometry *geometry, CConfig *config, bool adjoint_run, string val_filename);
 
   /*!
+     * \brief Read a body force camber normal file and load the variables into an array
+     * \param[in] config - Definition of the particular problem.
+ */
+  void Load_BFCamberNormals(CGeometry *geometry, CConfig *config);
+
+  /*!
    * \brief Read a native SU2 inlet file in ASCII format.
    * \param[in] geometry - Geometrical definition of the problem.
    * \param[in] config - Definition of the particular problem.
@@ -4366,6 +4375,8 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   virtual void SetDES_LengthScale(CSolver** solver, CGeometry *geometry, CConfig *config);
+
+  virtual void ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry);
 
 };
 
@@ -6925,6 +6936,8 @@ public:
    * \param[in] inMarkerTP - turboperformance marker.
    */
   void SetNuOut(su2double value, unsigned short inMarkerTP, unsigned short valSpan);
+
+  void ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry);
 
 
 };

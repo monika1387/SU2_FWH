@@ -4359,7 +4359,7 @@ unsigned long CEulerSolver::SetPrimitive_Variables(CSolver **solver_container, C
     /*--- Initialize the convective, source and viscous residual vector ---*/
     
     if (!Output) LinSysRes.SetBlock_Zero(iPoint);
-    
+
   }
   
   return ErrorCounter;
@@ -4913,8 +4913,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
   for (iVar = 0; iVar < nVar; iVar++) Residual[iVar] = 0.0;
 
   if (body_force) {
-
-    /*--- Loop over all points ---*/
+      /*--- Loop over all points ---*/
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
 
       /*--- Load the conservative variables ---*/
@@ -4924,8 +4923,14 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
       /*--- Load the volume of the dual mesh cell ---*/
       numerics->SetVolume(geometry->node[iPoint]->GetVolume());
 
-      /*--- Compute the rotating frame source residual ---*/
-      numerics->ComputeResidual(Residual, config);
+      /*--- Set coordinates ---*/
+      numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[iPoint]->GetCoord());
+
+      /*--- Load the primitive variables ---*/
+      numerics->SetPrimitive(node[iPoint]->GetPrimitive(), node[iPoint]->GetPrimitive());
+
+      /*--- Compute the body force source residual ---*/
+      numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo());
 
       /*--- Add the source residual to the total ---*/
       LinSysRes.AddBlock(iPoint, Residual);
@@ -5070,7 +5075,7 @@ void CEulerSolver::Source_Template(CGeometry *geometry, CSolver **solver_contain
   /* This method should be used to call any new source terms for a particular problem*/
   /* This method calls the new child class in CNumerics, where the new source term should be implemented.  */
   
-  /* Next we describe how to get access to some important quanties for this method */
+  /* Next we describe how to get access to some important quantities for this method */
   /* Access to all points in the current geometric mesh by saying: nPointDomain */
   /* Get the vector of conservative variables at some point iPoint = node[iPoint]->GetSolution() */
   /* Get the volume (or area in 2D) associated with iPoint = node[iPoint]->GetVolume() */
@@ -5365,7 +5370,7 @@ void CEulerSolver::Pressure_Forces(CGeometry *geometry, CConfig *config) {
   
   unsigned long iVertex, iPoint;
   unsigned short iDim, iMarker, Boundary, Monitoring, iMarker_Monitoring;
-  su2double Pressure = 0.0, *Normal = NULL, MomentDist[3] = {0.0,0.0,0.0}, *Coord,
+  su2double Pressure = 0.0, Velocity_y = 0.0, *Normal = NULL, MomentDist[3] = {0.0,0.0,0.0}, *Coord,
   factor, NFPressOF, RefVel2, RefTemp, RefDensity, RefPressure, Mach2Vel, Mach_Motion,
   Force[3] = {0.0,0.0,0.0};
   string Marker_Tag, Monitoring_Tag;
@@ -5392,7 +5397,7 @@ void CEulerSolver::Pressure_Forces(CGeometry *geometry, CConfig *config) {
    For dynamic meshes, use the motion Mach number as a reference value
    for computing the force coefficients. Otherwise, use the freestream
    values, which is the standard convention. ---*/
-  
+
   RefTemp     = Temperature_Inf;
   RefDensity  = Density_Inf;
   RefPressure = Pressure_Inf;
@@ -5456,14 +5461,17 @@ void CEulerSolver::Pressure_Forces(CGeometry *geometry, CConfig *config) {
       }
     }
     
-    if ((Boundary == EULER_WALL) || (Boundary == HEAT_FLUX) ||
-        (Boundary == ISOTHERMAL) || (Boundary == NEARFIELD_BOUNDARY) ||
-        (Boundary == CHT_WALL_INTERFACE) ||
-        (Boundary == INLET_FLOW) || (Boundary == OUTLET_FLOW) ||
-        (Boundary == ACTDISK_INLET) || (Boundary == ACTDISK_OUTLET)||
-        (Boundary == ENGINE_INFLOW) || (Boundary == ENGINE_EXHAUST)) {
+//    if ((Boundary == EULER_WALL) || (Boundary == HEAT_FLUX) ||
+//        (Boundary == ISOTHERMAL) || (Boundary == NEARFIELD_BOUNDARY) ||
+//        (Boundary == CHT_WALL_INTERFACE) ||
+//        (Boundary == INLET_FLOW) || (Boundary == OUTLET_FLOW) ||
+//        (Boundary == ACTDISK_INLET) || (Boundary == ACTDISK_OUTLET)||
+//        (Boundary == ENGINE_INFLOW) || (Boundary == ENGINE_EXHAUST) || (Boundary == OUTFLOW))
+    if (1)
+    {
       
       /*--- Forces initialization at each Marker ---*/
+
       
       CD_Inv[iMarker] = 0.0;        CL_Inv[iMarker] = 0.0; CSF_Inv[iMarker] = 0.0;
       CMx_Inv[iMarker] = 0.0;          CMy_Inv[iMarker] = 0.0;   CMz_Inv[iMarker] = 0.0;
@@ -5481,22 +5489,29 @@ void CEulerSolver::Pressure_Forces(CGeometry *geometry, CConfig *config) {
       NFPressOF = 0.0;
       
       /*--- Loop over the vertices to compute the forces ---*/
-      
+      unsigned short nodecount = 0;
       for (iVertex = 0; iVertex < geometry->GetnVertex(iMarker); iVertex++) {
         
         iPoint = geometry->vertex[iMarker][iVertex]->GetNode();
-        
         Pressure = node[iPoint]->GetPressure();
-        
+
         CPressure[iMarker][iVertex] = (Pressure - RefPressure)*factor*RefArea;
-        
+
         /*--- Note that the pressure coefficient is computed at the
          halo cells (for visualization purposes), but not the forces ---*/
         
         if ( (geometry->node[iPoint]->GetDomain()) && (Monitoring == YES) ) {
-          
+          nodecount = nodecount + 1;
+
           Normal = geometry->vertex[iMarker][iVertex]->GetNormal();
           Coord = geometry->node[iPoint]->GetCoord();
+          Velocity_y = Velocity_y + node[iPoint]->GetVelocity(1);
+
+          cout << "Node count :: " << nodecount << endl;
+          cout << "Mesh Coordinates [x,y] :: " << Coord[0] << ", " << Coord[1] << endl;
+          cout << "Vel[1] at point :: " << node[iPoint]->GetVelocity(1) << endl;
+          cout << "Velocity_y :: " << Velocity_y << endl;
+
           
           /*--- Quadratic objective function for the near-field.
            This uses the infinity pressure regardless of Mach number. ---*/
@@ -5544,7 +5559,7 @@ void CEulerSolver::Pressure_Forces(CGeometry *geometry, CConfig *config) {
         
         if (Boundary != NEARFIELD_BOUNDARY) {
           if (nDim == 2) {
-            CD_Inv[iMarker]     =  ForceInviscid[0]*cos(Alpha) + ForceInviscid[1]*sin(Alpha);
+            CD_Inv[iMarker]     =  Velocity_y;//ForceInviscid[0]*cos(Alpha) + ForceInviscid[1]*sin(Alpha);
             CL_Inv[iMarker]     = -ForceInviscid[0]*sin(Alpha) + ForceInviscid[1]*cos(Alpha);
             CEff_Inv[iMarker]   = CL_Inv[iMarker] / (CD_Inv[iMarker]+EPS);
             CMz_Inv[iMarker]    = MomentInviscid[2];
@@ -14811,6 +14826,143 @@ void CEulerSolver::GatherInOutAverageValues(CConfig *config, CGeometry *geometry
       NuOut[markerTP -1][iSpan]                  = nuOut;
     }
   }
+}
+
+void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) {
+    /*--- Load all relevant values from config file ---*/
+    unsigned long iPoint;
+    unsigned short nDim = geometry->GetnDim();
+    su2double *U_i, *V_i, *Coord_i;
+    su2double gamma = config->GetGamma(), R_gas = config->GetGas_Constant(), BodyForceVector_Turbo[nDim] = { 0.0 },
+        BF_blades = config->GetBody_Force_Blades(), BF_rotation = config->GetBody_Force_Rotation(),
+        BF_radius = config->GetBody_Force_Radius();
+    // string bfnormal_filename = config->GetBF_Normals_Filename(); TODO(BF): Add reading of normal values to source code
+
+    /*--- Initialize common variables ---*/
+    su2double pi = M_PI, pitch, omegaR;
+    pitch = (2 * pi * BF_radius ) / BF_blades;
+    omegaR = ((BF_rotation / 60) * 2 * pi ) * BF_radius;
+
+    for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
+        /*--- Set coordinates and conservative and primitive variables ---*/
+        U_i = node[iPoint]->GetSolution();
+        V_i = node[iPoint]->GetPrimitive();
+        Coord_i = geometry->node[iPoint]->GetCoord();
+//        cout << "Coord_i[0]: " << Coord_i[0] << endl;
+//        cout << "iZone for iPoint: " << config->GetiZone() << endl;
+
+        /*--- Calculation of variable body force residuals ---*/
+        /*--- Determine camber normal using x-coordinate ---*/
+        su2double x_coord = Coord_i[0];
+//        su2double xarray[2] = {0, 1};
+//        su2double Nxarray[2] = {-0.1736481777, -0.1736481777};
+//        su2double Nyarray[2] = {0.984807753, 0.984807753};
+        su2double xarray[2] = {0, 1};
+        su2double Nxarray[2] = {-0.08715574275, -0.08715574275};
+        su2double Nyarray[2] = {0.9961946981, 0.9961946981};
+//        su2double Nxarray[2] = {-0.1736481777, -0.1736481777};
+//        su2double Nyarray[2] = {0.984807753, 0.984807753};
+//        su2double Nxarray[2] = {-0.3420201433, -0.3420201433};
+//        su2double Nyarray[2] = {0.9396926208, 0.9396926208};
+//        su2double xarray[10] = {0.0 , 0.11111111, 0.22222222, 0.33333333, 0.44444444, 0.55555556, 0.66666667, 0.77777778, 0.88888889, 1.0 };
+//        su2double Nxarray[10] = {-0.5735764363510462, -0.5575841379685927, -0.5413821549953697, -0.5249765803345601, -0.5083735834518556, -0.4915794080553704, -0.4746003697476404, -0.4574428536505806, -0.44011331200430487, -0.4226182617406993};
+//        su2double Nyarray[10] = {0.8191520442889918, 0.8301204304712788, 0.8407766423091031, 0.8511166724369997, 0.8611366323925137, 0.8708327540784921, 0.8802013911801111, 0.8892390205361062, 0.8979422434636881, 0.9063077870366499};
+//        su2double xarray[104] = {0.0, 0.000447378, 0.000894785, 0.0013421179999999998, 0.001789376, 0.0022355920000000002, 0.0026827609999999997, 0.003128797, 0.003574908, 0.00402084, 0.0044657740000000005, 0.004911766, 0.00535661, 0.005802378, 0.006247193000000001, 0.006691903000000001, 0.00713563, 0.007580295999999999, 0.008024916, 0.008468494, 0.008913041, 0.009356648, 0.009800151, 0.010243625, 0.010687158, 0.011130527, 0.011573956000000002, 0.012016356, 0.01245977, 0.01290311, 0.01334548, 0.013787762, 0.014231056, 0.014673367, 0.015115634, 0.015557886000000002, 0.016001135, 0.016443387, 0.016885609, 0.017327816, 0.017769948, 0.018212185, 0.018654317, 0.019096494, 0.019538612, 0.019980759, 0.020422861, 0.020865992, 0.021310047000000002, 0.021753967000000003, 0.022198767, 0.022642537999999997, 0.023086325, 0.023530037, 0.023974732000000002, 0.024418325, 0.024861947000000002, 0.025305644, 0.025750369, 0.026194141, 0.026637777999999997, 0.027082488, 0.027526036, 0.027969717999999998, 0.02841422, 0.028857752999999996, 0.029302195, 0.029745669, 0.030189052999999997, 0.030633375, 0.031076745, 0.031521022999999995, 0.031964347000000004, 0.032408432, 0.032851652, 0.033295811, 0.033738882000000005, 0.034182936000000004, 0.034625948, 0.035069839, 0.035512895, 0.035956771, 0.036399633, 0.036843434, 0.037286297, 0.037730024, 0.038172692, 0.038616404, 0.039058984, 0.039502621, 0.039945141, 0.040388689, 0.040831134, 0.041273639, 0.041717038, 0.042159424, 0.042602747999999996, 0.043045104, 0.043488294000000004, 0.04393062, 0.044373855, 0.044816614000000005, 0.045257612999999995, 0.04569681};
+//        su2double Nxarray[104] = {-0.72683425, -0.72718498, -0.74541169, -0.76545218, -0.76802138, -0.76496552, -0.76232598, -0.75984166, -0.75664707, -0.75437792, -0.75158399, -0.7487311, -0.74552392, -0.74276596, -0.7410606, -0.73849434, -0.73547207, -0.73239101, -0.73006222, -0.72764698, -0.7249439, -0.72258853, -0.72015808, -0.71724359, -0.71454872, -0.7121246, -0.71016759, -0.70760377, -0.70443649, -0.70198259, -0.69973977, -0.6971332, -0.6942885, -0.69198894, -0.68918012, -0.68606063, -0.68400626, -0.68187949, -0.67911997, -0.67659539, -0.6735136, -0.67107929, -0.66896921, -0.66649012, -0.66387821, -0.66129439, -0.65828042, -0.65471381, -0.65140867, -0.6483025, -0.64563906, -0.64334429, -0.64088459, -0.63811328, -0.63542753, -0.6328908, -0.63041071, -0.62704505, -0.62429301, -0.62188845, -0.61886641, -0.61652444, -0.61381016, -0.61049243, -0.60831505, -0.60599748, -0.60311584, -0.60036254, -0.59692211, -0.59487216, -0.59254715, -0.58971356, -0.5867526, -0.58432698, -0.58174406, -0.57903017, -0.57642869, -0.57351379, -0.57136882, -0.56934495, -0.56648182, -0.56358975, -0.56085402, -0.5584569, -0.55678086, -0.5538003, -0.55102932, -0.54934456, -0.54678933, -0.54399142, -0.5413661, -0.53952276, -0.53795751, -0.53466462, -0.53191113, -0.53002975, -0.52788647, -0.52798857, -0.5299497, -0.5309362, -0.50709341, -0.48212336, -0.48353926, -0.48426112};
+//        su2double Nyarray[104] = {0.68681291, 0.68644156, 0.66660439, 0.64349278, 0.6404242, 0.64407123, 0.64719325, 0.65010818, 0.65382354, 0.65644037, 0.65963741, 0.66287384, 0.66647887, 0.66955114, 0.67143815, 0.67425967, 0.67755504, 0.68088428, 0.68338068, 0.6859518, 0.68880792, 0.6912784, 0.69381002, 0.69682253, 0.69958568, 0.7020531, 0.70403266, 0.70660944, 0.70976702, 0.7121941, 0.71439783, 0.71694163, 0.7196968, 0.7219081, 0.72459006, 0.72754437, 0.72947614, 0.73146453, 0.73402729, 0.736355, 0.73917483, 0.74138559, 0.74329011, 0.74551386, 0.74784071, 0.75012647, 0.7527728, 0.75587686, 0.75872705, 0.76138287, 0.76364272, 0.76557699, 0.76763725, 0.76994249, 0.77216051, 0.77424107, 0.77626177, 0.778983, 0.78119027, 0.78310584, 0.78549625, 0.78733577, 0.78945366, 0.79202209, 0.79369566, 0.79546656, 0.79765361, 0.79972796, 0.80229919, 0.80382033, 0.80553577, 0.80761248, 0.80976625, 0.81151832, 0.8133719, 0.81530611, 0.81714746, 0.81919591, 0.82069341, 0.82209874, 0.82407424, 0.82605484, 0.82791471, 0.82953354, 0.83065942, 0.83264952, 0.83448588, 0.83559593, 0.83727023, 0.83909078, 0.84078698, 0.84197102, 0.84297195, 0.84506434, 0.84680018, 0.84797905, 0.84931494, 0.84925148, 0.84802908, 0.8474118, 0.8618911, 0.87610334, 0.87532267, 0.87492352};
+        // Calculate difference between coordinate and xarray
+        int len = sizeof(xarray) / sizeof(xarray[0]), i;
+        su2double diff[len] = {0};
+        for (i = 0; i < len; i++) {
+            diff[i] = xarray[i] - x_coord;
+        }
+        // Find closest number smaller than coordinate
+        su2double smallest = diff[0];
+        for (i = 0; i < len; i++) {
+            if (diff[i] < 0 && diff[i] > smallest) {
+                smallest = diff[i];
+            }
+        }
+        // Find closest number larger than coordinate
+        su2double largest = diff[len - 1];
+        for (i = 0; i < len; i++) {
+            if (diff[i] > 0 && diff[i] < largest) {
+                largest = diff[i];
+            }
+        }
+        // Find index of smallest and largest closest numbers
+        int smallest_index = 0, largest_index = 0;
+        for (i = 0; i < len; i++) {
+            if (diff[i] == smallest) {
+                smallest_index = i;
+            }
+            if (diff[i] == largest) {
+                largest_index = i;
+            }
+        }
+        // Find value of Nx, Ny, Tx, and Ty at given coordinate
+        su2double dx, dNx, dNy, x_to_coor, Nx, Ny, Tx, Ty;
+        dx = xarray[largest_index] - xarray[smallest_index];
+        dNx = Nxarray[largest_index] - Nxarray[smallest_index];
+        dNy = Nyarray[largest_index] - Nyarray[smallest_index];
+        x_to_coor = x_coord - xarray[smallest_index];
+        Nx = Nxarray[smallest_index] + dNx / dx * x_to_coor;
+        Ny = Nyarray[smallest_index] + dNy / dx * x_to_coor;
+        Tx = Ny;
+        Ty = -Nx;
+
+        /*--- Initialize velocity variables, determine delta, calculate deflection angle, and calculate BF magnitude---*/
+        su2double Velocity_i_x, Velocity_i_y, vel_mag, sound, M_rel, WdotN, delta, sq_vel, BF_magnitude_inc, K = 1, Kprime, BF_magnitude, BF_n, BF_t, BF_nx, BF_ny, BF_tx, BF_ty, BF_x, BF_y;
+        Velocity_i_x = U_i[1] / U_i[0]; //Use conservative variables to determine V_x and V_y
+        Velocity_i_y = U_i[2] / U_i[0] - omegaR;
+        vel_mag = sqrt(Velocity_i_x * Velocity_i_x + Velocity_i_y * Velocity_i_y);
+        sound = sqrt(gamma * R_gas * V_i[0]); // V_i is primitive variables as point i, T is first value
+        M_rel = vel_mag / sound;
+        WdotN = Velocity_i_x * Nx + Velocity_i_y * Ny;
+        delta = asin(WdotN / vel_mag);
+        sq_vel = vel_mag * vel_mag;
+        BF_magnitude_inc = pi * delta * (1 / pitch) * sq_vel * (1 / Ny);
+
+        // Compressibility correction
+        if (M_rel < 1) {
+            Kprime = 1 / (sqrt(1 - (M_rel * M_rel)));
+            if (Kprime <= 3) {
+                K = Kprime;
+            }
+            if (Kprime > 3) {
+                K = 3;
+            }
+        }
+        if (M_rel > 1) {
+            Kprime = 2 / (pi * sqrt((M_rel * M_rel) - 1));
+            if (Kprime <= 3) {
+                K = Kprime;
+            }
+            if (Kprime > 3) {
+                K = 3;
+            }
+        }
+        BF_magnitude = K * BF_magnitude_inc;
+
+        // Decompose forces into respective
+        BF_n = -BF_magnitude * cos(delta); //Split normal into x and y-components
+        BF_nx = BF_n * Nx;
+        BF_ny = BF_n * Ny;
+        BF_t = BF_magnitude * sin(delta); //Split tangential into x and y-components
+        BF_tx = BF_t * Tx;
+        BF_ty = BF_t * Ty;
+        BF_x = BF_nx + BF_tx;
+        BF_y = BF_ny + BF_ty;
+
+        /*--- Add body forces to body force vector ---*/
+        BodyForceVector_Turbo[0] = BF_x;
+        BodyForceVector_Turbo[1] = BF_y;
+
+        /*--- Test set and get body force to node ---*/
+//        cout<<"BodyForce X :: "<<BodyForceVector_Turbo[0]<<"BodyForce Y :: "<<BodyForceVector_Turbo[1]<<endl;
+        node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
+    }
+
 }
 
 CNSSolver::CNSSolver(void) : CEulerSolver() {

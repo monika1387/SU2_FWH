@@ -9335,6 +9335,8 @@ protected:
   *Secondary_i,           /*!< \brief Auxiliary nPrimVar vector for storing the primitive at point i. */
   *Secondary_j;           /*!< \brief Auxiliary nPrimVar vector for storing the primitive at point j. */
 
+  su2double *SourceVec;   /*!< \brief Auxiliary nVar vector, used in adaptaion loop. */
+
   su2double Cauchy_Value,        /*!< \brief Summed value of the convergence indicator. */
   Cauchy_Func;                   /*!< \brief Current value of the convergence indicator at one iteration. */
   unsigned short Cauchy_Counter; /*!< \brief Number of elements of the Cauchy serial. */

@@ -15139,7 +15139,9 @@ void CNSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_container, C
   
   StrainMag_Max = 0.0; Omega_Max = 0.0;
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    
+    if (iPoint == 109){
+      cout << "TODO" << endl;
+    }
     solver_container[FLOW_SOL]->node[iPoint]->SetVorticity();
     solver_container[FLOW_SOL]->node[iPoint]->SetStrainMag();
     

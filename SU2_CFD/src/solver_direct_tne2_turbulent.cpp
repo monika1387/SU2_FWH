@@ -196,6 +196,11 @@ void CTNE2TurbSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_cont
 
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
 
+    for (iVar=0; iVar<nVar; iVar++){
+      //delete me
+      if (Residual[iVar] != Residual[iVar])
+        cout << "ugh" << endl;}
+
     LinSysRes.AddBlock(iPoint, Residual);
     LinSysRes.SubtractBlock(jPoint, Residual);
 
@@ -244,6 +249,12 @@ void CTNE2TurbSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_con
     /*--- Compute residual, and Jacobians ---*/
 
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
+
+
+    for (unsigned short iVar=0; iVar<nVar; iVar++){
+      //delete me
+      if (Residual[iVar] != Residual[iVar])
+        cout << "ugh" << endl;}
 
     /*--- Add and subtract residual, and update Jacobians ---*/
 
@@ -325,6 +336,8 @@ void CTNE2TurbSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **sol
       total_index = iPoint*nVar+iVar;
       LinSysRes[total_index] = - LinSysRes[total_index];
       LinSysSol[total_index] = 0.0;
+      if (LinSysRes[total_index]!=LinSysRes[total_index])
+        cout << "delete me" << endl;
       AddRes_RMS(iVar, LinSysRes[total_index]*LinSysRes[total_index]);
       AddRes_Max(iVar, fabs(LinSysRes[total_index]), geometry->node[iPoint]->GetGlobalIndex(), geometry->node[iPoint]->GetCoord());
     }
@@ -1225,6 +1238,11 @@ void CTNE2TurbSASolver::Source_Residual(CGeometry *geometry, CSolver **solver_co
     /*--- Compute the source term ---*/
 
     numerics->ComputeResidual(Residual, Jacobian_i, NULL, config);
+
+    for (unsigned short iVar=0; iVar<nVar; iVar++){
+      //delete me
+      if (Residual[iVar] != Residual[iVar])
+        cout << "ugh" << endl;}
 
     /*--- Store the intermittency ---*/
 

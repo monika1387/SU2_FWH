@@ -144,6 +144,12 @@ public:
   inline su2double GetLaminarViscosity(void) {return Primitive[LAM_VISC_INDEX]; }
 
   /*!
+   * \brief Get the laminar viscosity of the flow.
+   * \return Value of the laminar viscosity of the flow.
+   */
+  inline su2double GetEddyViscosity(void) {return Primitive[EDDY_VISC_INDEX]; }
+
+  /*!
    * \overload
    * \param[in] eddy_visc - Value of the eddy viscosity.
    */

@@ -613,8 +613,11 @@ void CUpwAUSM_TNE2::ComputeResidual(su2double *val_residual,
   for (iVar = 0; iVar < nVar; iVar++)
     val_residual[iVar] = 0.5*((mF+Phi)*FcL[iVar]+(mF-Phi)*FcR[iVar])*Area;
 
-  for (iDim = 0; iDim < nDim; iDim++)
+  for (iDim = 0; iDim < nDim; iDim++){
     val_residual[nSpecies+iDim] += pF*UnitNormal[iDim]*Area;
+    //delete me
+    if (val_residual[iVar] != val_residual[iVar])
+      cout << "ugh" << endl;}
 
   if (implicit) {
 
@@ -2094,8 +2097,14 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
                      config);
 
   /*--- Update viscous residual ---*/
-  for (iVar = 0; iVar < nVar; iVar++)
+  for (iVar = 0; iVar < nVar; iVar++) {
     val_residual[iVar] = Proj_Flux_Tensor[iVar];
+
+    //delete me
+    if (val_residual[iVar] != val_residual[iVar])
+      cout << "ugh" << endl;
+  }
+
 
   /*--- Compute the implicit part ---*/
   if (implicit) {
@@ -2105,7 +2114,7 @@ void CAvgGrad_TNE2::ComputeResidual(su2double *val_residual,
     dist_ij = sqrt(dist_ij);
 
     GetViscousProjJacs(Mean_PrimVar, Mean_GradPrimVar, Mean_Eve, Mean_Cvve,
-                       Mean_Diffusion_Coeff, Mean_Laminar_Viscosity,
+                       Mean_Diffusion_Coeff, Mean_Laminar_Viscosity, Mean_Eddy_Viscosity,
                        Mean_Thermal_Conductivity, Mean_Thermal_Conductivity_ve,
                        dist_ij, UnitNormal, Area, Proj_Flux_Tensor,
                        val_Jacobian_i, val_Jacobian_j, config);
@@ -3171,13 +3180,17 @@ void CAvgGradCorrected_TNE2::ComputeResidual(su2double *val_residual,
   GetViscousProjFlux(Mean_PrimVar, Mean_GradPrimVar, Mean_Eve,
                      Normal, Mean_Diffusion_Coeff,
                      Mean_Laminar_Viscosity,
+                     Mean_Eddy_Viscosity,
                      Mean_Thermal_Conductivity,
                      Mean_Thermal_Conductivity_ve,
                      config);
 
   /*--- Update viscous residual ---*/
-  for (iVar = 0; iVar < nVar; iVar++)
+  for (iVar = 0; iVar < nVar; iVar++){
     val_residual[iVar] = Proj_Flux_Tensor[iVar];
+    //delete me
+    if (val_residual[iVar] != val_residual[iVar])
+      cout << "ugh" << endl;}
 
   /*--- Compute the implicit part ---*/
   if (implicit) {
@@ -3187,7 +3200,7 @@ void CAvgGradCorrected_TNE2::ComputeResidual(su2double *val_residual,
     dist_ij = sqrt(dist_ij);
 
     GetViscousProjJacs(Mean_PrimVar, Mean_GradPrimVar, Mean_Eve, Mean_Cvve,
-                       Mean_Diffusion_Coeff, Mean_Laminar_Viscosity,
+                       Mean_Diffusion_Coeff, Mean_Laminar_Viscosity, Mean_Eddy_Viscosity,
                        Mean_Thermal_Conductivity, Mean_Thermal_Conductivity_ve,
                        dist_ij, UnitNormal, Area, Proj_Flux_Tensor,
                        val_Jacobian_i, val_Jacobian_j, config);
@@ -3468,6 +3481,11 @@ void CSource_TNE2::ComputeChemistry(su2double *val_residual,
       }
     }
 
+    for (iVar=0; iVar<nVar; iVar++){
+      //delete me
+      if (val_residual[iVar] != val_residual[iVar])
+        cout << "ugh" << endl;}
+
     if (implicit) {
 
       /*--- Initializing derivative variables ---*/
@@ -3682,6 +3700,11 @@ void CSource_TNE2::ComputeVibRelaxation(su2double *val_residual,
                                  eve_i[iSpecies]) / taus[iSpecies] * Volume;
   }
 
+  for (iVar=0; iVar<nVar; iVar++){
+    //delete me
+    if (val_residual[iVar] != val_residual[iVar])
+      cout << "ugh" << endl;}
+
   if (implicit) {
     for (iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
 
@@ -3728,6 +3751,11 @@ void CSource_TNE2::ComputeAxisymmetric(su2double *val_residual,
   val_residual[nSpecies+1] = yinv*rhov*U_i[nSpecies+1]/rho*Volume;
   val_residual[nSpecies+2] = yinv*rhov*H*Volume;
   val_residual[nSpecies+3] = yinv*rhov*U_i[nSpecies+nDim+1]/rho*Volume;
+
+  for (iVar=0; iVar<nVar; iVar++){
+    //delete me
+    if (val_residual[iVar] != val_residual[iVar])
+      cout << "ugh" << endl;}
 
   if (implicit) {
 

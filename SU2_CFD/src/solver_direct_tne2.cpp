@@ -2329,6 +2329,8 @@ void CTNE2EulerSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **so
         Res = local_Residual[iVar] + local_Res_TruncError[iVar];
         node[iPoint]->AddSolution(iVar, -Res*Delta);
         AddRes_RMS(iVar, Res*Res);
+        if (Res!=Res)
+          cout << "delete me" << endl;
         AddRes_Max(iVar, fabs(Res), geometry->node[iPoint]->GetGlobalIndex(), geometry->node[iPoint]->GetCoord());
       }
     }
@@ -6327,7 +6329,9 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
   /*--- Evaluate the vorticity and strain rate magnitude ---*/
   StrainMag_Max = 0.0; Omega_Max = 0.0;
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
-
+    if (iPoint == 109){
+      cout << "TODO" << endl;
+    }
     solver_container[TNE2_SOL]->node[iPoint]->SetVorticity();
     solver_container[TNE2_SOL]->node[iPoint]->SetStrainMag();
 
@@ -7487,11 +7491,11 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
   /*--- Local variables ---*/
   bool implicit;
   unsigned short iDim, iVar;
-  unsigned short T_INDEX, TVE_INDEX, RHOCVTR_INDEX;
+  unsigned short T_INDEX, TVE_INDEX, RHOCVTR_INDEX, K_INDEX, KVE_INDEX;
   unsigned long iVertex, iPoint, total_index;
   su2double Wall_HeatFlux, dTdn, dTvedn, ktr, kve, pcontrol;
   su2double *Normal, Area;
-  su2double **GradV;
+  su2double **GradV, *V;
 
   /*--- Assign booleans ---*/
   implicit = (config->GetKind_TimeIntScheme_TNE2() == EULER_IMPLICIT);
@@ -7508,6 +7512,8 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
   /*--- Get the locations of the primitive variables ---*/
   T_INDEX       = node[0]->GetTIndex();
   TVE_INDEX     = node[0]->GetTveIndex();
+  K_INDEX       = node[0]->GetKIndex();
+  KVE_INDEX     = node[0]->GetKveIndex();
   RHOCVTR_INDEX = node[0]->GetRhoCvtrIndex();
 
   /*--- Loop over all of the vertices on this boundary marker ---*/
@@ -7532,6 +7538,7 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
       /*--- Set the residual on the boundary with the specified heat flux ---*/
       // Note: Contributions from qtr and qve are used for proportional control
       //       to drive the solution toward the specified heatflux more quickly.
+      V      = node[iPoint]->GetPrimVar();
       GradV  = node[iPoint]->GetGradient_Primitive();
       dTdn   = 0.0;
       dTvedn = 0.0;
@@ -7539,8 +7546,8 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
         dTdn   += GradV[T_INDEX][iDim]*Normal[iDim];
         dTvedn += GradV[TVE_INDEX][iDim]*Normal[iDim];
       }
-      ktr = node[iPoint]->GetThermalConductivity();
-      kve = node[iPoint]->GetThermalConductivity_ve();
+      ktr = V[K_INDEX];
+      kve = V[KVE_INDEX];
 
       /*--- Scale thermal conductivity with turb ---*/
       //delete me
@@ -7550,7 +7557,6 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
       su2double *Ms = FluidModel->GetMolar_Mass();
       su2double tmp1, scl, Cptr;
       su2double Ru=1000.0*UNIVERSAL_GAS_CONSTANT;
-      su2double *V = node[iPoint]->GetPrimVar();
       su2double eddy_viscosity=node[iPoint]->GetEddyViscosity();
       for (unsigned short iSpecies=0; iSpecies<nSpecies; iSpecies++)
         Mass += V[iSpecies]*Ms[iSpecies];
@@ -7559,6 +7565,8 @@ void CTNE2NSSolver::BC_HeatFlux_Wall(CGeometry *geometry,
       scl  = tmp1/ktr;
       ktr += Cptr*(eddy_viscosity/Prandtl_Turb);
       kve  = kve*(1.0+scl);
+      //delete me
+      cout << eddy_viscosity << endl;
       //Cpve = V[RHOCVVE_INDEX]+Ru/Mass;
       //kve += Cpve*(val_eddy_viscosity/Prandtl_Turb);
 
@@ -7900,7 +7908,8 @@ void CTNE2NSSolver::BC_Isothermal_Wall(CGeometry *geometry,
                                        unsigned short val_marker) {
 
   unsigned short iDim, iVar, jVar;
-  unsigned short RHOS_INDEX, T_INDEX, TVE_INDEX, RHOCVTR_INDEX, RHOCVVE_INDEX;
+  unsigned short RHOS_INDEX, T_INDEX, TVE_INDEX, RHOCVTR_INDEX,
+  RHOCVVE_INDEX, K_INDEX, KVE_INDEX;
   unsigned long iVertex, iPoint, jPoint;
   su2double ktr, kve;
   su2double Ti, Tvei, Tj, Tvej, *dTdU, *dTvedU;
@@ -7932,6 +7941,8 @@ void CTNE2NSSolver::BC_Isothermal_Wall(CGeometry *geometry,
   TVE_INDEX     = node[0]->GetTveIndex();
   RHOCVTR_INDEX = node[0]->GetRhoCvtrIndex();
   RHOCVVE_INDEX = node[0]->GetRhoCvveIndex();
+  K_INDEX       = node[0]->GetKIndex();
+  KVE_INDEX     = node[0]->GetKveIndex();
 
   /*--- Loop over boundary points to calculate energy flux ---*/
   for(iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
@@ -7987,18 +7998,18 @@ void CTNE2NSSolver::BC_Isothermal_Wall(CGeometry *geometry,
       Tvej = node[jPoint]->GetTemperature_ve();
 
       /*--- Rename variables for convenience ---*/
-      ktr     = node[iPoint]->GetThermalConductivity();
-      kve     = node[iPoint]->GetThermalConductivity_ve();
+      su2double *V = node[iPoint]->GetPrimVar();
+      ktr          = V[K_INDEX];
+      kve          = V[KVE_INDEX];
 
       /*--- Scale thermal conductivity with turb ---*/
-      //delete me
+      //delete me, todo
       // Need to determine proper way to incorporate eddy viscosity
       // This is only scaling Kve by same factor as ktr
       su2double Mass = 0.0;
       su2double *Ms = FluidModel->GetMolar_Mass();
       su2double tmp1, scl, Cptr;
       su2double Ru=1000.0*UNIVERSAL_GAS_CONSTANT;
-      su2double *V = node[iPoint]->GetPrimVar();
       su2double eddy_viscosity=node[iPoint]->GetEddyViscosity();
       for (unsigned short iSpecies=0; iSpecies<nSpecies; iSpecies++)
         Mass += V[iSpecies]*Ms[iSpecies];

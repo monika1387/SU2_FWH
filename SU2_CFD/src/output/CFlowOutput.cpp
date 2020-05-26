@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file output_flow.cpp
  * \brief Main subroutines for compressible flow output
  * \author R. Sanchez
@@ -543,7 +543,7 @@ void CFlowOutput::SetAnalyzeSurface(CSolver *solver, CGeometry *geometry, CConfi
   SetHistoryOutputValue("AVG_PRESS", Tot_Surface_Pressure);
   SetHistoryOutputValue("AVG_DENSITY", Tot_Surface_Density);
   SetHistoryOutputValue("AVG_ENTHALPY", Tot_Surface_Enthalpy);
-  SetHistoryOutputValue("AVG_NORMALVEL", Tot_Surface_Enthalpy);
+  SetHistoryOutputValue("AVG_NORMALVEL", Tot_Surface_NormalVelocity);
   SetHistoryOutputValue("UNIFORMITY", Tot_Surface_StreamVelocity2);
   SetHistoryOutputValue("SECONDARY_STRENGTH", Tot_Surface_TransvVelocity2);
   SetHistoryOutputValue("MOMENTUM_DISTORTION", Tot_Momentum_Distortion);

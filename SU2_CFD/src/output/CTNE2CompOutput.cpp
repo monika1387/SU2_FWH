@@ -68,6 +68,8 @@ CTNE2CompOutput::CTNE2CompOutput(CConfig *config, unsigned short nDim) : CFlowOu
     requestedVolumeFields.emplace_back("SOLUTION");
     requestedVolumeFields.emplace_back("PRIMITIVE");
     nRequestedVolumeFields = requestedVolumeFields.size();
+    if (config->GetGrid_Movement()) requestedVolumeFields.emplace_back("GRID_VELOCITY");
+    nRequestedVolumeFields = requestedVolumeFields.size();
   }
 
   stringstream ss;
@@ -158,7 +160,17 @@ void CTNE2CompOutput::SetHistoryOutputFields(CConfig *config){
 
   /// BEGIN_GROUP: MAX_RES, DESCRIPTION: The maximum residuals of the SOLUTION variables.
   /// DESCRIPTION: Maximum residual of the density.
-  AddHistoryOutput("MAX_DENSITY",    "max[Rho]",  ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the density.", HistoryFieldType::RESIDUAL);
+  if (nSpecies == 2) {
+    AddHistoryOutput("MAX_DENSITY_N2", "max[Rho_N2]",  ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the N2 density.", HistoryFieldType::RESIDUAL);
+    AddHistoryOutput("MAX_DENSITY_N",  "max[Rho_N]",   ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the N density.", HistoryFieldType::RESIDUAL);
+  }
+  if (nSpecies == 5) {
+    AddHistoryOutput("MAX_DENSITY_N2", "max[Rho_N2]",  ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the N2 density.", HistoryFieldType::RESIDUAL);
+    AddHistoryOutput("MAX_DENSITY_O2", "max[Rho_O2]",  ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the O2 density.", HistoryFieldType::RESIDUAL);
+    AddHistoryOutput("MAX_DENSITY_NO", "max[Rho_NO]",  ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the NO density.", HistoryFieldType::RESIDUAL);
+    AddHistoryOutput("MAX_DENSITY_N",  "max[Rho_N]",   ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the N density.", HistoryFieldType::RESIDUAL);
+    AddHistoryOutput("MAX_DENSITY_O",  "max[Rho_O]",   ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the O density.", HistoryFieldType::RESIDUAL);
+  }
   /// DESCRIPTION: Maximum residual of the momentum x-component.
   AddHistoryOutput("MAX_MOMENTUM-X", "max[RhoU]", ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum square residual of the momentum x-component.", HistoryFieldType::RESIDUAL);
   /// DESCRIPTION: Maximum residual of the momentum y-component.
@@ -167,6 +179,8 @@ void CTNE2CompOutput::SetHistoryOutputFields(CConfig *config){
   if (nDim == 3) AddHistoryOutput("MAX_MOMENTUM-Z", "max[RhoW]", ScreenOutputFormat::FIXED,"MAX_RES", "Maximum residual of the z-component.", HistoryFieldType::RESIDUAL);
   /// DESCRIPTION: Maximum residual of the energy.
   AddHistoryOutput("MAX_ENERGY",     "max[RhoE]", ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum residual of the energy.", HistoryFieldType::RESIDUAL);
+  /// DESCRIPTION: Maximum residual of the vib-el energy.
+  AddHistoryOutput("MAX_ENERGY_VE",  "max[RhoEve]", ScreenOutputFormat::FIXED,   "MAX_RES", "Maximum residual of the vib-el energy.", HistoryFieldType::RESIDUAL);
 
   switch(turb_model){
   case SA: case SA_NEG: case SA_E: case SA_COMP: case SA_E_COMP:
@@ -221,7 +235,6 @@ void CTNE2CompOutput::SetHistoryOutputFields(CConfig *config){
   AddHistoryOutputPerSurface("PITCH",  "pitch",  ScreenOutputFormat::FIXED, "AEROELASTIC", Marker_Monitoring, HistoryFieldType::COEFFICIENT);
   /// END_GROUP
 
-
   /// DESCRIPTION: Linear solver iterations
   AddHistoryOutput("LINSOL_ITER", "Linear_Solver_Iterations", ScreenOutputFormat::INTEGER, "LINSOL", "Number of iterations of the linear solver.");
   AddHistoryOutput("LINSOL_RESIDUAL", "LinSolRes", ScreenOutputFormat::FIXED, "LINSOL", "Residual of the linear solver.");
@@ -255,14 +268,19 @@ void CTNE2CompOutput::SetHistoryOutputFields(CConfig *config){
 
   ///   /// BEGIN_GROUP: HEAT_COEFF, DESCRIPTION: Heat coefficients on all surfaces set with MARKER_MONITORING.
   /// DESCRIPTION: Total heatflux
-  AddHistoryOutput("HEATFLUX", "HF",      ScreenOutputFormat::SCIENTIFIC, "HEAT", "Total heatflux on all surfaces set with MARKER_MONITORING.", HistoryFieldType::COEFFICIENT);
+  AddHistoryOutput("TOTAL_HEATFLUX", "HF",  ScreenOutputFormat::SCIENTIFIC, "HEAT", "Total heatflux on all surfaces set with MARKER_MONITORING.", HistoryFieldType::COEFFICIENT);
   /// DESCRIPTION: Maximal heatflux
-  AddHistoryOutput("HEATFLUX_MAX", "maxHF",    ScreenOutputFormat::SCIENTIFIC, "HEAT", "Total maximum heatflux on all surfaces set with MARKER_MONITORING.", HistoryFieldType::COEFFICIENT);
+  AddHistoryOutput("HEATFLUX_MAX", "maxHF", ScreenOutputFormat::SCIENTIFIC, "HEAT", "Total maximum heatflux on all surfaces set with MARKER_MONITORING.", HistoryFieldType::COEFFICIENT);
   /// DESCRIPTION: Temperature
-  AddHistoryOutput("TEMPERATURE", "Temp", ScreenOutputFormat::SCIENTIFIC, "HEAT",  "Total avg. temperature on all surfaces set with MARKER_MONITORING.", HistoryFieldType::COEFFICIENT);
+  AddHistoryOutput("TEMPERATURE", "Temp",   ScreenOutputFormat::SCIENTIFIC, "HEAT",  "Total avg. temperature on all surfaces set with MARKER_MONITORING.", HistoryFieldType::COEFFICIENT);
   /// END_GROUP
 
-  AddHistoryOutput("CFL_NUMBER", "CFL number", ScreenOutputFormat::SCIENTIFIC, "CFL_NUMBER", "Current value of the CFL number");
+  AddHistoryOutput("MIN_DELTA_TIME", "Min DT", ScreenOutputFormat::SCIENTIFIC, "CFL_NUMBER", "Current minimum local time step");
+  AddHistoryOutput("MAX_DELTA_TIME", "Max DT", ScreenOutputFormat::SCIENTIFIC, "CFL_NUMBER", "Current maximum local time step");
+
+  AddHistoryOutput("MIN_CFL", "Min CFL", ScreenOutputFormat::SCIENTIFIC, "CFL_NUMBER", "Current minimum of the local CFL numbers");
+  AddHistoryOutput("MAX_CFL", "Max CFL", ScreenOutputFormat::SCIENTIFIC, "CFL_NUMBER", "Current maximum of the local CFL numbers");
+  AddHistoryOutput("AVG_CFL", "Avg CFL", ScreenOutputFormat::SCIENTIFIC, "CFL_NUMBER", "Current average of the local CFL numbers");
 
   ///   /// BEGIN_GROUP: FIXED_CL, DESCRIPTION: Relevant outputs for the Fixed CL mode
   if (config->GetFixed_CL_Mode()){
@@ -329,6 +347,7 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
     AddVolumeOutput("MOMENTUM-Z", "Momentum_z", "SOLUTION", "z-component of the momentum vector");
   AddVolumeOutput("ENERGY",       "Energy",     "SOLUTION", "Energy");
   AddVolumeOutput("ENERGY_VE",    "Energy_ve",  "SOLUTION", "Energy_ve");
+
   // Turbulent Residuals
   switch(config->GetKind_Turb_Model()){
   case SST: case SST_SUST:
@@ -352,11 +371,10 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
   }
 
   // Primitive variables
-  AddVolumeOutput("PRESSURE",       "Pressure",                "PRIMITIVE", "Pressure");
-  AddVolumeOutput("TEMPERATURE",    "Temperature",             "PRIMITIVE", "Temperature");
-  AddVolumeOutput("TEMPERATURE_VE", "Temperature_ve",          "PRIMITIVE", "Temperature_ve");
-
-  AddVolumeOutput("MACH",        "Mach",                    "PRIMITIVE", "Mach number");
+  AddVolumeOutput("PRESSURE",       "Pressure",             "PRIMITIVE", "Pressure");
+  AddVolumeOutput("TEMPERATURE",    "Temperature",          "PRIMITIVE", "Temperature");
+  AddVolumeOutput("TEMPERATURE_VE", "Temperature_ve",       "PRIMITIVE", "Temperature_ve");
+  AddVolumeOutput("MACH",           "Mach",                 "PRIMITIVE", "Mach number");
   AddVolumeOutput("PRESSURE_COEFF", "Pressure_Coefficient", "PRIMITIVE", "Pressure coefficient");
 
   if (config->GetKind_Solver() == TNE2_RANS || config->GetKind_Solver() == TNE2_NAVIER_STOKES){
@@ -413,12 +431,23 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
   }
 
   // Limiter values
-  AddVolumeOutput("LIMITER_DENSITY", "Limiter_Density", "LIMITER", "Limiter value of the density");
+  if (nSpecies == 2) {
+    AddVolumeOutput("LIMITER_DENSITY_N2", "Limiter_Density_N2", "LIMITER", "Limiter value of the N2 density");
+    AddVolumeOutput("LIMITER_DENSITY_N",  "Limiter_Density_N", "LIMITER", "Limiter value of the N density");
+  }
+  if (nSpecies == 5) {
+    AddVolumeOutput("LIMITER_DENSITY_N2", "Limiter_Density_N2", "LIMITER", "Limiter value of the N2 density");
+    AddVolumeOutput("LIMITER_DENSITY_O2", "Limiter_Density_O2", "LIMITER", "Limiter value of the O2 density");
+    AddVolumeOutput("LIMITER_DENSITY_NO", "Limiter_Density_NO", "LIMITER", "Limiter value of the NO density");
+    AddVolumeOutput("LIMITER_DENSITY_N",  "Limiter_Density_N", "LIMITER", "Limiter value of the N density");
+    AddVolumeOutput("LIMITER_DENSITY_O",  "Limiter_Density_O", "LIMITER", "Limiter value of the O density");
+  }
   AddVolumeOutput("LIMITER_MOMENTUM-X", "Limiter_Momentum_x", "LIMITER", "Limiter value of the x-momentum");
   AddVolumeOutput("LIMITER_MOMENTUM-Y", "Limiter_Momentum_y", "LIMITER", "Limiter value of the y-momentum");
   if (nDim == 3)
     AddVolumeOutput("LIMITER_MOMENTUM-Z", "Limiter_Momentum_z", "LIMITER", "Limiter value of the z-momentum");
-  AddVolumeOutput("LIMITER_ENERGY", "Limiter_Energy", "LIMITER", "Limiter value of the energy");
+  AddVolumeOutput("LIMITER_ENERGY",    "Limiter_Energy", "LIMITER", "Limiter value of the energy");
+  AddVolumeOutput("LIMITER_ENERGY_VE", "Limiter_Energy_ve", "LIMITER", "Limiter value of the vib-el energy");
 
   switch(config->GetKind_Turb_Model()){
   case SST: case SST_SUST:
@@ -433,7 +462,6 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
     break;
   }
 
-
   // Hybrid RANS-LES
   if (config->GetKind_HybridRANSLES() != NO_HYBRIDRANSLES){
     AddVolumeOutput("DES_LENGTHSCALE", "DES_LengthScale", "DDES", "DES length scale value");
@@ -445,13 +473,15 @@ void CTNE2CompOutput::SetVolumeOutputFields(CConfig *config){
     AddVolumeOutput("ROE_DISSIPATION", "Roe_Dissipation", "ROE_DISSIPATION", "Value of the Roe dissipation");
   }
 
-  if(config->GetKind_Solver() == RANS || config->GetKind_Solver() == NAVIER_STOKES){
+  if(config->GetKind_Solver() == TNE2_RANS || config->GetKind_Solver() == TNE2_NAVIER_STOKES){
     if (nDim == 3){
       AddVolumeOutput("VORTICITY_X", "Vorticity_x", "VORTEX_IDENTIFICATION", "x-component of the vorticity vector");
       AddVolumeOutput("VORTICITY_Y", "Vorticity_y", "VORTEX_IDENTIFICATION", "y-component of the vorticity vector");
-      AddVolumeOutput("Q_CRITERION", "Q_Criterion", "VORTEX_IDENTIFICATION", "Value of the Q-Criterion");
+      AddVolumeOutput("VORTICITY_Z", "Vorticity_z", "VORTEX_IDENTIFICATION", "z-component of the vorticity vector");
+    } else {
+      AddVolumeOutput("VORTICITY", "Vorticity", "VORTEX_IDENTIFICATION", "Value of the vorticity");
     }
-    AddVolumeOutput("VORTICITY_Z", "Vorticity_z", "VORTEX_IDENTIFICATION", "z-component of the vorticity vector");
+    AddVolumeOutput("Q_CRITERION", "Q_Criterion", "VORTEX_IDENTIFICATION", "Value of the Q-Criterion");
   }
 
   if (config->GetTime_Domain()){
@@ -506,22 +536,22 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
     break;
   case SA: case SA_COMP: case SA_E:
   case SA_E_COMP: case SA_NEG:
-    SetVolumeOutputValue("NU_TILDE", iPoint, Node_Turb->GetSolution(iPoint, 0));
+    SetVolumeOutputValue("NU_TILDE",    iPoint, Node_Turb->GetSolution(iPoint, 0));
     break;
   case NONE:
     break;
   }
 
   if (config->GetGrid_Movement()){
-    SetVolumeOutputValue("GRID_VELOCITY-X", iPoint, Node_Geo->GetGridVel()[0]);
-    SetVolumeOutputValue("GRID_VELOCITY-Y", iPoint, Node_Geo->GetGridVel()[1]);
+    SetVolumeOutputValue("GRID_VELOCITY-X", iPoint,   Node_Geo->GetGridVel()[0]);
+    SetVolumeOutputValue("GRID_VELOCITY-Y", iPoint,   Node_Geo->GetGridVel()[1]);
     if (nDim == 3)
       SetVolumeOutputValue("GRID_VELOCITY-Z", iPoint, Node_Geo->GetGridVel()[2]);
   }
 
-  SetVolumeOutputValue("PRESSURE", iPoint, Node_Flow->GetPressure(iPoint));
+  SetVolumeOutputValue("PRESSURE",    iPoint, Node_Flow->GetPressure(iPoint));
   SetVolumeOutputValue("TEMPERATURE", iPoint, Node_Flow->GetTemperature(iPoint));
-  SetVolumeOutputValue("MACH", iPoint, sqrt(Node_Flow->GetVelocity2(iPoint))/Node_Flow->GetSoundSpeed(iPoint));
+  SetVolumeOutputValue("MACH",        iPoint, sqrt(Node_Flow->GetVelocity2(iPoint))/Node_Flow->GetSoundSpeed(iPoint));
 
   su2double VelMag = 0.0;
   for (unsigned short iDim = 0; iDim < nDim; iDim++){
@@ -530,11 +560,11 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
   su2double factor = 1.0/(0.5*solver[TNE2_SOL]->GetDensity_Inf()*VelMag);
   SetVolumeOutputValue("PRESSURE_COEFF", iPoint, (Node_Flow->GetPressure(iPoint) - solver[TNE2_SOL]->GetPressure_Inf())*factor);
 
-  if (config->GetKind_Solver() == RANS || config->GetKind_Solver() == NAVIER_STOKES){
+  if (config->GetKind_Solver() == TNE2_RANS || config->GetKind_Solver() == TNE2_NAVIER_STOKES){
     SetVolumeOutputValue("LAMINAR_VISCOSITY", iPoint, Node_Flow->GetLaminarViscosity(iPoint));
   }
 
-  if (config->GetKind_Solver() == RANS) {
+  if (config->GetKind_Solver() == TNE2_RANS) {
     SetVolumeOutputValue("EDDY_VISCOSITY", iPoint, Node_Flow->GetEddyViscosity(iPoint));
   }
 
@@ -553,7 +583,6 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
     SetVolumeOutputValue("RES_DENSITY_N",  iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, 3));
     SetVolumeOutputValue("RES_DENSITY_O",  iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, 4));
   }
-
   SetVolumeOutputValue("RES_MOMENTUM-X", iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies));
   SetVolumeOutputValue("RES_MOMENTUM-Y", iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies+1));
   if (nDim == 3){
@@ -561,7 +590,7 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
     SetVolumeOutputValue("RES_ENERGY",     iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies+3));
     SetVolumeOutputValue("RES_ENERGY_VE",  iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies+4));
   } else {
-    SetVolumeOutputValue("RES_ENERGY", iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies+2));
+    SetVolumeOutputValue("RES_ENERGY",    iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies+2));
     SetVolumeOutputValue("RES_ENERGY_VE", iPoint, solver[TNE2_SOL]->LinSysRes.GetBlock(iPoint, nSpecies+3));
   }
 
@@ -578,14 +607,26 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
     break;
   }
 
-  SetVolumeOutputValue("LIMITER_DENSITY",    iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 0));
-  SetVolumeOutputValue("LIMITER_MOMENTUM-X", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 1));
-  SetVolumeOutputValue("LIMITER_MOMENTUM-Y", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 2));
+  if (nSpecies == 2) {
+    SetVolumeOutputValue("LIMITER_DENSITY_N2", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 0));
+    SetVolumeOutputValue("LIMITER_DENSITY_N",  iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 1));
+  }
+  if (nSpecies == 5) {
+    SetVolumeOutputValue("LIMITER_DENSITY_N2", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 0));
+    SetVolumeOutputValue("LIMITER_DENSITY_O2", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 1));
+    SetVolumeOutputValue("LIMITER_DENSITY_NO", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 0));
+    SetVolumeOutputValue("LIMITER_DENSITY_N",  iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 1));
+    SetVolumeOutputValue("LIMITER_DENSITY_O",  iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 0));
+  }
+  SetVolumeOutputValue("LIMITER_MOMENTUM-X", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies));
+  SetVolumeOutputValue("LIMITER_MOMENTUM-Y", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies+1));
   if (nDim == 3){
-    SetVolumeOutputValue("LIMITER_MOMENTUM-Z", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 3));
-    SetVolumeOutputValue("LIMITER_ENERGY",     iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 4));
+    SetVolumeOutputValue("LIMITER_MOMENTUM-Z", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies+2));
+    SetVolumeOutputValue("LIMITER_ENERGY",     iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies+3));
+    SetVolumeOutputValue("LIMITER_ENERGY_VE",  iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies+4));
   } else {
-    SetVolumeOutputValue("LIMITER_ENERGY", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, 3));
+    SetVolumeOutputValue("LIMITER_ENERGY",    iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies+2));
+    SetVolumeOutputValue("LIMITER_ENERGY_VE", iPoint, Node_Flow->GetLimiter_Primitive(iPoint, nSpecies+3));
   }
 
   switch(config->GetKind_Turb_Model()){
@@ -610,7 +651,7 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
     SetVolumeOutputValue("ROE_DISSIPATION", iPoint, Node_Flow->GetRoe_Dissipation(iPoint));
   }
 
-  if(config->GetKind_Solver() == RANS || config->GetKind_Solver() == NAVIER_STOKES){
+  if(config->GetKind_Solver() == TNE2_RANS || config->GetKind_Solver() == TNE2_NAVIER_STOKES){
     if (nDim == 3){
       SetVolumeOutputValue("VORTICITY_X", iPoint, Node_Flow->GetVorticity(iPoint)[0]);
       SetVolumeOutputValue("VORTICITY_Y", iPoint, Node_Flow->GetVorticity(iPoint)[1]);
@@ -626,14 +667,14 @@ void CTNE2CompOutput::LoadVolumeData(CConfig *config, CGeometry *geometry, CSolv
 
 void CTNE2CompOutput::LoadSurfaceData(CConfig *config, CGeometry *geometry, CSolver **solver, unsigned long iPoint, unsigned short iMarker, unsigned long iVertex){
 
-  if ((config->GetKind_Solver() == NAVIER_STOKES) || (config->GetKind_Solver()  == RANS)) {
+  if ((config->GetKind_Solver() == TNE2_NAVIER_STOKES) || (config->GetKind_Solver()  == TNE2_RANS)) {
     SetVolumeOutputValue("SKIN_FRICTION-X", iPoint, solver[TNE2_SOL]->GetCSkinFriction(iMarker, iVertex, 0));
     SetVolumeOutputValue("SKIN_FRICTION-Y", iPoint, solver[TNE2_SOL]->GetCSkinFriction(iMarker, iVertex, 1));
     if (nDim == 3)
       SetVolumeOutputValue("SKIN_FRICTION-Z", iPoint, solver[TNE2_SOL]->GetCSkinFriction(iMarker, iVertex, 2));
 
     SetVolumeOutputValue("HEAT_FLUX", iPoint, solver[TNE2_SOL]->GetHeatFlux(iMarker, iVertex));
-    SetVolumeOutputValue("Y_PLUS", iPoint, solver[TNE2_SOL]->GetYPlus(iMarker, iVertex));
+    SetVolumeOutputValue("Y_PLUS",    iPoint, solver[TNE2_SOL]->GetYPlus(iMarker, iVertex));
   }
 }
 
@@ -677,14 +718,26 @@ void CTNE2CompOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSol
   default: break;
   }
 
-  SetHistoryOutputValue("MAX_DENSITY", log10(flow_solver->GetRes_Max(0)));
-  SetHistoryOutputValue("MAX_MOMENTUM-X", log10(flow_solver->GetRes_Max(1)));
-  SetHistoryOutputValue("MAX_MOMENTUM-Y", log10(flow_solver->GetRes_Max(2)));
-  if (nDim == 2)
-    SetHistoryOutputValue("MAX_ENERGY", log10(flow_solver->GetRes_Max(3)));
-  else {
-    SetHistoryOutputValue("MAX_MOMENTUM-Z", log10(flow_solver->GetRes_Max(3)));
-    SetHistoryOutputValue("MAX_ENERGY", log10(flow_solver->GetRes_Max(4)));
+  if (nSpecies == 2) {
+    SetHistoryOutputValue("MAX_DENSITY_N2", log10(flow_solver->GetRes_Max(0)));
+    SetHistoryOutputValue("MAX_DENSITY_N",  log10(flow_solver->GetRes_Max(1)));
+  }
+  if (nSpecies == 5) {
+    SetHistoryOutputValue("MAX_DENSITY_N2", log10(flow_solver->GetRes_Max(0)));
+    SetHistoryOutputValue("MAX_DENSITY_O2", log10(flow_solver->GetRes_Max(1)));
+    SetHistoryOutputValue("MAX_DENSITY_NO", log10(flow_solver->GetRes_Max(2)));
+    SetHistoryOutputValue("MAX_DENSITY_N",  log10(flow_solver->GetRes_Max(3)));
+    SetHistoryOutputValue("MAX_DENSITY_O",  log10(flow_solver->GetRes_Max(4)));
+  }
+  SetHistoryOutputValue("MAX_MOMENTUM-X", log10(flow_solver->GetRes_Max(nSpecies)));
+  SetHistoryOutputValue("MAX_MOMENTUM-Y", log10(flow_solver->GetRes_Max(nSpecies+1)));
+  if (nDim == 2) {
+    SetHistoryOutputValue("MAX_ENERGY",    log10(flow_solver->GetRes_Max(nSpecies+2)));
+    SetHistoryOutputValue("MAX_ENERGY_VE", log10(flow_solver->GetRes_Max(nSpecies+3)));
+  } else {
+    SetHistoryOutputValue("MAX_MOMENTUM-Z", log10(flow_solver->GetRes_Max(nSpecies+2)));
+    SetHistoryOutputValue("MAX_ENERGY",     log10(flow_solver->GetRes_Max(nSpecies+3)));
+    SetHistoryOutputValue("MAX_ENERGY",     log10(flow_solver->GetRes_Max(nSpecies+4)));
   }
 
   switch(turb_model){
@@ -699,6 +752,7 @@ void CTNE2CompOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSol
   }
 
   if (multiZone){
+    //TODO extend NEMO/TNE2 Here?
     SetHistoryOutputValue("BGS_DENSITY", log10(flow_solver->GetRes_BGS(0)));
     SetHistoryOutputValue("BGS_MOMENTUM-X", log10(flow_solver->GetRes_BGS(1)));
     SetHistoryOutputValue("BGS_MOMENTUM-Y", log10(flow_solver->GetRes_BGS(2)));
@@ -722,11 +776,16 @@ void CTNE2CompOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSol
     }
   }
 
-  SetHistoryOutputValue("HEATFLUX",     flow_solver->GetTotal_HeatFlux());
-  SetHistoryOutputValue("HEATFLUX_MAX", flow_solver->GetTotal_MaxHeatFlux());
-  SetHistoryOutputValue("TEMPERATURE",  flow_solver->GetTotal_AvgTemperature());
+  SetHistoryOutputValue("TOTAL_HEATFLUX", flow_solver->GetTotal_HeatFlux());
+  SetHistoryOutputValue("HEATFLUX_MAX",   flow_solver->GetTotal_MaxHeatFlux());
+  SetHistoryOutputValue("TEMPERATURE",    flow_solver->GetTotal_AvgTemperature());
 
-  SetHistoryOutputValue("CFL_NUMBER", config->GetCFL(MESH_0));
+  SetHistoryOutputValue("MIN_DELTA_TIME", flow_solver->GetMin_Delta_Time());
+  SetHistoryOutputValue("MAX_DELTA_TIME", flow_solver->GetMax_Delta_Time());
+
+  SetHistoryOutputValue("MIN_CFL", flow_solver->GetMin_CFL_Local());
+  SetHistoryOutputValue("MAX_CFL", flow_solver->GetMax_CFL_Local());
+  SetHistoryOutputValue("AVG_CFL", flow_solver->GetAvg_CFL_Local());
 
   SetHistoryOutputValue("LINSOL_ITER", flow_solver->GetIterLinSolver());
   SetHistoryOutputValue("LINSOL_RESIDUAL", log10(flow_solver->GetLinSol_Residual()));
@@ -743,7 +802,6 @@ void CTNE2CompOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSol
     SetHistoryOutputValue("PREV_AOA", flow_solver->GetPrevious_AoA());
     SetHistoryOutputValue("CHANGE_IN_AOA", config->GetAoA()-flow_solver->GetPrevious_AoA());
     SetHistoryOutputValue("CL_DRIVER_COMMAND", flow_solver->GetAoA_inc());
-
   }
 
   /*--- Set the analyse surface history values --- */
@@ -767,7 +825,7 @@ void CTNE2CompOutput::LoadHistoryData(CConfig *config, CGeometry *geometry, CSol
 bool CTNE2CompOutput::SetInit_Residuals(CConfig *config){
 
   return (config->GetTime_Marching() != STEADY && (curInnerIter == 0))||
-        (config->GetTime_Marching() == STEADY && (curInnerIter < 2));
+         (config->GetTime_Marching() == STEADY && (curInnerIter < 2));
 
 }
 

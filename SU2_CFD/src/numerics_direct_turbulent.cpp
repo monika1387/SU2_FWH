@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file numerics_direct_turbulent.cpp
  * \brief This file contains all the convective term discretization.
  * \author F. Palacios, A. Bueno
@@ -245,7 +245,8 @@ void CAvgGrad_TurbSA::FinishResidualCalc(su2double *val_residual, su2double **Ja
   nu_e = 0.5*(nu_i+nu_j+TurbVar_i[0]+TurbVar_j[0]);
   
   val_residual[0] = nu_e*Proj_Mean_GradTurbVar[0]/sigma;
-  
+  cout << "todo delete me visc turbsa:  " << val_residual[0] << endl;
+
   /*--- For Jacobians -> Use of TSL approx. to compute derivatives of the gradients ---*/
   
   if (implicit) {
@@ -447,7 +448,7 @@ void CSourcePieceWise_TurbSA::ComputeResidual(su2double *val_residual, su2double
     CrossProduction = cb2_sigma*norm2_Grad*Volume;
     
     val_residual[0] = Production - Destruction + CrossProduction;
-    
+
     /*--- Implicit part, production term ---*/
     
     dfv1 = 3.0*Ji_2*cv1_3/(nu*pow(Ji_3+cv1_3,2.));

@@ -2321,7 +2321,6 @@ void CTNE2EulerSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **so
   for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
     Vol = geometry->node[iPoint]->GetVolume();
     Delta = node[iPoint]->GetDelta_Time() / Vol;
-
     local_Res_TruncError = node[iPoint]->GetResTruncError();
     local_Residual = LinSysRes.GetBlock(iPoint);
     if (!adjoint) {
@@ -2329,8 +2328,6 @@ void CTNE2EulerSolver::ExplicitEuler_Iteration(CGeometry *geometry, CSolver **so
         Res = local_Residual[iVar] + local_Res_TruncError[iVar];
         node[iPoint]->AddSolution(iVar, -Res*Delta);
         AddRes_RMS(iVar, Res*Res);
-        if (Res!=Res)
-          cout << "delete me" << endl;
         AddRes_Max(iVar, fabs(Res), geometry->node[iPoint]->GetGlobalIndex(), geometry->node[iPoint]->GetCoord());
       }
     }
@@ -2566,10 +2563,6 @@ void CTNE2EulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *co
       r23_b, r33, rho_i, rho_j, weight, product, detR2, z11, z12, z13, z22, z23, z33;
   bool singular;
 
-  //Unused at the momemnt
-  //unsigned short iSpecies;
-  //unsigned long
-
   /*--- Initialize arrays, Primitive variables:
    [Y1, ..., YNs, T, Tve, u, v, w, P]^T ---*/
   PrimVar_i      = new su2double [nPrimVarGrad];
@@ -2625,9 +2618,10 @@ void CTNE2EulerSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *co
 
         /*--- Entries of c:= transpose(A)*b ---*/
         for (iVar = 0; iVar < nPrimVarGrad; iVar++)
-          for (iDim = 0; iDim < nDim; iDim++)
+          for (iDim = 0; iDim < nDim; iDim++){
             Cvector[iVar][iDim] += (Coord_j[iDim]-Coord_i[iDim]) *
                                    (PrimVar_j[iVar]-PrimVar_i[iVar])/weight;
+          }
       }
     }
 
@@ -6329,16 +6323,13 @@ void CTNE2NSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_containe
   /*--- Evaluate the vorticity and strain rate magnitude ---*/
   StrainMag_Max = 0.0; Omega_Max = 0.0;
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    if (iPoint == 109){
-      cout << "TODO" << endl;
-    }
+
     solver_container[TNE2_SOL]->node[iPoint]->SetVorticity();
     solver_container[TNE2_SOL]->node[iPoint]->SetStrainMag();
 
     StrainMag = solver_container[TNE2_SOL]->node[iPoint]->GetStrainMag();
     Vorticity = solver_container[TNE2_SOL]->node[iPoint]->GetVorticity();
     Omega = sqrt(Vorticity[0]*Vorticity[0]+ Vorticity[1]*Vorticity[1]+ Vorticity[2]*Vorticity[2]);
-
     StrainMag_Max = max(StrainMag_Max, StrainMag);
     Omega_Max = max(Omega_Max, Omega);
   }
@@ -6404,7 +6395,7 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
   Global_Delta_Time = 1E6;
   Min_Delta_Time    = 1.E6;
   Max_Delta_Time    = 0.0;
-  K_v    = 0.5;
+  K_v    = 0.25;  //todo, check this out .25 = NS Solver use.....5 = TNe2 og implementation.
   iPoint = 0;
   jPoint = 0;
   RuSI   = UNIVERSAL_GAS_CONSTANT;
@@ -6456,7 +6447,7 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
     /*--- Calculate the required mean values ---*/
     Mean_ProjVel = 0.0;
     for (iDim = 0; iDim < nDim; iDim++)
-      Mean_ProjVel   = 0.5*( V_i[VEL_INDEX+iDim]
+      Mean_ProjVel  += 0.5*( V_i[VEL_INDEX+iDim]
                             +V_j[VEL_INDEX+iDim] )*UnitNormal[iDim];
     Mean_SoundSpeed  = 0.5*(V_i[A_INDEX]   + V_j[A_INDEX]);
     Mean_Density     = 0.5*(V_i[RHO_INDEX] + V_j[RHO_INDEX]);
@@ -6475,7 +6466,6 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
     /*--- Compute mean total Cv ---*/
     Cv = 0.5*(V_i[RHOCVTR_INDEX] + V_i[RHOCVVE_INDEX] +
               V_j[RHOCVTR_INDEX] + V_j[RHOCVVE_INDEX])/ Mean_Density;
-
 
     // DELETE ME, SCALE THERMAL COND for TURBULENCE
 
@@ -6524,7 +6514,7 @@ void CTNE2NSSolver::SetTime_Step(CGeometry *geometry,
       Mean_EddyVisc       = V_i[EDDY_VISC_INDEX];
       Mean_ThermalCond    = V_i[K_INDEX];
       Mean_ThermalCond_ve = V_i[KVE_INDEX];
-      Mean_Density        = node[iPoint]->GetDensity();
+      Mean_Density        = V_i[RHO_INDEX];
 
       Cv = (V_i[RHOCVTR_INDEX] + V_i[RHOCVVE_INDEX]) / Mean_Density;
 

@@ -226,6 +226,7 @@ void CAvgGrad_TNE2TurbSA::FinishResidualCalc(su2double *val_residual, su2double 
   nu_e = 0.5*(nu_i+nu_j+TurbVar_i[0]+TurbVar_j[0]);
 
   val_residual[0] = nu_e*Proj_Mean_GradTurbVar[0]/sigma;
+  cout << "todo delete me visc turbsa:  " << val_residual[0] << endl;
 
   /*--- For Jacobians -> Use of TSL approx. to compute derivatives of the gradients ---*/
 

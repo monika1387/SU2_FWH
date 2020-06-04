@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * \file solution_direct_turbulent.cpp
  * \brief Main subrotuines for solving direct problems
  * \author F. Palacios, A. Bueno
@@ -192,7 +192,7 @@ void CTurbSolver::Upwind_Residual(CGeometry *geometry, CSolver **solver_containe
     /*--- Add and subtract residual ---*/
     
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-    
+
     LinSysRes.AddBlock(iPoint, Residual);
     LinSysRes.SubtractBlock(jPoint, Residual);
     
@@ -241,7 +241,7 @@ void CTurbSolver::Viscous_Residual(CGeometry *geometry, CSolver **solver_contain
     /*--- Compute residual, and Jacobians ---*/
     
     numerics->ComputeResidual(Residual, Jacobian_i, Jacobian_j, config);
-    
+
     /*--- Add and subtract residual, and update Jacobians ---*/
     
     LinSysRes.SubtractBlock(iPoint, Residual);
@@ -377,6 +377,7 @@ void CTurbSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solver_
       total_index = iPoint*nVar+iVar;
       LinSysRes[total_index] = - LinSysRes[total_index];
       LinSysSol[total_index] = 0.0;
+      cout << "todo delete me: " << LinSysRes[total_index]*LinSysRes[total_index] << endl;
       AddRes_RMS(iVar, LinSysRes[total_index]*LinSysRes[total_index]);
       AddRes_Max(iVar, fabs(LinSysRes[total_index]), geometry->node[iPoint]->GetGlobalIndex(), geometry->node[iPoint]->GetCoord());
     }

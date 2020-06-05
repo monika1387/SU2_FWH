@@ -555,8 +555,9 @@ void CFluidIteration::Preprocess(COutput *output,
   unsigned long ExtIter = config_container[val_iZone]->GetExtIter();
   
   bool fsi = config_container[val_iZone]->GetFSI_Simulation();
+  bool body_force = config_container[val_iZone]->GetBody_Force();
   unsigned long OuterIter = config_container[val_iZone]->GetOuterIter();
-
+  unsigned short BF_zone = config_container[val_iZone]->GetBody_Force_Zone();
   
   /*--- Set the initial condition for FSI problems with subiterations ---*/
   /*--- This is done only in the first block subiteration.---*/
@@ -564,6 +565,12 @@ void CFluidIteration::Preprocess(COutput *output,
   if( fsi  && ( OuterIter == 0 ) ){
     solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->SetInitialCondition(geometry_container[val_iZone][val_iInst], solver_container[val_iZone][val_iInst], config_container[val_iZone], ExtIter);
   }
+ /*
+  if(body_force && ( OuterIter == 0) && (val_iZone == BF_zone)){
+	  cout << "Here, initial interpolation could take place\n";
+	  solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->SetBodyForceParameters(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone], OuterIter);
+  }
+  */
   
   /*--- Apply a Wind Gust ---*/
   
@@ -667,9 +674,13 @@ void CFluidIteration::Iterate(COutput *output,
   }
 
   /*--- Compute body force and save to each node ---*/
-  if (body_force && val_iZone == BF_zone){
-	  cout<<"Body force function being called for zone :"<<val_iZone<<endl;
+  if (body_force){
+	  //cout<<"Body force function being called for zone :"<<val_iZone<<endl;
 	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
+	  //cout<<"Blockage function being called for zone :"<<val_iZone<<endl;
+	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
+
+	  
   }
 
   /*--- Write the convergence history ---*/
@@ -1108,7 +1119,6 @@ void CTurboIteration::Preprocess(COutput *output,
   /*--- Average quantities at the inflow and outflow boundaries ---*/ 
   solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->TurboAverageProcess(solver_container[val_iZone][val_iInst][MESH_0], geometry_container[val_iZone][val_iInst][MESH_0],config_container[val_iZone],INFLOW);
   solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->TurboAverageProcess(solver_container[val_iZone][val_iInst][MESH_0], geometry_container[val_iZone][val_iInst][MESH_0],config_container[val_iZone],OUTFLOW);
-
 }
 
 void CTurboIteration::Postprocess( COutput *output,
@@ -1158,6 +1168,7 @@ void CFEMFluidIteration::Preprocess(COutput *output,
                                                                        solver_container[val_iZone][val_iInst],
                                                                        config_container[val_iZone],
                                                                        ExtIter);
+														   
   
 }
 

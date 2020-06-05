@@ -765,6 +765,7 @@ void CConfig::SetConfig_Options(unsigned short val_iZone, unsigned short val_nZo
   addDoubleOption("BODY_FORCE_ROTATION", Body_Force_Rotation, 0);
   /*!\brief BODY_FORCE_RADIUS \n DESCRIPTION: Define the radius used in body force calculation \ingroup Config */
   addDoubleOption("BODY_FORCE_RADIUS", Body_Force_Radius, 1);
+  //addDoubleArrayOption("BODY_FORCE_RADIUS",2, Body_Force_Radius, {0.25, 0.25});
   /*!\brief BODY_FORCE_NORMALS \n DESCRIPTION: Input file for camber normals (w/ extension) \n DEFAULT: normals.dat \ingroup Config*/
   addStringOption("BODY_FORCE_NORMALS", BF_Normals_Filename, string("normals.dat"));
   default_camb_norm[0] = 0.0; default_camb_norm[1] = 1.0; default_camb_norm[2] = 0.0; default_camb_norm[3] = 1.0;

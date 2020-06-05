@@ -3426,6 +3426,7 @@ public:
   virtual void SetInitialCondition(CGeometry **geometry,
                                    CSolver ***solver_container,
                                    CConfig *config, unsigned long ExtIter);
+								   
   
   /*!
    * \brief A virtual member.
@@ -4377,6 +4378,8 @@ public:
   virtual void SetDES_LengthScale(CSolver** solver, CGeometry *geometry, CConfig *config);
 
   virtual void ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry);
+  
+  virtual void ComputeBlockageVector(CConfig *config, CGeometry *geometry);
 
 };
 
@@ -6581,6 +6584,7 @@ public:
    */
   void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
   
+  void SetBodyForceParameters(CGeometry *geometry, CConfig *config, unsigned long ExtIter);
   /*!
    * \brief Set the freestream pressure.
    * \param[in] Value of freestream pressure.
@@ -6938,7 +6942,8 @@ public:
   void SetNuOut(su2double value, unsigned short inMarkerTP, unsigned short valSpan);
 
   void ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry);
-
+  
+  void ComputeBlockageVector(CConfig *config, CGeometry *geometry);
 
 };
 
@@ -8234,7 +8239,6 @@ public:
    * \param[in] ExtIter - External iteration.
    */
   void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
-  
   /*!
    * \brief Set the freestream pressure.
    * \param[in] Value of freestream pressure.
@@ -10863,7 +10867,6 @@ public:
    * \param[in] ExtIter - External iteration.
    */
   void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
-
   /*!
    * \brief Load a solution from a restart file.
    * \param[in] geometry - Geometrical definition of the problem.
@@ -11683,7 +11686,7 @@ public:
    * \param[in] ExtIter - External iteration.
    */
   void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
-
+  
   /*!
    * \brief Set the total residual adding the term that comes from the Dual Time-Stepping Strategy.
    * \param[in] geometry - Geometric definition of the problem.

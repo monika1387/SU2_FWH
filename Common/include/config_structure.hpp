@@ -1052,12 +1052,14 @@ private:
   su2double *ExtraRelFacGiles; /*!< \brief coefficient for extra relaxation factor for Giles BC*/
   bool Body_Force;            /*!< \brief Flag to know if a body force is included in the formulation. */
   su2double *Body_Force_Vector;  /*!< \brief Values of the prescribed body force vector. */
+  su2double *Blockage_Vector;
   su2double *Body_Force_Camb_Norm; /*!< \brief Array of camber normal values HARDCODED. */
   unsigned short Body_Force_Type; /*!< \brief Determines the type of body force used. */
   unsigned short Body_Force_Zone; /*!< \brief Determines the zone in which the body force is implemented. */
   su2double Body_Force_Blades; /*!< \brief Determines the number of blades used in body force calculations */
   su2double Body_Force_Rotation; /*!< \brief Determines the pitch used in body force calculations */
   su2double Body_Force_Radius; /*!< \brief Determines the pitch used in body force calculations */
+  //su2double* Body_Force_Radius; /*!< \brief Determines the pitch used in body force calculations */
   string BF_Normals_Filename; /*!< \brief Name of input file for body force camber normals */
   su2double *FreeStreamTurboNormal; /*!< \brief Direction to initialize the flow in turbomachinery computation */
   su2double Restart_Bandwidth_Agg; /*!< \brief The aggregate of the bandwidth for writing binary restarts (to be averaged later). */
@@ -5976,12 +5978,15 @@ public:
    * \return <code>TRUE</code> if it uses a body force; otherwise <code>FALSE</code>.
    */
   bool GetBody_Force(void);
+  
 
   /*!
    * \brief Get a pointer to the body force vector.
    * \return A pointer to the body force vector.
    */
   su2double* GetBody_Force_Vector(void);
+  
+  su2double* GetBlockage_Vector(void);
 
   /*!
    * \brief Get a pointer to the body force camber normal vector

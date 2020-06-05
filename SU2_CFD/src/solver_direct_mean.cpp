@@ -361,7 +361,7 @@ CEulerSolver::CEulerSolver(CGeometry *geometry, CConfig *config, unsigned short 
   nVar = nDim+2;
   nPrimVar = nDim+9; nPrimVarGrad = nDim+4;
   nSecondaryVar = 2; nSecondaryVarGrad = 2;
-
+  
   
   /*--- Initialize nVarGrad for deallocation ---*/
   
@@ -787,7 +787,9 @@ CEulerSolver::CEulerSolver(CGeometry *geometry, CConfig *config, unsigned short 
 
     }
   }
-
+  
+  cout << "Initialization from CEulerSolver\n";
+  
   /*--- Initialize the solution to the far-field state everywhere. ---*/
 
   for (iPoint = 0; iPoint < nPoint; iPoint++)
@@ -1347,7 +1349,7 @@ void CEulerSolver::InitTurboContainers(CGeometry *geometry, CConfig *config){
 
 
   /*--- Initialize quantities for the average process for internal flow ---*/
-
+  cout << "Initialization from InitTurboContainers\n";
   nSpanWiseSections = config->GetnSpanWiseSections();
 
   AverageVelocity                       = new su2double** [nMarker];
@@ -4040,6 +4042,8 @@ void CEulerSolver::SetNondimensionalization(CConfig *config, unsigned short iMes
   
 }
 
+
+
 void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter) {
 
   unsigned long iPoint;
@@ -4047,24 +4051,179 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
   su2double X0[3] = {0.0,0.0,0.0}, X1[3] = {0.0,0.0,0.0}, X2[3] = {0.0,0.0,0.0},
   X1_X0[3] = {0.0,0.0,0.0}, X2_X0[3] = {0.0,0.0,0.0}, X2_X1[3] = {0.0,0.0,0.0},
   CP[3] = {0.0,0.0,0.0}, Distance, DotCheck, Radius;
-  
-  unsigned short nDim = geometry[MESH_0]->GetnDim();
   bool restart = (config->GetRestart() || config->GetRestart_Flow());
+  unsigned short nDim = geometry[MESH_0]->GetnDim();
+  
   bool rans = ((config->GetKind_Solver() == RANS) ||
                (config->GetKind_Solver() == ADJ_RANS) ||
                (config->GetKind_Solver() == DISC_ADJ_RANS));
   bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
   bool SubsonicEngine = config->GetSubsonicEngine();
-
-  /*--- Set subsonic initial condition for engine intakes ---*/
+  bool body_force = config->GetBody_Force();
   
+  unsigned short iZone = config->GetiZone();
+ 
+  
+  //if ((ExtIter == 0) && (!restart) && body_force && (BF_zone == iZone)) {
+  if ((ExtIter == 0) && (!restart) && body_force) {
+	  cout << "Performing Body Force Model blockage and camber normal interpolation " << endl;
+	  for (iMesh = 0; iMesh <= config->GetnMGLevels(); iMesh++){
+			unsigned short nDim = geometry[iMesh]->GetnDim();
+			su2double BF_radius = config->GetBody_Force_Radius();
+			int n_blade{0};
+			int n_points{0};
+			int n_rows{0};
+			ifstream inputFile;
+			inputFile.open("/home/evert/Documents/TU_Delft_administratie/Thesis/Pythonscripts/BFM_stage_input");
+			string line;
+			inputFile >> n_rows >> n_blade >> n_points;
+			
+			su2double xarray[n_rows][n_blade][n_points];
+			su2double rarray[n_rows][n_blade][n_points];
+			su2double Nxarray[n_rows][n_blade][n_points];
+			su2double Ntarray[n_rows][n_blade][n_points];
+			su2double Nrarray[n_rows][n_blade][n_points];
+			su2double barray[n_rows][n_blade][n_points];
+			su2double dbdxarray[n_rows][n_blade][n_points];
+			su2double dbdrarray[n_rows][n_blade][n_points];
+			su2double D_LE[n_rows][n_blade][n_points];
+			su2double blade_count[n_rows];
+			su2double rotation[n_rows];
+			int start_line{};
+			int end_line{};
+			su2double x_min = 0.0;
+			for (int q=0; q < n_rows; q++){
+				for (int p=0; p < n_blade; p++){
+					getline(inputFile, line);
+					start_line = p * n_points + 1;
+					end_line = (p + 1) * n_points;
+					int j=0;
+					for (int i=start_line; i<=end_line; i++){
+						getline(inputFile, line);
+						if (i >= start_line){
+							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> dbdxarray[q][p][j] >> dbdrarray[q][p][j] >> rotation[q] >> blade_count[q];
+							//cout << xarray[j] << "	" << barray[j] << endl;
+							if(xarray[q][p][j] <= x_min){
+								x_min = xarray[q][p][j];
+							}
+							
+							j++;
+						}
+						
+					}
+					for (int i=0; i < n_points; i++){
+						D_LE[q][p][i] = xarray[q][p][i] - xarray[q][p][0];
+					}
+				}
+			}
+			inputFile.close();
+			
+			
+			x_min = x_min - 1.0;
+			for (iPoint = 0; iPoint < geometry[iMesh]->GetnPoint(); iPoint++){
+				su2double *Coord = geometry[iMesh]->node[iPoint]->GetCoord();
+				su2double x = Coord[0];
+				su2double y = Coord[1];
+				
+				su2double r{};
+				su2double b=1.0, dbdx = 0.0, dbdr = 0.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, d_le = 0.0, rotFac = 0.0, bladeCount = 10;
+				su2double BodyForceParams[10] = {bfFac, b, dbdx, dbdr, Nx, Nt, Nr, d_le, rotFac, bladeCount};
+				if (nDim == 3){
+					su2double z = Coord[2];
+					r = sqrt(y*y + z*z);
+				}else{
+					r = BF_radius;
+				}
+				for (int q=0; q < n_rows; q++){
+					for(int j=0; j < n_blade - 1; j++){
+						for(int n = 0; n < n_points - 1; n++){
+							su2double x_side[5] = {xarray[q][j][n], xarray[q][j+1][n], xarray[q][j+1][n+1], xarray[q][j][n+1], xarray[q][j][n]};
+							su2double r_side[5] = {rarray[q][j][n], rarray[q][j+1][n], rarray[q][j+1][n+1], rarray[q][j][n+1], rarray[q][j][n]};
+							su2double b_side[5] = {barray[q][j][n], barray[q][j+1][n], barray[q][j+1][n+1], barray[q][j][n+1], barray[q][j][n]};
+							su2double dbdx_side[5] = {dbdxarray[q][j][n], dbdxarray[q][j+1][n], dbdxarray[q][j+1][n+1], dbdxarray[q][j][n+1], dbdxarray[q][j][n]};
+							su2double dbdr_side[5] = {dbdrarray[q][j][n], dbdrarray[q][j+1][n], dbdrarray[q][j+1][n+1], dbdrarray[q][j][n+1], dbdrarray[q][j][n]};
+							su2double Nx_side[5] = {Nxarray[q][j][n], Nxarray[q][j+1][n], Nxarray[q][j+1][n+1], Nxarray[q][j][n+1], Nxarray[q][j][n]};
+							su2double Nt_side[5] = {Ntarray[q][j][n], Ntarray[q][j+1][n], Ntarray[q][j+1][n+1], Ntarray[q][j][n+1], Ntarray[q][j][n]};
+							su2double Nr_side[5] = {Nrarray[q][j][n], Nrarray[q][j+1][n], Nrarray[q][j+1][n+1], Nrarray[q][j][n+1], Nrarray[q][j][n]};
+							su2double d_le_side[5] = {D_LE[q][j][n], D_LE[q][j+1][n], D_LE[q][j+1][n+1], D_LE[q][j][n+1], D_LE[q][j][n]};
+							
+							su2double x1{}, x2{}, r1{}, r2{};
+							int nInt=0;
+							bool inside = false;
+							for(int p=0; p < 4; p++){
+								x1 = x_side[p];
+								x2 = x_side[p + 1];
+								r1 = r_side[p];
+								r2 = r_side[p + 1];
+								
+								su2double A[2][2] = {{x - x_min, - (x2 - x1)}, {0, -(r2 - r1)}};
+								su2double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+								su2double S_ray{}, S_side{};
+								
+								if(det != 0){
+									S_ray = (1 / det) * ((x1 - x_min) * A[1][1] + (r1 - r) * -A[0][1]);
+									S_side = (1 / det) * (x1 * -A[1][0] + (r1 - r) * A[0][0]);
+									if(S_ray >= 0.0 && S_ray < 1.0 && S_side >= 0.0 && S_side < 1.0){
+										nInt ++;
+									}
+								}
+							}
+							if (nInt % 2 != 0 and nInt > 0){
+								inside = true;
+							}
+							if (inside){
+								su2double dist{}, deNom=0;
+								su2double eNum_b{}, eNum_dbdx{}, eNum_dbdr{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_d_le{};
+								for(int p = 0; p < 4; p++){
+									dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
+									deNom += 1 / dist;
+									eNum_b += b_side[p] / dist;
+									eNum_dbdx += dbdx_side[p] / dist;
+									eNum_dbdr += dbdr_side[p] / dist;
+									eNum_Nx += Nx_side[p] / dist;
+									eNum_Nt += Nt_side[p] / dist;
+									eNum_Nr += Nr_side[p] / dist;
+									eNum_d_le += d_le_side[p] / dist;
+								}
+								bfFac = 1.0;
+								b = eNum_b / deNom;
+								dbdx = eNum_dbdx / deNom;
+								dbdr = eNum_dbdr / deNom;
+								Nx = eNum_Nx / deNom;
+								Nt = eNum_Nt / deNom;
+								Nr = eNum_Nr / deNom;
+								d_le = eNum_d_le / deNom;
+								rotFac = rotation[q];
+								bladeCount = blade_count[q];
+								
+							}
+							BodyForceParams[0] = bfFac;
+							BodyForceParams[1] = b;
+							BodyForceParams[2] = dbdx;
+							BodyForceParams[3] = dbdr;
+							BodyForceParams[4] = Nx;
+							BodyForceParams[5] = Nt;
+							BodyForceParams[6] = Nr;
+							BodyForceParams[7] = d_le;
+							BodyForceParams[8] = rotFac;
+							BodyForceParams[9] = bladeCount;
+						}
+					}
+				}
+				//cout << "X: " << x << "  bFac: " << BodyForceParams[0] <<" rotFac: " << BodyForceParams[8] << " b: " << BodyForceParams[1] << " dbdx: " << BodyForceParams[2] << " bladeCount: " << BodyForceParams[9] << endl;
+				node[iPoint]->SetBodyForceParameters(BodyForceParams);
+				
+			}
+		  }
+	  
+  }
+    /*--- Set subsonic initial condition for engine intakes ---*/
   if (SubsonicEngine) {
     
     /*--- Set initial boundary condition at iteration 0 ---*/
     
     if ((ExtIter == 0) && (!restart)) {
-      
       su2double Velocity_Cyl[3] = {0.0, 0.0, 0.0}, Velocity_CylND[3] = {0.0, 0.0, 0.0}, Viscosity_Cyl,
       Density_Cyl, Density_CylND, Pressure_CylND, ModVel_Cyl, ModVel_CylND, Energy_CylND,
       T_ref = 0.0, S = 0.0, Mu_ref = 0.0, *Coord, *SubsonicEngine_Cyl, *SubsonicEngine_Values;
@@ -4911,7 +5070,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
   /*--- Initialize the source residual to zero ---*/
 
   for (iVar = 0; iVar < nVar; iVar++) Residual[iVar] = 0.0;
-
+  
   if (body_force) {
       /*--- Loop over all points ---*/
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
@@ -4925,15 +5084,22 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
 
       /*--- Set coordinates ---*/
       numerics->SetCoord(geometry->node[iPoint]->GetCoord(), geometry->node[iPoint]->GetCoord());
-
+	  
+	  su2double *Coord = {};
+	  Coord = geometry->node[iPoint]->GetCoord();
+	  
       /*--- Load the primitive variables ---*/
       numerics->SetPrimitive(node[iPoint]->GetPrimitive(), node[iPoint]->GetPrimitive());
-
+	 
       /*--- Compute the body force source residual ---*/
-      numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo());
-
+      numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo(), node[iPoint]->GetBlockage_Vector());
+	  
+	  /*--- Compute the blockage vector source residual ---*/
+      //numerics->ComputeResidual2(Residual, config, node[iPoint]->GetBlockage_Vector());
+	  
       /*--- Add the source residual to the total ---*/
       LinSysRes.AddBlock(iPoint, Residual);
+	  //cout << "X: " << Coord[0] <<" rho_res: " << Residual[0] << " mom_x_res: " << Residual[1] << " mom_y_res: " << Residual[2] << " Energy residual: " << Residual[3] << endl;
       
     }
   }
@@ -14828,102 +14994,218 @@ void CEulerSolver::GatherInOutAverageValues(CConfig *config, CGeometry *geometry
   }
 }
 
+void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
+	/*
+	This function computes the local residual vector due to metal blockage for the body-force Euler solver.
+	It uses the blockage factor and its derivatives in x- and r-direction provided by the interpolation function which is 
+	performed during the solver initialization.
+	*/
+	
+	// Obtaining the dimension count, flow and primitive variables and the interpolated body-force parameters.
+	unsigned long iPoint;
+	unsigned long nDim = geometry->GetnDim();
+	su2double *U_i, *V_i, enthalpy, *Coord_i, Density, *Geometric_Parameters;
+	
+	//  Getting the fluid parameters, blade count, rotation speed and defining the blockage residual vector.
+	su2double gamma = config->GetGamma(), R_gas = config->GetGas_Constant(), Blockage_Vector[nDim + 2] = { 0.0 },
+        BF_blades = config->GetBody_Force_Blades(), BF_rotation = config->GetBody_Force_Rotation();
+        
+	// Calculating the rotation speed in radians per second.
+	su2double pi = M_PI, omegaR;
+    omegaR = ((BF_rotation / 60) * 2 * pi );
+
+	// The function loops over all points in the zone, calculating and storing the residual blockage vector for each
+	// respective node.
+	for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
+		// Getting the solution and primitive variables of the current node.
+		U_i = node[iPoint]->GetSolution();
+        V_i = node[iPoint]->GetPrimitive();
+		enthalpy = node[iPoint]->GetEnthalpy();
+		// Getting the node coordinates.
+		Coord_i = geometry->node[iPoint]-> GetCoord();
+		
+		// The blockage factor, its derivatives and the body-force factor are obtained from the body-force
+		// parameter vector of the current node.
+		su2double b, dbdx, dbdr, dbdy, dbdz, bfFac, rotFac;
+		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
+		bfFac = Geometric_Parameters[0];
+		b = Geometric_Parameters[1];
+		dbdx = Geometric_Parameters[2];
+		dbdr = Geometric_Parameters[3];
+		rotFac = Geometric_Parameters[8];
+		
+		// The blockage residual vector is constructed. 
+		su2double u_x, u_y, u_z;
+		su2double Blockage_Div;
+		if(nDim == 2){
+		su2double radius = config->GetBody_Force_Radius();
+		u_x = U_i[1] / U_i[0];
+		u_y = U_i[2] / U_i[0] - rotFac * omegaR * radius;
+		u_z = 0.0;
+		Blockage_Div = u_x * dbdx;
+		Blockage_Vector[0] = -(1 / b) * U_i[0] * bfFac * Blockage_Div;
+		Blockage_Vector[1] = -(1 / b) * U_i[1] * bfFac * Blockage_Div;
+		Blockage_Vector[2] = -(1 / b) * U_i[2] * bfFac * Blockage_Div;
+		Blockage_Vector[3] = -(1 / b) * U_i[0] * enthalpy * bfFac * Blockage_Div;
+		}else{su2double y, z, radius;
+		y = Coord_i[1];
+		z = Coord_i[2];
+		radius = sqrt(y*y + z*z);
+		dbdy = dbdr*y/radius;
+		dbdz = dbdr*z/radius;
+		u_x = U_i[1] / U_i[0];
+		u_y = (U_i[2] / U_i[0]) - rotFac * omegaR * z;
+		u_z = (U_i[3] / U_i[0]) - rotFac * omegaR * y;
+		Blockage_Div = u_x * dbdx + u_y * dbdy + u_z * dbdz;
+		Blockage_Vector[0] = -(1 / b) * bfFac * Blockage_Div;
+		Blockage_Vector[1] = -(1 / b) * bfFac *  u_x * Blockage_Div;
+		Blockage_Vector[2] = -(1 / b) * bfFac * (U_i[2]/U_i[0]) * Blockage_Div;
+		Blockage_Vector[3] = -(1 / b) * bfFac * (U_i[3]/U_i[0])  * Blockage_Div;
+		Blockage_Vector[4] = -(1 / b) * bfFac * enthalpy * Blockage_Div;
+		}
+		
+		// Storing the blockage residual vector at the current node.
+		node[iPoint]->SetBlockage_Vector(Blockage_Vector);
+	}
+	
+}
+
 void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) {
+	/*
+	This function computes the body-force field for the Euler solver. 
+	*/
     /*--- Load all relevant values from config file ---*/
     unsigned long iPoint;
     unsigned short nDim = geometry->GetnDim();
-    su2double *U_i, *V_i, *Coord_i;
+    su2double *U_i, *V_i, *Coord_i, Density, *Geometric_Parameters;
     su2double gamma = config->GetGamma(), R_gas = config->GetGas_Constant(), BodyForceVector_Turbo[nDim] = { 0.0 },
-        BF_blades = config->GetBody_Force_Blades(), BF_rotation = config->GetBody_Force_Rotation(),
+        BF_blades{}, BF_rotation = config->GetBody_Force_Rotation(),
         BF_radius = config->GetBody_Force_Radius();
-    // string bfnormal_filename = config->GetBF_Normals_Filename(); TODO(BF): Add reading of normal values to source code
 
     /*--- Initialize common variables ---*/
     su2double pi = M_PI, pitch, omegaR;
     pitch = (2 * pi * BF_radius ) / BF_blades;
-    omegaR = ((BF_rotation / 60) * 2 * pi ) * BF_radius;
+    omegaR = ((BF_rotation / 60) * 2 * pi );
 
     for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
-        /*--- Set coordinates and conservative and primitive variables ---*/
+		/*--- Set coordinates and conservative and primitive variables ---*/
         U_i = node[iPoint]->GetSolution();
         V_i = node[iPoint]->GetPrimitive();
+		// Extracting node coordinates 
         Coord_i = geometry->node[iPoint]->GetCoord();
-//        cout << "Coord_i[0]: " << Coord_i[0] << endl;
-//        cout << "iZone for iPoint: " << config->GetiZone() << endl;
-
-        /*--- Calculation of variable body force residuals ---*/
-        /*--- Determine camber normal using x-coordinate ---*/
-        su2double x_coord = Coord_i[0];
-//        su2double xarray[2] = {0, 1};
-//        su2double Nxarray[2] = {-0.1736481777, -0.1736481777};
-//        su2double Nyarray[2] = {0.984807753, 0.984807753};
-        su2double xarray[2] = {0, 1};
-        su2double Nxarray[2] = {-0.08715574275, -0.08715574275};
-        su2double Nyarray[2] = {0.9961946981, 0.9961946981};
-//        su2double Nxarray[2] = {-0.1736481777, -0.1736481777};
-//        su2double Nyarray[2] = {0.984807753, 0.984807753};
-//        su2double Nxarray[2] = {-0.3420201433, -0.3420201433};
-//        su2double Nyarray[2] = {0.9396926208, 0.9396926208};
-//        su2double xarray[10] = {0.0 , 0.11111111, 0.22222222, 0.33333333, 0.44444444, 0.55555556, 0.66666667, 0.77777778, 0.88888889, 1.0 };
-//        su2double Nxarray[10] = {-0.5735764363510462, -0.5575841379685927, -0.5413821549953697, -0.5249765803345601, -0.5083735834518556, -0.4915794080553704, -0.4746003697476404, -0.4574428536505806, -0.44011331200430487, -0.4226182617406993};
-//        su2double Nyarray[10] = {0.8191520442889918, 0.8301204304712788, 0.8407766423091031, 0.8511166724369997, 0.8611366323925137, 0.8708327540784921, 0.8802013911801111, 0.8892390205361062, 0.8979422434636881, 0.9063077870366499};
-//        su2double xarray[104] = {0.0, 0.000447378, 0.000894785, 0.0013421179999999998, 0.001789376, 0.0022355920000000002, 0.0026827609999999997, 0.003128797, 0.003574908, 0.00402084, 0.0044657740000000005, 0.004911766, 0.00535661, 0.005802378, 0.006247193000000001, 0.006691903000000001, 0.00713563, 0.007580295999999999, 0.008024916, 0.008468494, 0.008913041, 0.009356648, 0.009800151, 0.010243625, 0.010687158, 0.011130527, 0.011573956000000002, 0.012016356, 0.01245977, 0.01290311, 0.01334548, 0.013787762, 0.014231056, 0.014673367, 0.015115634, 0.015557886000000002, 0.016001135, 0.016443387, 0.016885609, 0.017327816, 0.017769948, 0.018212185, 0.018654317, 0.019096494, 0.019538612, 0.019980759, 0.020422861, 0.020865992, 0.021310047000000002, 0.021753967000000003, 0.022198767, 0.022642537999999997, 0.023086325, 0.023530037, 0.023974732000000002, 0.024418325, 0.024861947000000002, 0.025305644, 0.025750369, 0.026194141, 0.026637777999999997, 0.027082488, 0.027526036, 0.027969717999999998, 0.02841422, 0.028857752999999996, 0.029302195, 0.029745669, 0.030189052999999997, 0.030633375, 0.031076745, 0.031521022999999995, 0.031964347000000004, 0.032408432, 0.032851652, 0.033295811, 0.033738882000000005, 0.034182936000000004, 0.034625948, 0.035069839, 0.035512895, 0.035956771, 0.036399633, 0.036843434, 0.037286297, 0.037730024, 0.038172692, 0.038616404, 0.039058984, 0.039502621, 0.039945141, 0.040388689, 0.040831134, 0.041273639, 0.041717038, 0.042159424, 0.042602747999999996, 0.043045104, 0.043488294000000004, 0.04393062, 0.044373855, 0.044816614000000005, 0.045257612999999995, 0.04569681};
-//        su2double Nxarray[104] = {-0.72683425, -0.72718498, -0.74541169, -0.76545218, -0.76802138, -0.76496552, -0.76232598, -0.75984166, -0.75664707, -0.75437792, -0.75158399, -0.7487311, -0.74552392, -0.74276596, -0.7410606, -0.73849434, -0.73547207, -0.73239101, -0.73006222, -0.72764698, -0.7249439, -0.72258853, -0.72015808, -0.71724359, -0.71454872, -0.7121246, -0.71016759, -0.70760377, -0.70443649, -0.70198259, -0.69973977, -0.6971332, -0.6942885, -0.69198894, -0.68918012, -0.68606063, -0.68400626, -0.68187949, -0.67911997, -0.67659539, -0.6735136, -0.67107929, -0.66896921, -0.66649012, -0.66387821, -0.66129439, -0.65828042, -0.65471381, -0.65140867, -0.6483025, -0.64563906, -0.64334429, -0.64088459, -0.63811328, -0.63542753, -0.6328908, -0.63041071, -0.62704505, -0.62429301, -0.62188845, -0.61886641, -0.61652444, -0.61381016, -0.61049243, -0.60831505, -0.60599748, -0.60311584, -0.60036254, -0.59692211, -0.59487216, -0.59254715, -0.58971356, -0.5867526, -0.58432698, -0.58174406, -0.57903017, -0.57642869, -0.57351379, -0.57136882, -0.56934495, -0.56648182, -0.56358975, -0.56085402, -0.5584569, -0.55678086, -0.5538003, -0.55102932, -0.54934456, -0.54678933, -0.54399142, -0.5413661, -0.53952276, -0.53795751, -0.53466462, -0.53191113, -0.53002975, -0.52788647, -0.52798857, -0.5299497, -0.5309362, -0.50709341, -0.48212336, -0.48353926, -0.48426112};
-//        su2double Nyarray[104] = {0.68681291, 0.68644156, 0.66660439, 0.64349278, 0.6404242, 0.64407123, 0.64719325, 0.65010818, 0.65382354, 0.65644037, 0.65963741, 0.66287384, 0.66647887, 0.66955114, 0.67143815, 0.67425967, 0.67755504, 0.68088428, 0.68338068, 0.6859518, 0.68880792, 0.6912784, 0.69381002, 0.69682253, 0.69958568, 0.7020531, 0.70403266, 0.70660944, 0.70976702, 0.7121941, 0.71439783, 0.71694163, 0.7196968, 0.7219081, 0.72459006, 0.72754437, 0.72947614, 0.73146453, 0.73402729, 0.736355, 0.73917483, 0.74138559, 0.74329011, 0.74551386, 0.74784071, 0.75012647, 0.7527728, 0.75587686, 0.75872705, 0.76138287, 0.76364272, 0.76557699, 0.76763725, 0.76994249, 0.77216051, 0.77424107, 0.77626177, 0.778983, 0.78119027, 0.78310584, 0.78549625, 0.78733577, 0.78945366, 0.79202209, 0.79369566, 0.79546656, 0.79765361, 0.79972796, 0.80229919, 0.80382033, 0.80553577, 0.80761248, 0.80976625, 0.81151832, 0.8133719, 0.81530611, 0.81714746, 0.81919591, 0.82069341, 0.82209874, 0.82407424, 0.82605484, 0.82791471, 0.82953354, 0.83065942, 0.83264952, 0.83448588, 0.83559593, 0.83727023, 0.83909078, 0.84078698, 0.84197102, 0.84297195, 0.84506434, 0.84680018, 0.84797905, 0.84931494, 0.84925148, 0.84802908, 0.8474118, 0.8618911, 0.87610334, 0.87532267, 0.87492352};
-        // Calculate difference between coordinate and xarray
-        int len = sizeof(xarray) / sizeof(xarray[0]), i;
-        su2double diff[len] = {0};
-        for (i = 0; i < len; i++) {
-            diff[i] = xarray[i] - x_coord;
-        }
-        // Find closest number smaller than coordinate
-        su2double smallest = diff[0];
-        for (i = 0; i < len; i++) {
-            if (diff[i] < 0 && diff[i] > smallest) {
-                smallest = diff[i];
-            }
-        }
-        // Find closest number larger than coordinate
-        su2double largest = diff[len - 1];
-        for (i = 0; i < len; i++) {
-            if (diff[i] > 0 && diff[i] < largest) {
-                largest = diff[i];
-            }
-        }
-        // Find index of smallest and largest closest numbers
-        int smallest_index = 0, largest_index = 0;
-        for (i = 0; i < len; i++) {
-            if (diff[i] == smallest) {
-                smallest_index = i;
-            }
-            if (diff[i] == largest) {
-                largest_index = i;
-            }
-        }
-        // Find value of Nx, Ny, Tx, and Ty at given coordinate
-        su2double dx, dNx, dNy, x_to_coor, Nx, Ny, Tx, Ty;
-        dx = xarray[largest_index] - xarray[smallest_index];
-        dNx = Nxarray[largest_index] - Nxarray[smallest_index];
-        dNy = Nyarray[largest_index] - Nyarray[smallest_index];
-        x_to_coor = x_coord - xarray[smallest_index];
-        Nx = Nxarray[smallest_index] + dNx / dx * x_to_coor;
-        Ny = Nyarray[smallest_index] + dNy / dx * x_to_coor;
-        Tx = Ny;
-        Ty = -Nx;
-
-        /*--- Initialize velocity variables, determine delta, calculate deflection angle, and calculate BF magnitude---*/
-        su2double Velocity_i_x, Velocity_i_y, vel_mag, sound, M_rel, WdotN, delta, sq_vel, BF_magnitude_inc, K = 1, Kprime, BF_magnitude, BF_n, BF_t, BF_nx, BF_ny, BF_tx, BF_ty, BF_x, BF_y;
-        Velocity_i_x = U_i[1] / U_i[0]; //Use conservative variables to determine V_x and V_y
-        Velocity_i_y = U_i[2] / U_i[0] - omegaR;
-        vel_mag = sqrt(Velocity_i_x * Velocity_i_x + Velocity_i_y * Velocity_i_y);
+		su2double x_coord = Coord_i[0];
+		su2double y_coord;
+		su2double z_coord;
+		
+		if (nDim == 2){
+			z_coord = BF_radius;
+			y_coord = 0.0;
+		}else{
+			z_coord = Coord_i[2];
+			y_coord = Coord_i[1];
+		}
+		
+		
+		
+		// Extracing blockage factor and camber normal components
+		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
+		su2double bfFac = Geometric_Parameters[0];
+		su2double b = Geometric_Parameters[1];
+		su2double Nx = Geometric_Parameters[4];
+		su2double Nt = Geometric_Parameters[5];
+		su2double Nr = Geometric_Parameters[6];
+        su2double d_le = Geometric_Parameters[7];
+		su2double rotFac = Geometric_Parameters[8];
+		BF_blades = Geometric_Parameters[9];
+		
+		/*--- Initialize velocity variables, determine delta, calculate deflection angle, and calculate BF magnitude---*/
+        su2double Velocity_i_x, Velocity_i_y, Velocity_i_z, vel_mag, sound, M_rel, WdotN, delta, sq_vel, BF_normal_inc, K = 1, Kprime, BF_normal, BF_x, BF_y, BF_z;
+		su2double BF_par;
+		Velocity_i_x = U_i[1] / U_i[0]; //Use conservative variables to determine V_x and V_y
+		Velocity_i_y = U_i[2] / U_i[0] - rotFac * omegaR * z_coord;
+		
+		// Transforming tangential and radial camber normals to Y and Z-components
+		su2double Ny, Nz;
+		su2double pitch, radius;
+		radius = sqrt(y_coord*y_coord + z_coord*z_coord);
+		pitch = (2 * pi * radius) / BF_blades;
+		if (nDim == 2){
+			Velocity_i_z = 0.0;
+			Ny = Nt;
+			Nz = 0.0;
+		} else{
+			Velocity_i_z = U_i[3] / U_i[0] + rotFac * omegaR * y_coord;
+			Ny = Nr * (y_coord / radius) + Nt * (z_coord / radius);
+			Nz = Nr * (z_coord / radius) - Nt * (y_coord / radius);
+		}
+		
+		// Determining velocity magnitude
+        vel_mag = sqrt(Velocity_i_x * Velocity_i_x + Velocity_i_y * Velocity_i_y + Velocity_i_z * Velocity_i_z);
+		// Calculating local speed of sound
         sound = sqrt(gamma * R_gas * V_i[0]); // V_i is primitive variables as point i, T is first value
+		// Calculating local Mach number
         M_rel = vel_mag / sound;
-        WdotN = Velocity_i_x * Nx + Velocity_i_y * Ny;
+		// Calculating deviation angle by performing dot product between velocity vector and camber normal vector
+        WdotN = Velocity_i_x * Nx + Velocity_i_y * Ny + Velocity_i_z * Nz;
         delta = asin(WdotN / vel_mag);
-        sq_vel = vel_mag * vel_mag;
-        BF_magnitude_inc = pi * delta * (1 / pitch) * sq_vel * (1 / Ny);
+		
+		// cout << "Nx: " << Nx << " Ny: " << Ny << " Nz: " << Nz << endl;
+		su2double u[3] = {Velocity_i_x / vel_mag, Velocity_i_y / vel_mag, Velocity_i_z / vel_mag};
+		//cout << "ux: " << u[0] << " uy: " << u[1] << " uz: " << u[2] << endl;
+		// Defining the rotation axis between the camber normal vector and velocity vector.
+		su2double r[3] = {u[1] * Nz - u[2] * Ny, 
+			u[2] * Nx - u[0] * Nz, 
+			u[0] * Ny - u[1] * Nx};
+		su2double r_cyl[3] = {};
+		r_cyl[0] = r[0];
+		r_cyl[1] = -(z_coord / radius) * r[1] + (y_coord / radius) * r[2];
+		r_cyl[2] = (y_coord / radius) * r[1] + (z_coord / radius) * r[2];
+		/*
+		if (r_cyl[2] < 0.0){
+			// delta = pi - delta;
+			r_cyl[0] = abs(r_cyl[0]);
+			r_cyl[1] = abs(r_cyl[1]);
+			r_cyl[2] = abs(r_cyl[2]);
+		}
+		*/
+		r[0] = r_cyl[0];
+		r[1] = -(z_coord / radius) * r_cyl[1] + (y_coord / radius) * r_cyl[2];
+		r[2] = (y_coord / radius) * r_cyl[1] + (z_coord / radius) * r_cyl[2];
 
+		su2double r_mag = sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+		su2double A = r[0] / r_mag;	// X-component of rotation axis
+		su2double B = r[1] / r_mag;	// Y-component of rotation axis
+		su2double C = r[2] / r_mag;	// Z-component of rotation axis
+		
+		// Setting up the projection vector for the normal force. This is the velocity unit vector rotated
+		// 90 degrees over the rotation axis.
+		su2double N_vec[3] = {((A * A*u[0] + (A*B + C)*u[1] + (A*C - B)*u[2])), 
+			(((A*B - C)*u[0] + B*B*u[1] + (B*C + A)*u[2])),
+			(((C*A + B)*u[0] + (B*C + A)*u[1]+ C*C*u[2]))};
+		
+		// Normalizing the normal force projection vector
+		su2double N_mag = sqrt(N_vec[0] * N_vec[0] + N_vec[1] * N_vec[1] + N_vec[2] * N_vec[2]);
+		int j;
+		for (j = 0 ; j < 3 ; j++){
+			N_vec[j] = N_vec[j] / N_mag;
+		}
+		// Calculating incompressible normal body-force magnitude
+        sq_vel = vel_mag * vel_mag;
+        BF_normal_inc = pi * delta * (1 / pitch) * sq_vel * (1 / Nt) * (1 / b);
+		
+		
+		// Friction factor calculation for parallel force
+		su2double Cf, Re;
+		Re = (vel_mag * d_le* U_i[0]) / (1.75E-5);	// Calculating flat-plate Reynolds number
+		// In case x=0 is evaluated, Cf is capped to avoid division by 0
+		if (Re == 0.0){
+			Cf = 0.0;
+		}else{
+			//Cf = min(0.0592/pow(Re, 0.2), 1020.0);
+			Cf = 0.0;
+		}
         // Compressibility correction
+		
         if (M_rel < 1) {
             Kprime = 1 / (sqrt(1 - (M_rel * M_rel)));
             if (Kprime <= 3) {
@@ -14942,25 +15224,153 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
                 K = 3;
             }
         }
-        BF_magnitude = K * BF_magnitude_inc;
+				// Computing the normal and parallel force magnitudes
+        BF_normal = bfFac * K * BF_normal_inc;
+		BF_par = bfFac * Cf * sq_vel * (1 / pitch) * (1 / Nt) * (1 / b);
+		
+		// Calculating the X, Y, and Z-components of the normal force.
+		su2double BF_n_x = BF_normal * N_vec[0];
+		su2double BF_n_y = BF_normal * N_vec[1];
+		su2double BF_n_z = BF_normal * N_vec[2];
+		
+		// Setting up the projection vector for the parallel force. This is in opposite direction
+		// of the normalized velocity vector.
+		su2double P_vec[3] = {-u[0], -u[1], -u[2]};
+		// Calculating the X, Y and Z-components of the parallel force.
+		su2double BF_p_x = BF_par * P_vec[0];
+		su2double BF_p_y = BF_par * P_vec[1];
+		su2double BF_p_z = BF_par * P_vec[2];
 
-        // Decompose forces into respective
-        BF_n = -BF_magnitude * cos(delta); //Split normal into x and y-components
-        BF_nx = BF_n * Nx;
-        BF_ny = BF_n * Ny;
-        BF_t = BF_magnitude * sin(delta); //Split tangential into x and y-components
-        BF_tx = BF_t * Tx;
-        BF_ty = BF_t * Ty;
-        BF_x = BF_nx + BF_tx;
-        BF_y = BF_ny + BF_ty;
-
-        /*--- Add body forces to body force vector ---*/
-        BodyForceVector_Turbo[0] = BF_x;
-        BodyForceVector_Turbo[1] = BF_y;
-
-        /*--- Test set and get body force to node ---*/
-//        cout<<"BodyForce X :: "<<BodyForceVector_Turbo[0]<<"BodyForce Y :: "<<BodyForceVector_Turbo[1]<<endl;
-        node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
+		
+		// Adding normal and parallel force components respectively in X, Y and Z-direction.
+		BF_x = BF_n_x + BF_p_x;
+		BF_y = BF_n_y + BF_p_y;
+		BF_z = BF_n_z + BF_p_z;
+		//cout << "X: " << x_coord << " BF_x: " << BF_x << " BF_y: " << BF_y << endl;
+		if (nDim == 2){
+			BodyForceVector_Turbo[0] = BF_x;
+			BodyForceVector_Turbo[1] = BF_y;
+		}else{
+			BodyForceVector_Turbo[0] = BF_x;
+			BodyForceVector_Turbo[1] = BF_y;
+			BodyForceVector_Turbo[2] = BF_z;
+		}
+		/*
+		if (((x_coord > -2.12839298078e-04) && x_coord < (4.57856367436e-02)) || ((x_coord > 5.71253639660e-02) && x_coord < 1.02125375841e-01)){
+			cout << "X: " << x_coord << " u_x: " << u[0] << " u_y: " << u[1] << " n_x: " << Nx << " ny: " << Ny << " delta: " << delta * 180.0 / pi << " b: " << b << " dbdx: " << Geometric_Parameters[2] << " dbdr: " << Geometric_Parameters[3] << endl;
+        }else{
+			cout << "X: " << x_coord << " b: " << b << endl;
+		}
+		*/
+		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
+        /*--- Set coordinates and conservative and primitive variables ---*/
+		/*
+        U_i = node[iPoint]->GetSolution();
+        V_i = node[iPoint]->GetPrimitive();
+		// Extracting node coordinates 
+        Coord_i = geometry->node[iPoint]->GetCoord();
+		su2double x_coord = Coord_i[0];
+		su2double y_coord;
+		su2double z_coord;
+		
+		su2double V_x, V_y, V_z, W_x, W_r, W_th;
+		V_x = U_i[1] / U_i[0];
+		V_y = U_i[2] / U_i[0];
+		su2double CT, ST, radius;
+		if (nDim == 2){
+			radius = BF_radius;
+			CT = 0.0;
+			ST = 1.0;
+			V_z = 0.0;
+		}else{
+			z_coord = Coord_i[2];
+			y_coord = Coord_i[1];
+			radius = sqrt(y_coord * y_coord + z_coord * z_coord);
+			CT = y_coord / radius;
+			ST = z_coord / radius;
+			V_z = U_i[3] / U_i[0];
+		}
+		
+		// Extracing blockage factor and camber normal components
+		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
+		su2double bfFac = Geometric_Parameters[0];
+		su2double b = Geometric_Parameters[1];
+		su2double Nx = Geometric_Parameters[4];
+		su2double Nt = Geometric_Parameters[5];
+		su2double Nr = Geometric_Parameters[6];
+        su2double d_le = Geometric_Parameters[7];
+		su2double rotFac = Geometric_Parameters[8];
+		BF_blades = Geometric_Parameters[9];
+		
+		W_x = V_x;
+		W_r = V_y * CT + V_z * ST;
+		W_th = V_z * CT - V_y * ST - rotFac * omegaR * radius;
+		
+		su2double WdotN = W_x * Nx + W_r * Nr + W_th * Nt;
+		su2double W_nx = WdotN * Nx, W_nr = WdotN * Nr, W_nth = WdotN * Nt;
+		su2double W_px = W_x - W_nx, W_pr = W_r - W_nr, W_pth = W_th - W_nth;
+		
+		su2double W_p = sqrt(W_px * W_px + W_pr * W_pr + W_pth * W_pth);
+		su2double W = sqrt(W_x * W_x + W_r * W_r + W_th * W_th);
+		
+		su2double delta = asin(WdotN / W);
+		su2double V_sound = sqrt(gamma * R_gas * V_i[0]), M_rel = W / V_sound;
+		
+		su2double pitch = 2 * pi * radius / BF_blades;
+		su2double F_n_inc, F_n, F_p;
+		
+		F_n_inc = pi * delta * (1 / pitch) * (1 / Nt) * (1 / b) * W * W;
+		
+		su2double C_f, Re_x;
+		Re_x = (d_le * W * U_i[0]) / (1.75E-5);
+		if(Re_x == 0.0){
+			Re_x = (0.001 * W * U_i[0]) / (1.75E-5);
+		}
+		//C_f = 0.0592 * pow(Re_x, -0.2) ;
+		C_f = 0.0;
+		
+		su2double Kprime, K;
+		if (M_rel < 1) {
+            Kprime = 1 / (sqrt(1 - (M_rel * M_rel)));
+            if (Kprime <= 3) {
+                K = Kprime;
+            }
+            if (Kprime > 3) {
+                K = 3;
+            }
+        }
+        if (M_rel > 1) {
+            Kprime = 2 / (pi * sqrt((M_rel * M_rel) - 1));
+            if (Kprime <= 3) {
+                K = Kprime;
+            }
+            if (Kprime > 3) {
+                K = 3;
+            }
+        }
+		
+		F_n = bfFac * K * F_n_inc;
+		F_p = bfFac * C_f * W * W * (1 / pitch) * (1 / Nt) * (1 / b);
+		
+		su2double F_x, F_r, F_th, F_y, F_z;
+		F_x = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) - F_p * W_x / W;
+		F_r = F_n * (cos(delta) * Nr - sin(delta) * (W_pr / W_p)) - F_p * W_r / W;
+		F_th = F_n * (cos(delta) * Nt - sin(delta) * (W_pth / W_p)) - F_p * W_th / W;
+		
+		F_y = F_r * CT + F_th * ST;
+		F_z = F_r * ST - F_th * CT;
+		
+		if(nDim == 2){
+			BodyForceVector_Turbo[0] = F_x;
+			BodyForceVector_Turbo[1] = F_y;
+		}else{
+			BodyForceVector_Turbo[0] = F_x;
+			BodyForceVector_Turbo[1] = F_y;
+			BodyForceVector_Turbo[2] = F_z;
+		}
+		//cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
+		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
+		*/
     }
 
 }
@@ -15855,7 +16265,163 @@ void CNSSolver::Preprocessing(CGeometry *geometry, CSolver **solver_container, C
                                config->GetKind_Upwind_Flow() == SLAU ||
                                config->GetKind_Upwind_Flow() == SLAU2);
   bool wall_functions       = config->GetWall_Functions();
-
+  bool restart = (config->GetRestart() || config->GetRestart_Flow());
+  /*
+  bool body_force = config->GetBody_Force;
+  
+  if ((ExtIter == 0) && (!restart) && body_force) {
+	  cout << "Performing Body Force Model blockage and camber normal interpolation " << endl;
+	  for (iMesh = 0; iMesh <= config->GetnMGLevels(); iMesh++){
+			unsigned short nDim = geometry[iMesh]->GetnDim();
+			su2double BF_radius = config->GetBody_Force_Radius();
+			int n_blade{0};
+			int n_points{0};
+			int n_rows{0};
+			ifstream inputFile;
+			inputFile.open("/home/evert/Documents/TU_Delft_administratie/Thesis/Pythonscripts/BFM_stage_input");
+			string line;
+			inputFile >> n_rows >> n_blade >> n_points;
+			
+			su2double xarray[n_rows][n_blade][n_points];
+			su2double rarray[n_rows][n_blade][n_points];
+			su2double Nxarray[n_rows][n_blade][n_points];
+			su2double Ntarray[n_rows][n_blade][n_points];
+			su2double Nrarray[n_rows][n_blade][n_points];
+			su2double barray[n_rows][n_blade][n_points];
+			su2double dbdxarray[n_rows][n_blade][n_points];
+			su2double dbdrarray[n_rows][n_blade][n_points];
+			su2double D_LE[n_rows][n_blade][n_points];
+			su2double blade_count[n_rows];
+			su2double rotation[n_rows];
+			int start_line{};
+			int end_line{};
+			su2double x_min = 0.0;
+			for (int q=0; q < n_rows; q++){
+				for (int p=0; p < n_blade; p++){
+					getline(inputFile, line);
+					start_line = p * n_points + 1;
+					end_line = (p + 1) * n_points;
+					int j=0;
+					for (int i=start_line; i<=end_line; i++){
+						getline(inputFile, line);
+						if (i >= start_line){
+							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> dbdxarray[q][p][j] >> dbdrarray[q][p][j] >> rotation[q] >> blade_count[q];
+							//cout << xarray[j] << "	" << barray[j] << endl;
+							if(xarray[q][p][j] <= x_min){
+								x_min = xarray[q][p][j];
+							}
+							
+							j++;
+						}
+						
+					}
+					for (int i=0; i < n_points; i++){
+						D_LE[q][p][i] = xarray[q][p][i] - xarray[q][p][0];
+					}
+				}
+			}
+			inputFile.close();
+			
+			
+			x_min = x_min - 1.0;
+			for (iPoint = 0; iPoint < geometry[iMesh]->GetnPoint(); iPoint++){
+				su2double *Coord = geometry[iMesh]->node[iPoint]->GetCoord();
+				su2double x = Coord[0];
+				su2double y = Coord[1];
+				
+				su2double r{};
+				su2double b=1.0, dbdx = 0.0, dbdr = 0.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, d_le = 0.0, rotFac = 0.0, bladeCount = 10;
+				su2double BodyForceParams[10] = {bfFac, b, dbdx, dbdr, Nx, Nt, Nr, d_le, rotFac, bladeCount};
+				if (nDim == 3){
+					su2double z = Coord[2];
+					r = sqrt(y*y + z*z);
+				}else{
+					r = BF_radius;
+				}
+				for (int q=0; q < n_rows; q++){
+					for(int j=0; j < n_blade - 1; j++){
+						for(int n = 0; n < n_points - 1; n++){
+							su2double x_side[5] = {xarray[q][j][n], xarray[q][j+1][n], xarray[q][j+1][n+1], xarray[q][j][n+1], xarray[q][j][n]};
+							su2double r_side[5] = {rarray[q][j][n], rarray[q][j+1][n], rarray[q][j+1][n+1], rarray[q][j][n+1], rarray[q][j][n]};
+							su2double b_side[5] = {barray[q][j][n], barray[q][j+1][n], barray[q][j+1][n+1], barray[q][j][n+1], barray[q][j][n]};
+							su2double dbdx_side[5] = {dbdxarray[q][j][n], dbdxarray[q][j+1][n], dbdxarray[q][j+1][n+1], dbdxarray[q][j][n+1], dbdxarray[q][j][n]};
+							su2double dbdr_side[5] = {dbdrarray[q][j][n], dbdrarray[q][j+1][n], dbdrarray[q][j+1][n+1], dbdrarray[q][j][n+1], dbdrarray[q][j][n]};
+							su2double Nx_side[5] = {Nxarray[q][j][n], Nxarray[q][j+1][n], Nxarray[q][j+1][n+1], Nxarray[q][j][n+1], Nxarray[q][j][n]};
+							su2double Nt_side[5] = {Ntarray[q][j][n], Ntarray[q][j+1][n], Ntarray[q][j+1][n+1], Ntarray[q][j][n+1], Ntarray[q][j][n]};
+							su2double Nr_side[5] = {Nrarray[q][j][n], Nrarray[q][j+1][n], Nrarray[q][j+1][n+1], Nrarray[q][j][n+1], Nrarray[q][j][n]};
+							su2double d_le_side[5] = {D_LE[q][j][n], D_LE[q][j+1][n], D_LE[q][j+1][n+1], D_LE[q][j][n+1], D_LE[q][j][n]};
+							
+							su2double x1{}, x2{}, r1{}, r2{};
+							int nInt=0;
+							bool inside = false;
+							for(int p=0; p < 4; p++){
+								x1 = x_side[p];
+								x2 = x_side[p + 1];
+								r1 = r_side[p];
+								r2 = r_side[p + 1];
+								
+								su2double A[2][2] = {{x - x_min, - (x2 - x1)}, {0, -(r2 - r1)}};
+								su2double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+								su2double S_ray{}, S_side{};
+								
+								if(det != 0){
+									S_ray = (1 / det) * ((x1 - x_min) * A[1][1] + (r1 - r) * -A[0][1]);
+									S_side = (1 / det) * (x1 * -A[1][0] + (r1 - r) * A[0][0]);
+									if(S_ray >= 0.0 && S_ray < 1.0 && S_side >= 0.0 && S_side < 1.0){
+										nInt ++;
+									}
+								}
+							}
+							if (nInt % 2 != 0 and nInt > 0){
+								inside = true;
+							}
+							if (inside){
+								su2double dist{}, deNom=0;
+								su2double eNum_b{}, eNum_dbdx{}, eNum_dbdr{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_d_le{};
+								for(int p = 0; p < 4; p++){
+									dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
+									deNom += 1 / dist;
+									eNum_b += b_side[p] / dist;
+									eNum_dbdx += dbdx_side[p] / dist;
+									eNum_dbdr += dbdr_side[p] / dist;
+									eNum_Nx += Nx_side[p] / dist;
+									eNum_Nt += Nt_side[p] / dist;
+									eNum_Nr += Nr_side[p] / dist;
+									eNum_d_le += d_le_side[p] / dist;
+								}
+								bfFac = 1.0;
+								b = eNum_b / deNom;
+								dbdx = eNum_dbdx / deNom;
+								dbdr = eNum_dbdr / deNom;
+								Nx = eNum_Nx / deNom;
+								Nt = eNum_Nt / deNom;
+								Nr = eNum_Nr / deNom;
+								d_le = eNum_d_le / deNom;
+								rotFac = rotation[q];
+								bladeCount = blade_count[q];
+								
+							}
+							BodyForceParams[0] = bfFac;
+							BodyForceParams[1] = b;
+							BodyForceParams[2] = dbdx;
+							BodyForceParams[3] = dbdr;
+							BodyForceParams[4] = Nx;
+							BodyForceParams[5] = Nt;
+							BodyForceParams[6] = Nr;
+							BodyForceParams[7] = d_le;
+							BodyForceParams[8] = rotFac;
+							BodyForceParams[9] = bladeCount;
+						}
+					}
+				}
+				//cout << "X: " << x << " bFac: " << BodyForceParams[0] <<" rotFac: " << BodyForceParams[8] << " d_le: " << BodyForceParams[7] << endl;
+				node[iPoint]->SetBodyForceParameters(BodyForceParams);
+				
+			}
+		  }
+	  
+  }
+  */
   /*--- Update the angle of attack at the far-field for fixed CL calculations (only direct problem). ---*/
   
   if ((fixed_cl) && (!disc_adjoint) && (!cont_adjoint)) { SetFarfield_AoA(geometry, solver_container, config, iMesh, Output); }
@@ -18000,4 +18566,6 @@ void CNSSolver::SetTauWall_WF(CGeometry *geometry, CSolver **solver_container, C
   }
   
 }
+
+
 

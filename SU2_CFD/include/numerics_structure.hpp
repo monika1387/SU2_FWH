@@ -1069,8 +1069,8 @@ public:
    * \param[in] config - Definition of the particular problem.
    * \param[in] val_bodyforceturbo - Pointer to turbo body force vector
    */
-  virtual void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo);
-
+  virtual void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo, su2double *val_blockagevector);
+//  virtual void ComputeResidual2(su2double *val_residual, CConfig *config, su2double *val_blockagevector);
   /*!
    * \overload
    * \param[out] val_residual_i - Pointer to the total residual at point i.
@@ -5191,7 +5191,6 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   CSourceBodyForce(unsigned short val_nDim, unsigned short val_nVar, CConfig *config);
-
   /*!
    * \brief Destructor of the class.
    */
@@ -5203,10 +5202,42 @@ public:
    * \param[in] config - Definition of the particular problem.
    * \param[in] Coord_i - Coordinates of iPoint.
    */
-  void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo);
+  void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo, su2double *val_blockagevector);
 
 };
 
+/*!
+ * \class CSourceBodyForce
+ * \brief Class for the source term integration of a blockage vector.
+ * \ingroup SourceDiscr
+ * \author T. Economon
+ */
+class CSourceBlockageVector : public CNumerics {
+  su2double *Blockage_Vector;
+
+public:
+
+  /*!
+   * \param[in] val_nDim - Number of dimensions of the problem.
+   * \param[in] val_nVar - Number of variables of the problem.
+   * \param[in] config - Definition of the particular problem.
+   */
+  CSourceBlockageVector(unsigned short val_nDim, unsigned short val_nVar, CConfig *config);
+
+  /*!
+   * \brief Destructor of the class.
+   */
+  ~CSourceBlockageVector(void);
+
+  /*!
+   * \brief Source term integration for a blockage vector
+   * \param[out] val_residual - Pointer to the residual vector.
+   * \param[in] config - Definition of the particular problem.
+   * \param[in] Coord_i - Coordinates of iPoint.
+   */
+  void ComputeResidual2(su2double *val_residual, CConfig *config, su2double *val_blockagevector);
+
+};
 /*!
  * \class CSourceIncBodyForce
  * \brief Class for the source term integration of a body force in the incompressible solver.

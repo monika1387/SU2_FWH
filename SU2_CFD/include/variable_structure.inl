@@ -153,6 +153,10 @@ inline su2double *CVariable::GetResidual_Old(void) { return Residual_Old; }
 
 inline su2double *CVariable::GetBodyForceVector_Turbo(void) { return Body_Force_Turbo; }
 
+inline su2double *CVariable::GetBlockage_Vector(void) { return Blockage_Vector; }
+
+inline su2double *CVariable::GetBodyForceParameters(void) { return Param_Vector; }
+
 inline void CVariable::SetGradient(unsigned short val_var, unsigned short val_dim, su2double val_value) { Gradient[val_var][val_dim] = val_value; }
 
 inline void CVariable::AddGradient(unsigned short val_var, unsigned short val_dim, su2double val_value) { Gradient[val_var][val_dim] += val_value; }

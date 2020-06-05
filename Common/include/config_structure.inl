@@ -1626,6 +1626,8 @@ inline bool CConfig::GetGravityForce(void) { return GravityForce; }
 
 inline bool CConfig::GetBody_Force(void) { return Body_Force; }
 
+inline su2double* CConfig::GetBlockage_Vector(void) { return Blockage_Vector; }
+
 inline su2double* CConfig::GetBody_Force_Vector(void) { return Body_Force_Vector; }
 
 inline su2double* CConfig::GetBody_Force_Camb_Norm(void) { return Body_Force_Camb_Norm; }

@@ -19,7 +19,8 @@ else
                            '-Wno-empty-body',
                            '-Wno-format-security',
                            '-Wno-deprecated-declarations',
-                           '-Wno-non-virtual-dtor']
+                           '-Wno-non-virtual-dtor',
+                           '-Wno-inconsistent-missing-override']
 endif
 
 # meson script path
@@ -138,6 +139,52 @@ elif get_option('enable-openblas')
 
 endif
 
+if get_option('enable-librom')
+
+  su2_cpp_args += '-DHAVE_LIBROM'
+
+  assert(get_option('enable-mkl') or get_option('enable-openblas'),
+         'libROM support requires either mkl or openblas')
+
+#  # get HDF5 first (required)
+#  hdf5_dep = dependency('hdf5')
+#
+#  if not hdf5_dep.found()
+#    hdf5_root = get_option('hdf5_root')
+#    hdf5_dep = declare_dependency(include_directories: hdf5_root+'/lib', link_args: ['-L../'+hdf5_root+'/lib','-lhdf5'])
+#  endif
+#
+#  su2_deps += hdf5_dep
+
+  librom_dep = dependency('libROM', required: false)
+
+  if not librom_dep.found()
+    librom_root = get_option('librom_root')
+    librom_dep = declare_dependency(include_directories: librom_root, compile_args: ['-std=c++11', '-I../'+librom_root],
+                                    link_args: ['-L'+librom_root, '-lROM'])
+  endif
+
+  su2_deps += librom_dep
+
+  scalapack_dep = dependency('scalapack')
+
+  #if not scalapack_dep.found()
+  #  scalapack_dep = declare_dependency(link_args: ['-L../usr/local/opt/scalapack/lib', '-lscalapack'])
+  #endif
+
+  #su2_deps += scalapack_dep
+
+  #lapack_dep = dependency('lapack')
+
+  #if not lapack_dep.found()
+  #lapack_dep = declare_dependency(link_args: ['-L../usr/local/opt/lapack/lib', '-llapack', '-lmpi' ])
+  #endif
+  
+  #su2_deps += lapack_dep
+
+
+endif
+
 # compile common library
 subdir('Common/src')
 # compile SU2_CFD executable
@@ -177,6 +224,7 @@ message('''---------------------------------------------------------------------
          Intel-MKL:      @7@
          OpenBlas:       @8@
          PaStiX:         @9@
+         libROM:         @10@
 
          Please be sure to add the $SU2_HOME and $SU2_RUN environment variables,
          and update your $PATH (and $PYTHONPATH if applicable) with $SU2_RUN
@@ -191,5 +239,5 @@ message('''---------------------------------------------------------------------
          Use './ninja -C @10@ install' to compile and install SU2
 '''.format(get_option('prefix')+'/bin', meson.source_root(), get_option('enable-tecio'), get_option('enable-cgns'),
            get_option('enable-autodiff'), get_option('enable-directdiff'), get_option('enable-pywrapper'), get_option('enable-mkl'),
-           get_option('enable-openblas'), get_option('enable-pastix'), meson.build_root().split('/')[-1]))
+           get_option('enable-openblas'), get_option('enable-pastix'), get_option('enable-librom'),  meson.build_root().split('/')[-1]))
 

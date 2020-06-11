@@ -4105,6 +4105,7 @@ void CFluidDriver::Run() {
       if (nZone > 1) {
          std::cout << "Error: Can only create ROM for single physics problems. " << std::endl;
       }
+     std::cout << "Saving to librom" << std::endl;
       solver_container[0][INST_0][MESH_0][FLOW_SOL]->SavelibROM(solver_container[0][INST_0][MESH_0], geometry_container[0][INST_0][0], config_container[0], converged);
    }
 #endif

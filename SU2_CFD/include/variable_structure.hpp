@@ -253,12 +253,14 @@ public:
   void SetBlockage_Vector(su2double *val_blockagevector);
   
   void SetBodyForceParameters(su2double *val_paramvector);
+  
   /*!
    * \brief Get body force vector at node.
    */
   virtual su2double *GetBodyForceVector_Turbo(void);
   
   virtual su2double *GetBlockage_Vector(void);
+  
   
   virtual su2double *GetBodyForceParameters(void);
   
@@ -1631,7 +1633,7 @@ public:
    * \brief A virtual member.
    */
   virtual void SetGradient_PrimitiveZero(unsigned short val_primvar);
-  
+  virtual void SetGradient_BlockageZero(void);
   /*!
    * \brief A virtual member.
    * \param[in] val_var - Index of the variable.
@@ -1639,6 +1641,7 @@ public:
    * \param[in] val_value - Value to add to the gradient of the primitive variables.
    */
   virtual void AddGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value);
+  virtual void AddGradient_Blockage(unsigned short val_dim, su2double val_value);
   
   /*!
    * \brief A virtual member.
@@ -1647,7 +1650,7 @@ public:
    * \param[in] val_value - Value to subtract to the gradient of the primitive variables.
    */
   virtual void SubtractGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value);
-  
+  virtual void SubtractGradient_Blockage(unsigned short val_dim, su2double val_value);
   /*!
    * \brief A virtual member.
    * \param[in] val_var - Index of the variable.
@@ -1655,7 +1658,7 @@ public:
    * \return Value of the primitive variables gradient.
    */
   virtual su2double GetGradient_Primitive(unsigned short val_var, unsigned short val_dim);
-  
+  virtual su2double GetGradient_Blockage(unsigned short val_dim);
   /*!
    * \brief A virtual member.
    * \param[in] val_var - Index of the variable.
@@ -1670,7 +1673,7 @@ public:
    * \param[in] val_value - Value of the gradient.
    */
   virtual void SetGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value);
-  
+  virtual void SetGradient_Blockage(unsigned short val_dim, su2double val_value);
   /*!
    * \brief A virtual member.
    * \param[in] val_var - Index of the variable.
@@ -1683,7 +1686,7 @@ public:
    * \return Value of the primitive variables gradient.
    */
   virtual su2double **GetGradient_Primitive(void);
-  
+  virtual su2double *GetGradient_Blockage(void);
   /*!
    * \brief A virtual member.
    * \return Value of the primitive variables gradient.
@@ -3175,6 +3178,7 @@ protected:
   
   su2double *Primitive;  /*!< \brief Primitive variables (T, vx, vy, vz, P, rho, h, c) in compressible flows. */
   su2double **Gradient_Primitive;  /*!< \brief Gradient of the primitive variables (T, vx, vy, vz, P, rho). */
+  su2double *Gradient_Blockage;  /*!< \brief Gradient of the primitive variables (T, vx, vy, vz, P, rho). */
   su2double *Limiter_Primitive;    /*!< \brief Limiter of the primitive variables (T, vx, vy, vz, P, rho). */
   
   /*--- Secondary variable definition ---*/
@@ -3266,6 +3270,8 @@ public:
    */
   void SetGradient_PrimitiveZero(unsigned short val_primvar);
   
+  void SetGradient_BlockageZero(void);
+  
   /*!
    * \brief Add <i>val_value</i> to the gradient of the primitive variables.
    * \param[in] val_var - Index of the variable.
@@ -3273,7 +3279,7 @@ public:
    * \param[in] val_value - Value to add to the gradient of the primitive variables.
    */
   void AddGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value);
-  
+  void AddGradient_Blockage(unsigned short val_dim, su2double val_value);
   /*!
    * \brief Subtract <i>val_value</i> to the gradient of the primitive variables.
    * \param[in] val_var - Index of the variable.
@@ -3281,7 +3287,7 @@ public:
    * \param[in] val_value - Value to subtract to the gradient of the primitive variables.
    */
   void SubtractGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value);
-  
+  void SubtractGradient_Blockage(unsigned short val_dim, su2double val_value);
   /*!
    * \brief Get the value of the primitive variables gradient.
    * \param[in] val_var - Index of the variable.
@@ -3289,7 +3295,7 @@ public:
    * \return Value of the primitive variables gradient.
    */
   su2double GetGradient_Primitive(unsigned short val_var, unsigned short val_dim);
-  
+  su2double GetGradient_Blockage(unsigned short val_dim);
   /*!
    * \brief Get the value of the primitive variables gradient.
    * \param[in] val_var - Index of the variable.
@@ -3304,7 +3310,7 @@ public:
    * \param[in] val_value - Value of the gradient.
    */
   void SetGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value);
-  
+  void SetGradient_Blockage(unsigned short val_dim, su2double val_value);
   /*!
    * \brief Set the gradient of the primitive variables.
    * \param[in] val_var - Index of the variable.
@@ -3317,7 +3323,7 @@ public:
    * \return Value of the primitive variables gradient.
    */
   su2double **GetGradient_Primitive(void);
-  
+  su2double *GetGradient_Blockage(void);
   /*!
    * \brief Get the value of the primitive variables gradient.
    * \return Value of the primitive variables gradient.

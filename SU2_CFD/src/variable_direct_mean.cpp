@@ -46,6 +46,7 @@ CEulerVariable::CEulerVariable(void) : CVariable() {
   Secondary = NULL;
   
   Gradient_Primitive = NULL;
+  Gradient_Blockage = NULL;
   Gradient_Secondary = NULL;
   
   Limiter_Primitive = NULL;
@@ -86,6 +87,7 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
   Secondary = NULL;
   
   Gradient_Primitive = NULL;
+  Gradient_Blockage = NULL;
   Gradient_Secondary = NULL;
   
   Limiter_Primitive = NULL;
@@ -223,7 +225,12 @@ CEulerVariable::CEulerVariable(su2double val_density, su2double *val_velocity, s
     for (iDim = 0; iDim < nDim; iDim++)
       Gradient_Primitive[iVar][iDim] = 0.0;
   }
-
+  
+  Gradient_Blockage = new su2double[nDim];
+  for (iDim = 0; iDim < nDim; iDim++) {
+      Gradient_Blockage[iDim] = 0.0;
+  }
+  
   Gradient_Secondary = new su2double* [nSecondaryVarGrad];
   for (iVar = 0; iVar < nSecondaryVarGrad; iVar++) {
     Gradient_Secondary[iVar] = new su2double [nDim];
@@ -261,6 +268,7 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
   Secondary = NULL;
   
   Gradient_Primitive = NULL;
+  Gradient_Blockage = NULL;
   Gradient_Secondary = NULL;
   
   Limiter_Primitive = NULL;
@@ -391,7 +399,12 @@ CEulerVariable::CEulerVariable(su2double *val_solution, unsigned short val_nDim,
     for (iDim = 0; iDim < nDim; iDim++)
       Gradient_Primitive[iVar][iDim] = 0.0;
   }
-
+ 
+  Gradient_Blockage = new su2double[nDim];
+  for (iDim = 0; iDim < nDim; iDim++) {
+      Gradient_Blockage[iDim] = 0.0;
+  }
+  
   Gradient_Secondary = new su2double* [nSecondaryVarGrad];
   for (iVar = 0; iVar < nSecondaryVarGrad; iVar++) {
     Gradient_Secondary[iVar] = new su2double [nDim];
@@ -425,6 +438,11 @@ CEulerVariable::~CEulerVariable(void) {
       if (Gradient_Primitive[iVar] != NULL) delete [] Gradient_Primitive[iVar];
     delete [] Gradient_Primitive;
   }
+  
+    if (Gradient_Blockage != NULL) {
+    delete [] Gradient_Blockage;
+  }
+  
   if (Gradient_Secondary != NULL) {
     for (iVar = 0; iVar < nSecondaryVarGrad; iVar++)
       if (Gradient_Secondary[iVar] != NULL) delete [] Gradient_Secondary[iVar];
@@ -445,6 +463,14 @@ void CEulerVariable::SetGradient_PrimitiveZero(unsigned short val_primvar) {
     for (iVar = 0; iVar < val_primvar; iVar++)
         for (iDim = 0; iDim < nDim; iDim++)
             Gradient_Primitive[iVar][iDim] = 0.0;
+}
+
+void CEulerVariable::SetGradient_BlockageZero(void) {
+    unsigned short iDim;
+  
+    
+	for (iDim = 0; iDim < nDim; iDim++)
+		Gradient_Blockage[iDim] = 0.0;
 }
 
 void CEulerVariable::SetGradient_SecondaryZero(unsigned short val_secondaryvar) {

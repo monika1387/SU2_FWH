@@ -467,19 +467,31 @@ inline su2double CVariable::GetTauWall(void) { return 0; }
 
 inline void CVariable::SetGradient_PrimitiveZero(unsigned short val_primvar) { }
 
+inline void CVariable::SetGradient_BlockageZero(void) { }
+
 inline void CVariable::AddGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value) { }
+
+inline void CVariable::AddGradient_Blockage(unsigned short val_dim, su2double val_value) { }
 
 inline void CVariable::SubtractGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value) { }
 
+inline void CVariable::SubtractGradient_Blockage(unsigned short val_dim, su2double val_value) { }
+
 inline su2double CVariable::GetGradient_Primitive(unsigned short val_var, unsigned short val_dim) { return 0; }
+
+inline su2double CVariable::GetGradient_Blockage(unsigned short val_dim) { return 0; }
 
 inline su2double CVariable::GetLimiter_Primitive(unsigned short val_var) { return 0; }
 
 inline void CVariable::SetGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value) { }
 
+inline void CVariable::SetGradient_Blockage(unsigned short val_dim, su2double val_value) { }
+
 inline void CVariable::SetLimiter_Primitive(unsigned short val_var, su2double val_value) { }
 
 inline su2double **CVariable::GetGradient_Primitive(void) { return NULL; }
+
+inline su2double *CVariable::GetGradient_Blockage(void) { return NULL; }
 
 inline su2double *CVariable::GetLimiter_Primitive(void) { return NULL; }
 
@@ -833,17 +845,27 @@ inline void CEulerVariable::SetVelocity_Old(su2double *val_velocity) {
 
 inline void CEulerVariable::AddGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value) { Gradient_Primitive[val_var][val_dim] += val_value; }
 
+inline void CEulerVariable::AddGradient_Blockage(unsigned short val_dim, su2double val_value) { Gradient_Blockage[val_dim] += val_value; }
+
 inline void CEulerVariable::SubtractGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value) { Gradient_Primitive[val_var][val_dim] -= val_value; }
 
+inline void CEulerVariable::SubtractGradient_Blockage(unsigned short val_dim, su2double val_value) { Gradient_Blockage[val_dim] -= val_value; }
+
 inline su2double CEulerVariable::GetGradient_Primitive(unsigned short val_var, unsigned short val_dim) { return Gradient_Primitive[val_var][val_dim]; }
+
+inline su2double CEulerVariable::GetGradient_Blockage(unsigned short val_dim) { return Gradient_Blockage[val_dim]; }
 
 inline su2double CEulerVariable::GetLimiter_Primitive(unsigned short val_var) { return Limiter_Primitive[val_var]; }
 
 inline void CEulerVariable::SetGradient_Primitive(unsigned short val_var, unsigned short val_dim, su2double val_value) { Gradient_Primitive[val_var][val_dim] = val_value; }
 
+inline void CEulerVariable::SetGradient_Blockage(unsigned short val_dim, su2double val_value) { Gradient_Blockage[val_dim] = val_value; }
+
 inline void CEulerVariable::SetLimiter_Primitive(unsigned short val_var, su2double val_value) { Limiter_Primitive[val_var] = val_value; }
 
 inline su2double **CEulerVariable::GetGradient_Primitive(void) { return Gradient_Primitive; }
+
+inline su2double *CEulerVariable::GetGradient_Blockage(void) { return Gradient_Blockage; }
 
 inline su2double *CEulerVariable::GetLimiter_Primitive(void) { return Limiter_Primitive; }
 

@@ -4061,7 +4061,8 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
   bool SubsonicEngine = config->GetSubsonicEngine();
   bool body_force = config->GetBody_Force();
-  
+  unsigned long jPoint, iEdge, iVertex;
+  unsigned short iMarker;
   unsigned short iZone = config->GetiZone();
  
   
@@ -4075,7 +4076,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 			int n_points{0};
 			int n_rows{0};
 			ifstream inputFile;
-			inputFile.open("/home/evert/Documents/TU_Delft_administratie/Thesis/Pythonscripts/BFM_stage_input");
+			inputFile.open(config->GetBFM_inputName());
 			string line;
 			inputFile >> n_rows >> n_blade >> n_points;
 			
@@ -4103,7 +4104,6 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 						getline(inputFile, line);
 						if (i >= start_line){
 							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> dbdxarray[q][p][j] >> dbdrarray[q][p][j] >> rotation[q] >> blade_count[q];
-							//cout << xarray[j] << "	" << barray[j] << endl;
 							if(xarray[q][p][j] <= x_min){
 								x_min = xarray[q][p][j];
 							}
@@ -4128,7 +4128,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 				
 				su2double r{};
 				su2double b=1.0, dbdx = 0.0, dbdr = 0.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, d_le = 0.0, rotFac = 0.0, bladeCount = 10;
-				su2double BodyForceParams[10] = {bfFac, b, dbdx, dbdr, Nx, Nt, Nr, d_le, rotFac, bladeCount};
+				su2double BodyForceParams[8] = {bfFac, b, Nx, Nt, Nr, d_le, rotFac, bladeCount};
 				if (nDim == 3){
 					su2double z = Coord[2];
 					r = sqrt(y*y + z*z);
@@ -4141,8 +4141,6 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 							su2double x_side[5] = {xarray[q][j][n], xarray[q][j+1][n], xarray[q][j+1][n+1], xarray[q][j][n+1], xarray[q][j][n]};
 							su2double r_side[5] = {rarray[q][j][n], rarray[q][j+1][n], rarray[q][j+1][n+1], rarray[q][j][n+1], rarray[q][j][n]};
 							su2double b_side[5] = {barray[q][j][n], barray[q][j+1][n], barray[q][j+1][n+1], barray[q][j][n+1], barray[q][j][n]};
-							su2double dbdx_side[5] = {dbdxarray[q][j][n], dbdxarray[q][j+1][n], dbdxarray[q][j+1][n+1], dbdxarray[q][j][n+1], dbdxarray[q][j][n]};
-							su2double dbdr_side[5] = {dbdrarray[q][j][n], dbdrarray[q][j+1][n], dbdrarray[q][j+1][n+1], dbdrarray[q][j][n+1], dbdrarray[q][j][n]};
 							su2double Nx_side[5] = {Nxarray[q][j][n], Nxarray[q][j+1][n], Nxarray[q][j+1][n+1], Nxarray[q][j][n+1], Nxarray[q][j][n]};
 							su2double Nt_side[5] = {Ntarray[q][j][n], Ntarray[q][j+1][n], Ntarray[q][j+1][n+1], Ntarray[q][j][n+1], Ntarray[q][j][n]};
 							su2double Nr_side[5] = {Nrarray[q][j][n], Nrarray[q][j+1][n], Nrarray[q][j+1][n+1], Nrarray[q][j][n+1], Nrarray[q][j][n]};
@@ -4179,8 +4177,6 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 									dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
 									deNom += 1 / dist;
 									eNum_b += b_side[p] / dist;
-									eNum_dbdx += dbdx_side[p] / dist;
-									eNum_dbdr += dbdr_side[p] / dist;
 									eNum_Nx += Nx_side[p] / dist;
 									eNum_Nt += Nt_side[p] / dist;
 									eNum_Nr += Nr_side[p] / dist;
@@ -4188,8 +4184,6 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 								}
 								bfFac = 1.0;
 								b = eNum_b / deNom;
-								dbdx = eNum_dbdx / deNom;
-								dbdr = eNum_dbdr / deNom;
 								Nx = eNum_Nx / deNom;
 								Nt = eNum_Nt / deNom;
 								Nr = eNum_Nr / deNom;
@@ -4198,16 +4192,15 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 								bladeCount = blade_count[q];
 								
 							}
+							
 							BodyForceParams[0] = bfFac;
 							BodyForceParams[1] = b;
-							BodyForceParams[2] = dbdx;
-							BodyForceParams[3] = dbdr;
-							BodyForceParams[4] = Nx;
-							BodyForceParams[5] = Nt;
-							BodyForceParams[6] = Nr;
-							BodyForceParams[7] = d_le;
-							BodyForceParams[8] = rotFac;
-							BodyForceParams[9] = bladeCount;
+							BodyForceParams[2] = Nx;
+							BodyForceParams[3] = Nt;
+							BodyForceParams[4] = Nr;
+							BodyForceParams[5] = d_le;
+							BodyForceParams[6] = rotFac;
+							BodyForceParams[7] = bladeCount;
 						}
 					}
 				}
@@ -4215,7 +4208,10 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 				node[iPoint]->SetBodyForceParameters(BodyForceParams);
 				
 			}
+			
+			ComputeBlockageGradient(geometry[iMesh], config);
 		  }
+		  
 	  
   }
     /*--- Set subsonic initial condition for engine intakes ---*/
@@ -6560,6 +6556,156 @@ void CEulerSolver::ImplicitEuler_Iteration(CGeometry *geometry, CSolver **solver
   
   SetResidual_RMS(geometry, config);
   
+}
+
+
+void CEulerSolver::ComputeBlockageGradient(CGeometry *geometry, CConfig *config) {
+	unsigned short iDim, jDim, iNeigh;
+  unsigned long iPoint, jPoint;
+  su2double Blockage_i, Blockage_j, *BFMVec, *Coord_i, *Coord_j, r11, r12, r13, r22, r23, r23_a,
+  r23_b, r33, weight, product, z11, z12, z13, z22, z23, z33, detR2, cvector[nDim] = {0.0}, smatrix[nDim][nDim];
+  bool singular;
+  
+  /*--- Loop over points of the grid ---*/
+  
+  for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+    
+    /*--- Set the value of the singular ---*/
+    singular = false;
+    
+    /*--- Get coordinates ---*/
+    
+    Coord_i = geometry->node[iPoint]->GetCoord();
+    //cout << "Coordinate: " << Coord_i[0] << " " << Coord_i[1] << endl;
+    /*--- Get primitives from CVariable ---*/
+    BFMVec = node[iPoint]->GetBodyForceParameters();
+    Blockage_i = BFMVec[1];
+    //cout << "Blockage: " << Blockage_i << endl;
+    /*--- Inizialization of variables ---*/
+    
+    
+    for (iDim = 0; iDim < nDim; iDim++){
+        cvector[iDim] = 0.0;
+    }
+    r11 = 0.0; r12 = 0.0;   r13 = 0.0;    r22 = 0.0;
+    r23 = 0.0; r23_a = 0.0; r23_b = 0.0;  r33 = 0.0;
+    
+	/*
+    AD::StartPreacc();
+    AD::SetPreaccIn(PrimVar_i, nPrimVarGrad);
+    AD::SetPreaccIn(Coord_i, nDim);
+    */
+    for (iNeigh = 0; iNeigh < geometry->node[iPoint]->GetnPoint(); iNeigh++) {
+      jPoint = geometry->node[iPoint]->GetPoint(iNeigh);
+      Coord_j = geometry->node[jPoint]->GetCoord();
+      
+	  BFMVec = node[jPoint]->GetBodyForceParameters();
+      Blockage_j = BFMVec[1];
+      
+	  /*
+      AD::SetPreaccIn(Coord_j, nDim);
+      AD::SetPreaccIn(PrimVar_j, nPrimVarGrad);
+	  */
+	  
+      weight = 0.0;
+      for (iDim = 0; iDim < nDim; iDim++)
+        weight += (Coord_j[iDim]-Coord_i[iDim])*(Coord_j[iDim]-Coord_i[iDim]);
+      
+      /*--- Sumations for entries of upper triangular matrix R ---*/
+      //cout << "Weight: " << weight << endl;
+      if (weight != 0.0) {
+        
+        r11 += (Coord_j[0]-Coord_i[0])*(Coord_j[0]-Coord_i[0])/weight;
+        r12 += (Coord_j[0]-Coord_i[0])*(Coord_j[1]-Coord_i[1])/weight;
+        r22 += (Coord_j[1]-Coord_i[1])*(Coord_j[1]-Coord_i[1])/weight;
+        
+        if (nDim == 3) {
+          r13 += (Coord_j[0]-Coord_i[0])*(Coord_j[2]-Coord_i[2])/weight;
+          r23_a += (Coord_j[1]-Coord_i[1])*(Coord_j[2]-Coord_i[2])/weight;
+          r23_b += (Coord_j[0]-Coord_i[0])*(Coord_j[2]-Coord_i[2])/weight;
+          r33 += (Coord_j[2]-Coord_i[2])*(Coord_j[2]-Coord_i[2])/weight;
+        }
+        
+        /*--- Entries of c:= transpose(A)*b ---*/
+        
+        
+         for (iDim = 0; iDim < nDim; iDim++){
+            cvector[iDim] += (Coord_j[iDim]-Coord_i[iDim])*(Blockage_j-Blockage_i)/weight;
+		 }
+        
+      }
+      
+    }
+    //cout << " Cvector[0]: " << cvector[0] << " Cvector[1]: " << cvector[1] << endl;
+    /*--- Entries of upper triangular matrix R ---*/
+    
+    if (r11 >= 0.0) r11 = sqrt(r11); else r11 = 0.0;
+    if (r11 != 0.0) r12 = r12/r11; else r12 = 0.0;
+    if (r22-r12*r12 >= 0.0) r22 = sqrt(r22-r12*r12); else r22 = 0.0;
+    //cout << "r11: " << r11 << " r12: " << r12 << " r22: " << r22 << endl;
+    if (nDim == 3) {
+      if (r11 != 0.0) r13 = r13/r11; else r13 = 0.0;
+      if ((r22 != 0.0) && (r11*r22 != 0.0)) r23 = r23_a/r22 - r23_b*r12/(r11*r22); else r23 = 0.0;
+      if (r33-r23*r23-r13*r13 >= 0.0) r33 = sqrt(r33-r23*r23-r13*r13); else r33 = 0.0;
+    }
+    
+    /*--- Compute determinant ---*/
+    
+    if (nDim == 2) detR2 = (r11*r22)*(r11*r22);
+    else detR2 = (r11*r22*r33)*(r11*r22*r33);
+    
+    /*--- Detect singular matrices ---*/
+    
+    if (abs(detR2) <= EPS) { detR2 = 1.0; singular = true; }
+    //cout << "Determinant: " << detR2 << endl;
+    /*--- S matrix := inv(R)*traspose(inv(R)) ---*/
+    
+    if (singular) {
+      for (iDim = 0; iDim < nDim; iDim++)
+        for (jDim = 0; jDim < nDim; jDim++)
+          smatrix[iDim][jDim] = 0.0;
+    }
+    else {
+      if (nDim == 2) {
+        smatrix[0][0] = (r12*r12+r22*r22)/detR2;
+        smatrix[0][1] = -r11*r12/detR2;
+        smatrix[1][0] = smatrix[0][1];
+        smatrix[1][1] = r11*r11/detR2;
+      }
+      else {
+        z11 = r22*r33; z12 = -r12*r33; z13 = r12*r23-r13*r22;
+        z22 = r11*r33; z23 = -r11*r23; z33 = r11*r22;
+        smatrix[0][0] = (z11*z11+z12*z12+z13*z13)/detR2;
+        smatrix[0][1] = (z12*z22+z13*z23)/detR2;
+        smatrix[0][2] = (z13*z33)/detR2;
+        smatrix[1][0] = smatrix[0][1];
+        smatrix[1][1] = (z22*z22+z23*z23)/detR2;
+        smatrix[1][2] = (z23*z33)/detR2;
+        smatrix[2][0] = smatrix[0][2];
+        smatrix[2][1] = smatrix[1][2];
+        smatrix[2][2] = (z33*z33)/detR2;
+      }
+    }
+    //cout << " Smatrix[0][1]: " << smatrix[0][1] <<" Smatrix[1][0]: " << smatrix[1][0] << " Smatrix[1][1]: " << smatrix[1][1] << " Smatrix[0][0]: " << smatrix[0][0] << endl;
+    /*--- Computation of the gradient: S*c ---*/
+    
+      for (iDim = 0; iDim < nDim; iDim++) {
+        product = 0.0;
+        for (jDim = 0; jDim < nDim; jDim++) {
+          product += smatrix[iDim][jDim]*cvector[jDim];
+        }
+        
+        node[iPoint]->SetGradient_Blockage(iDim, product);
+      }
+    
+    /*
+    AD::SetPreaccOut(node[iPoint]->GetGradient_Primitive(), nPrimVarGrad, nDim);
+    AD::EndPreacc();
+	*/
+  }
+  
+
+
 }
 
 void CEulerSolver::SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config) {
@@ -15005,15 +15151,11 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 	unsigned long iPoint;
 	unsigned long nDim = geometry->GetnDim();
 	su2double *U_i, *V_i, enthalpy, *Coord_i, Density, *Geometric_Parameters;
+	int iDim;
 	
-	//  Getting the fluid parameters, blade count, rotation speed and defining the blockage residual vector.
-	su2double gamma = config->GetGamma(), R_gas = config->GetGas_Constant(), Blockage_Vector[nDim + 2] = { 0.0 },
-        BF_blades = config->GetBody_Force_Blades(), BF_rotation = config->GetBody_Force_Rotation();
+	//  Defining the blockage residual vector.
+	su2double Blockage_Vector[nDim + 2] = { 0.0 };
         
-	// Calculating the rotation speed in radians per second.
-	su2double pi = M_PI, omegaR;
-    omegaR = ((BF_rotation / 60) * 2 * pi );
-
 	// The function loops over all points in the zone, calculating and storing the residual blockage vector for each
 	// respective node.
 	for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
@@ -15024,44 +15166,35 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 		// Getting the node coordinates.
 		Coord_i = geometry->node[iPoint]-> GetCoord();
 		
-		// The blockage factor, its derivatives and the body-force factor are obtained from the body-force
-		// parameter vector of the current node.
-		su2double b, dbdx, dbdr, dbdy, dbdz, bfFac, rotFac;
+		// The blockage factor is extracted at the node, resulting from the interpolation during initialization.
+		su2double b = 1.0;
 		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
-		bfFac = Geometric_Parameters[0];
 		b = Geometric_Parameters[1];
-		dbdx = Geometric_Parameters[2];
-		dbdr = Geometric_Parameters[3];
-		rotFac = Geometric_Parameters[8];
 		
-		// The blockage residual vector is constructed. 
-		su2double u_x, u_y, u_z;
-		su2double Blockage_Div;
+		// Obtaining blockage derivative from gradient field, calculated during initialization.
+		su2double BGradient[nDim] = {0.0};
+		for(iDim=0; iDim < nDim; iDim++){
+			BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+		}
+		
+		// Calculating blockage divergence term.
+		su2double Blockage_Div = 0.0;
+		for(iDim=0; iDim < nDim; iDim ++){
+			Blockage_Div += (U_i[iDim + 1] / U_i[0]) * BGradient[iDim];
+		}
+		
+		// Inserting values into the blockage residual vector.
 		if(nDim == 2){
-		su2double radius = config->GetBody_Force_Radius();
-		u_x = U_i[1] / U_i[0];
-		u_y = U_i[2] / U_i[0] - rotFac * omegaR * radius;
-		u_z = 0.0;
-		Blockage_Div = u_x * dbdx;
-		Blockage_Vector[0] = -(1 / b) * U_i[0] * bfFac * Blockage_Div;
-		Blockage_Vector[1] = -(1 / b) * U_i[1] * bfFac * Blockage_Div;
-		Blockage_Vector[2] = -(1 / b) * U_i[2] * bfFac * Blockage_Div;
-		Blockage_Vector[3] = -(1 / b) * U_i[0] * enthalpy * bfFac * Blockage_Div;
+		Blockage_Vector[0] = -(1 / b) * U_i[0] * Blockage_Div;
+		Blockage_Vector[1] = -(1 / b) * U_i[1] * Blockage_Div;
+		Blockage_Vector[2] = -(1 / b) * U_i[2] * Blockage_Div;
+		Blockage_Vector[3] = -(1 / b) * U_i[0] * enthalpy * Blockage_Div;
 		}else{su2double y, z, radius;
-		y = Coord_i[1];
-		z = Coord_i[2];
-		radius = sqrt(y*y + z*z);
-		dbdy = dbdr*y/radius;
-		dbdz = dbdr*z/radius;
-		u_x = U_i[1] / U_i[0];
-		u_y = (U_i[2] / U_i[0]) - rotFac * omegaR * z;
-		u_z = (U_i[3] / U_i[0]) - rotFac * omegaR * y;
-		Blockage_Div = u_x * dbdx + u_y * dbdy + u_z * dbdz;
-		Blockage_Vector[0] = -(1 / b) * bfFac * Blockage_Div;
-		Blockage_Vector[1] = -(1 / b) * bfFac *  u_x * Blockage_Div;
-		Blockage_Vector[2] = -(1 / b) * bfFac * (U_i[2]/U_i[0]) * Blockage_Div;
-		Blockage_Vector[3] = -(1 / b) * bfFac * (U_i[3]/U_i[0])  * Blockage_Div;
-		Blockage_Vector[4] = -(1 / b) * bfFac * enthalpy * Blockage_Div;
+		Blockage_Vector[0] = -(1 / b) * U_i[0] * Blockage_Div;
+		Blockage_Vector[1] = -(1 / b) * U_i[1] * Blockage_Div;
+		Blockage_Vector[2] = -(1 / b) * U_i[2] * Blockage_Div;
+		Blockage_Vector[3] = -(1 / b) * U_i[3] * Blockage_Div;
+		Blockage_Vector[4] = -(1 / b) * U_i[0] * enthalpy * Blockage_Div;
 		}
 		
 		// Storing the blockage residual vector at the current node.
@@ -15088,195 +15221,18 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
     omegaR = ((BF_rotation / 60) * 2 * pi );
 
     for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
-		/*--- Set coordinates and conservative and primitive variables ---*/
         U_i = node[iPoint]->GetSolution();
         V_i = node[iPoint]->GetPrimitive();
 		// Extracting node coordinates 
         Coord_i = geometry->node[iPoint]->GetCoord();
-		su2double x_coord = Coord_i[0];
-		su2double y_coord;
-		su2double z_coord;
+		su2double x_coord{}, y_coord{}, z_coord{}, radius{};
 		
-		if (nDim == 2){
-			z_coord = BF_radius;
-			y_coord = 0.0;
-		}else{
-			z_coord = Coord_i[2];
-			y_coord = Coord_i[1];
-		}
-		
-		
-		
-		// Extracing blockage factor and camber normal components
-		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
-		su2double bfFac = Geometric_Parameters[0];
-		su2double b = Geometric_Parameters[1];
-		su2double Nx = Geometric_Parameters[4];
-		su2double Nt = Geometric_Parameters[5];
-		su2double Nr = Geometric_Parameters[6];
-        su2double d_le = Geometric_Parameters[7];
-		su2double rotFac = Geometric_Parameters[8];
-		BF_blades = Geometric_Parameters[9];
-		
-		/*--- Initialize velocity variables, determine delta, calculate deflection angle, and calculate BF magnitude---*/
-        su2double Velocity_i_x, Velocity_i_y, Velocity_i_z, vel_mag, sound, M_rel, WdotN, delta, sq_vel, BF_normal_inc, K = 1, Kprime, BF_normal, BF_x, BF_y, BF_z;
-		su2double BF_par;
-		Velocity_i_x = U_i[1] / U_i[0]; //Use conservative variables to determine V_x and V_y
-		Velocity_i_y = U_i[2] / U_i[0] - rotFac * omegaR * z_coord;
-		
-		// Transforming tangential and radial camber normals to Y and Z-components
-		su2double Ny, Nz;
-		su2double pitch, radius;
-		radius = sqrt(y_coord*y_coord + z_coord*z_coord);
-		pitch = (2 * pi * radius) / BF_blades;
-		if (nDim == 2){
-			Velocity_i_z = 0.0;
-			Ny = Nt;
-			Nz = 0.0;
-		} else{
-			Velocity_i_z = U_i[3] / U_i[0] + rotFac * omegaR * y_coord;
-			Ny = Nr * (y_coord / radius) + Nt * (z_coord / radius);
-			Nz = Nr * (z_coord / radius) - Nt * (y_coord / radius);
-		}
-		
-		// Determining velocity magnitude
-        vel_mag = sqrt(Velocity_i_x * Velocity_i_x + Velocity_i_y * Velocity_i_y + Velocity_i_z * Velocity_i_z);
-		// Calculating local speed of sound
-        sound = sqrt(gamma * R_gas * V_i[0]); // V_i is primitive variables as point i, T is first value
-		// Calculating local Mach number
-        M_rel = vel_mag / sound;
-		// Calculating deviation angle by performing dot product between velocity vector and camber normal vector
-        WdotN = Velocity_i_x * Nx + Velocity_i_y * Ny + Velocity_i_z * Nz;
-        delta = asin(WdotN / vel_mag);
-		
-		// cout << "Nx: " << Nx << " Ny: " << Ny << " Nz: " << Nz << endl;
-		su2double u[3] = {Velocity_i_x / vel_mag, Velocity_i_y / vel_mag, Velocity_i_z / vel_mag};
-		//cout << "ux: " << u[0] << " uy: " << u[1] << " uz: " << u[2] << endl;
-		// Defining the rotation axis between the camber normal vector and velocity vector.
-		su2double r[3] = {u[1] * Nz - u[2] * Ny, 
-			u[2] * Nx - u[0] * Nz, 
-			u[0] * Ny - u[1] * Nx};
-		su2double r_cyl[3] = {};
-		r_cyl[0] = r[0];
-		r_cyl[1] = -(z_coord / radius) * r[1] + (y_coord / radius) * r[2];
-		r_cyl[2] = (y_coord / radius) * r[1] + (z_coord / radius) * r[2];
-		/*
-		if (r_cyl[2] < 0.0){
-			// delta = pi - delta;
-			r_cyl[0] = abs(r_cyl[0]);
-			r_cyl[1] = abs(r_cyl[1]);
-			r_cyl[2] = abs(r_cyl[2]);
-		}
-		*/
-		r[0] = r_cyl[0];
-		r[1] = -(z_coord / radius) * r_cyl[1] + (y_coord / radius) * r_cyl[2];
-		r[2] = (y_coord / radius) * r_cyl[1] + (z_coord / radius) * r_cyl[2];
-
-		su2double r_mag = sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
-		su2double A = r[0] / r_mag;	// X-component of rotation axis
-		su2double B = r[1] / r_mag;	// Y-component of rotation axis
-		su2double C = r[2] / r_mag;	// Z-component of rotation axis
-		
-		// Setting up the projection vector for the normal force. This is the velocity unit vector rotated
-		// 90 degrees over the rotation axis.
-		su2double N_vec[3] = {((A * A*u[0] + (A*B + C)*u[1] + (A*C - B)*u[2])), 
-			(((A*B - C)*u[0] + B*B*u[1] + (B*C + A)*u[2])),
-			(((C*A + B)*u[0] + (B*C + A)*u[1]+ C*C*u[2]))};
-		
-		// Normalizing the normal force projection vector
-		su2double N_mag = sqrt(N_vec[0] * N_vec[0] + N_vec[1] * N_vec[1] + N_vec[2] * N_vec[2]);
-		int j;
-		for (j = 0 ; j < 3 ; j++){
-			N_vec[j] = N_vec[j] / N_mag;
-		}
-		// Calculating incompressible normal body-force magnitude
-        sq_vel = vel_mag * vel_mag;
-        BF_normal_inc = pi * delta * (1 / pitch) * sq_vel * (1 / Nt) * (1 / b);
-		
-		
-		// Friction factor calculation for parallel force
-		su2double Cf, Re;
-		Re = (vel_mag * d_le* U_i[0]) / (1.75E-5);	// Calculating flat-plate Reynolds number
-		// In case x=0 is evaluated, Cf is capped to avoid division by 0
-		if (Re == 0.0){
-			Cf = 0.0;
-		}else{
-			//Cf = min(0.0592/pow(Re, 0.2), 1020.0);
-			Cf = 0.0;
-		}
-        // Compressibility correction
-		
-        if (M_rel < 1) {
-            Kprime = 1 / (sqrt(1 - (M_rel * M_rel)));
-            if (Kprime <= 3) {
-                K = Kprime;
-            }
-            if (Kprime > 3) {
-                K = 3;
-            }
-        }
-        if (M_rel > 1) {
-            Kprime = 2 / (pi * sqrt((M_rel * M_rel) - 1));
-            if (Kprime <= 3) {
-                K = Kprime;
-            }
-            if (Kprime > 3) {
-                K = 3;
-            }
-        }
-				// Computing the normal and parallel force magnitudes
-        BF_normal = bfFac * K * BF_normal_inc;
-		BF_par = bfFac * Cf * sq_vel * (1 / pitch) * (1 / Nt) * (1 / b);
-		
-		// Calculating the X, Y, and Z-components of the normal force.
-		su2double BF_n_x = BF_normal * N_vec[0];
-		su2double BF_n_y = BF_normal * N_vec[1];
-		su2double BF_n_z = BF_normal * N_vec[2];
-		
-		// Setting up the projection vector for the parallel force. This is in opposite direction
-		// of the normalized velocity vector.
-		su2double P_vec[3] = {-u[0], -u[1], -u[2]};
-		// Calculating the X, Y and Z-components of the parallel force.
-		su2double BF_p_x = BF_par * P_vec[0];
-		su2double BF_p_y = BF_par * P_vec[1];
-		su2double BF_p_z = BF_par * P_vec[2];
-
-		
-		// Adding normal and parallel force components respectively in X, Y and Z-direction.
-		BF_x = BF_n_x + BF_p_x;
-		BF_y = BF_n_y + BF_p_y;
-		BF_z = BF_n_z + BF_p_z;
-		//cout << "X: " << x_coord << " BF_x: " << BF_x << " BF_y: " << BF_y << endl;
-		if (nDim == 2){
-			BodyForceVector_Turbo[0] = BF_x;
-			BodyForceVector_Turbo[1] = BF_y;
-		}else{
-			BodyForceVector_Turbo[0] = BF_x;
-			BodyForceVector_Turbo[1] = BF_y;
-			BodyForceVector_Turbo[2] = BF_z;
-		}
-		/*
-		if (((x_coord > -2.12839298078e-04) && x_coord < (4.57856367436e-02)) || ((x_coord > 5.71253639660e-02) && x_coord < 1.02125375841e-01)){
-			cout << "X: " << x_coord << " u_x: " << u[0] << " u_y: " << u[1] << " n_x: " << Nx << " ny: " << Ny << " delta: " << delta * 180.0 / pi << " b: " << b << " dbdx: " << Geometric_Parameters[2] << " dbdr: " << Geometric_Parameters[3] << endl;
-        }else{
-			cout << "X: " << x_coord << " b: " << b << endl;
-		}
-		*/
-		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
-        /*--- Set coordinates and conservative and primitive variables ---*/
-		/*
-        U_i = node[iPoint]->GetSolution();
-        V_i = node[iPoint]->GetPrimitive();
-		// Extracting node coordinates 
-        Coord_i = geometry->node[iPoint]->GetCoord();
-		su2double x_coord = Coord_i[0];
-		su2double y_coord;
-		su2double z_coord;
+		x_coord = Coord_i[0];
 		
 		su2double V_x, V_y, V_z, W_x, W_r, W_th;
 		V_x = U_i[1] / U_i[0];
 		V_y = U_i[2] / U_i[0];
-		su2double CT, ST, radius;
+		su2double CT, ST;
 		if (nDim == 2){
 			radius = BF_radius;
 			CT = 0.0;
@@ -15292,15 +15248,16 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		}
 		
 		// Extracing blockage factor and camber normal components
+		
 		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
 		su2double bfFac = Geometric_Parameters[0];
 		su2double b = Geometric_Parameters[1];
-		su2double Nx = Geometric_Parameters[4];
-		su2double Nt = Geometric_Parameters[5];
-		su2double Nr = Geometric_Parameters[6];
-        su2double d_le = Geometric_Parameters[7];
-		su2double rotFac = Geometric_Parameters[8];
-		BF_blades = Geometric_Parameters[9];
+		su2double Nx = Geometric_Parameters[2];
+		su2double Nt = Geometric_Parameters[3];
+		su2double Nr = Geometric_Parameters[4];
+        su2double d_le = Geometric_Parameters[5];
+		su2double rotFac = Geometric_Parameters[6];
+		BF_blades = Geometric_Parameters[7];
 		
 		W_x = V_x;
 		W_r = V_y * CT + V_z * ST;
@@ -15314,22 +15271,22 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double W = sqrt(W_x * W_x + W_r * W_r + W_th * W_th);
 		
 		su2double delta = asin(WdotN / W);
-		su2double V_sound = sqrt(gamma * R_gas * V_i[0]), M_rel = W / V_sound;
+		su2double V_sound = sqrt(gamma * R_gas * V_i[0]);
+		su2double M_rel = W / V_sound;
 		
 		su2double pitch = 2 * pi * radius / BF_blades;
 		su2double F_n_inc, F_n, F_p;
 		
-		F_n_inc = pi * delta * (1 / pitch) * (1 / Nt) * (1 / b) * W * W;
+		F_n_inc = pi * delta * (1 / pitch) * (1 / abs(Nt)) * (1 / b) * W * W;
 		
 		su2double C_f, Re_x;
 		Re_x = (d_le * W * U_i[0]) / (1.75E-5);
 		if(Re_x == 0.0){
 			Re_x = (0.001 * W * U_i[0]) / (1.75E-5);
 		}
-		//C_f = 0.0592 * pow(Re_x, -0.2) ;
-		C_f = 0.0;
+		C_f = 0.0592 * pow(Re_x, -0.2) ;
 		
-		su2double Kprime, K;
+		su2double Kprime, K=1;
 		if (M_rel < 1) {
             Kprime = 1 / (sqrt(1 - (M_rel * M_rel)));
             if (Kprime <= 3) {
@@ -15349,28 +15306,27 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
             }
         }
 		
-		F_n = bfFac * K * F_n_inc;
-		F_p = bfFac * C_f * W * W * (1 / pitch) * (1 / Nt) * (1 / b);
+		F_n = -bfFac * K * F_n_inc;
+		F_p = bfFac * C_f * W * W * (1 / pitch) * (1 / abs(Nt)) * (1 / b);
+		
+		su2double **primvarGrad = node[iPoint]->GetGradient_Primitive();
+		su2double *PGrad = primvarGrad[4];
 		
 		su2double F_x, F_r, F_th, F_y, F_z;
 		F_x = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) - F_p * W_x / W;
 		F_r = F_n * (cos(delta) * Nr - sin(delta) * (W_pr / W_p)) - F_p * W_r / W;
 		F_th = F_n * (cos(delta) * Nt - sin(delta) * (W_pth / W_p)) - F_p * W_th / W;
 		
-		F_y = F_r * CT + F_th * ST;
-		F_z = F_r * ST - F_th * CT;
+		F_y = F_r * CT - F_th * ST;
+		F_z = F_r * ST + F_th * CT;
 		
-		if(nDim == 2){
-			BodyForceVector_Turbo[0] = F_x;
-			BodyForceVector_Turbo[1] = F_y;
-		}else{
-			BodyForceVector_Turbo[0] = F_x;
-			BodyForceVector_Turbo[1] = F_y;
-			BodyForceVector_Turbo[2] = F_z;
+		su2double F[3] = {F_x, F_y, F_z};
+		for(int iDim = 0; iDim < nDim; iDim ++){
+			BodyForceVector_Turbo[iDim] = F[iDim];
 		}
+		
 		//cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
 		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
-		*/
     }
 
 }

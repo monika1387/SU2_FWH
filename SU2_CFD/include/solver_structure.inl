@@ -132,6 +132,8 @@ inline su2double CSolver::GetPsiE_Inf(void) { return 0; }
 
 inline void CSolver::SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config) { }
 
+inline void CSolver::ComputeBlockageGradient(CGeometry *geometry, CConfig *config) { }
+
 inline void CSolver::SetPrimitive_Gradient_LS(CGeometry *geometry, CConfig *config) { }
 
 inline void CSolver::Set_MPI_Primitive_Gradient(CGeometry *geometry, CConfig *config) { }

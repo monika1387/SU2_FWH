@@ -1485,6 +1485,7 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   virtual void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
+  virtual void ComputeBlockageGradient(CGeometry *geometry, CConfig *config);
   
   /*!
    * \brief A virtual member.
@@ -5041,7 +5042,7 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
-  
+  void ComputeBlockageGradient(CGeometry *geometry, CConfig *config);
   /*!
    * \brief Compute the gradient of the primitive variables using a Least-Squares method,
    *        and stores the result in the <i>Gradient_Primitive</i> variable.
@@ -6585,6 +6586,8 @@ public:
   void SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter);
   
   void SetBodyForceParameters(CGeometry *geometry, CConfig *config, unsigned long ExtIter);
+  
+  void SetBlockage_Gradient(CGeometry *geometry, CConfig *config);
   /*!
    * \brief Set the freestream pressure.
    * \param[in] Value of freestream pressure.
@@ -7372,7 +7375,7 @@ public:
    * \param[in] config - Definition of the particular problem.
    */
   void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
-  
+  //void ComputeBlockageGradient(CGeometry *geometry, CConfig *config);
   /*!
    * \brief Compute the gradient of the primitive variables using a Least-Squares method,
    *        and stores the result in the <i>Gradient_Primitive</i> variable.

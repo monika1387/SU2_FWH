@@ -722,6 +722,7 @@ private:
   nRefOriginMoment_Y,           /*!< \brief Number of Y-coordinate moment computation origins. */
   nRefOriginMoment_Z;           /*!< \brief Number of Z-coordinate moment computation origins. */
   string Mesh_FileName,			/*!< \brief Mesh input file. */
+  BFM_inputName,
   Mesh_Out_FileName,				/*!< \brief Mesh output file. */
   Solution_FlowFileName,			/*!< \brief Flow solution input file. */
   Solution_LinFileName,			/*!< \brief Linearized flow solution input file. */
@@ -5320,6 +5321,7 @@ public:
    */
   string GetMesh_FileName(void);
   
+  string GetBFM_inputName(void);
   /*!
    * \brief Get name of the output grid, this parameter is important for grid
    *        adaptation and deformation.

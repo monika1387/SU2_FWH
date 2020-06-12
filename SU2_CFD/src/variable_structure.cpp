@@ -103,8 +103,8 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
 	for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
       Blockage_Vector[iDim] = 0.0;
     }
-	Param_Vector = new su2double[10];
-	for (unsigned short iDim = 0; iDim < 10; iDim++) {
+	Param_Vector = new su2double[8];
+	for (unsigned short iDim = 0; iDim < 8; iDim++) {
       Param_Vector[iDim] = 0.0;
     }
   }
@@ -157,14 +157,14 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   if (config->GetBody_Force()) {
       Body_Force_Turbo = new su2double[nDim];
 	  Blockage_Vector = new su2double[nDim + 2];
-	  Param_Vector = new su2double[10];
+	  Param_Vector = new su2double[8];
       for (iDim = 0; iDim < nDim; iDim++) {
           Body_Force_Turbo[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
           Blockage_Vector[iDim] = 0.0;
       }
-	  for (iDim = 0; iDim < 10; iDim++) {
+	  for (iDim = 0; iDim < 8; iDim++) {
           Param_Vector[iDim] = 0.0;
       }
   }
@@ -256,7 +256,7 @@ void CVariable::SetBlockage_Vector(su2double *val_blockagevector) {
 }
 
 void CVariable::SetBodyForceParameters(su2double *val_paramvector){
-	 for (unsigned short i = 0; i < 10; i++) {
+	 for (unsigned short i = 0; i < 8; i++) {
         Param_Vector[i] = val_paramvector[i];
     }
 }

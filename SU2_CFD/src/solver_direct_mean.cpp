@@ -4086,9 +4086,8 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 			su2double Ntarray[n_rows][n_blade][n_points];
 			su2double Nrarray[n_rows][n_blade][n_points];
 			su2double barray[n_rows][n_blade][n_points];
-			su2double dbdxarray[n_rows][n_blade][n_points];
-			su2double dbdrarray[n_rows][n_blade][n_points];
 			su2double D_LE[n_rows][n_blade][n_points];
+			//su2double axialChord[n_rows][n_blade][n_points];
 			su2double blade_count[n_rows];
 			su2double rotation[n_rows];
 			int start_line{};
@@ -4103,7 +4102,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 					for (int i=start_line; i<=end_line; i++){
 						getline(inputFile, line);
 						if (i >= start_line){
-							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> dbdxarray[q][p][j] >> dbdrarray[q][p][j] >> rotation[q] >> blade_count[q];
+							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> rotation[q] >> blade_count[q];
 							if(xarray[q][p][j] <= x_min){
 								x_min = xarray[q][p][j];
 							}
@@ -4115,6 +4114,12 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 					for (int i=0; i < n_points; i++){
 						D_LE[q][p][i] = xarray[q][p][i] - xarray[q][p][0];
 					}
+					/*
+					for (int i=0; i < n_points; i++){
+						int n = sizeof(xarray[q][p])/sizeof(xarray[q][p][0]);
+						axialChord[q][p][i] = xarray[q][p][n-1] - xarray[q][p][0];
+					}
+					*/
 				}
 			}
 			inputFile.close();
@@ -4127,7 +4132,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 				su2double y = Coord[1];
 				
 				su2double r{};
-				su2double b=1.0, dbdx = 0.0, dbdr = 0.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, d_le = 0.0, rotFac = 0.0, bladeCount = 10;
+				su2double b=1.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, d_le = 0.0, rotFac = 0.0, bladeCount = 10, chord = 1.0;
 				su2double BodyForceParams[8] = {bfFac, b, Nx, Nt, Nr, d_le, rotFac, bladeCount};
 				if (nDim == 3){
 					su2double z = Coord[2];
@@ -4172,7 +4177,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 							}
 							if (inside){
 								su2double dist{}, deNom=0;
-								su2double eNum_b{}, eNum_dbdx{}, eNum_dbdr{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_d_le{};
+								su2double eNum_b{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_d_le{};
 								for(int p = 0; p < 4; p++){
 									dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
 									deNom += 1 / dist;
@@ -4204,7 +4209,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 						}
 					}
 				}
-				//cout << "X: " << x << "  bFac: " << BodyForceParams[0] <<" rotFac: " << BodyForceParams[8] << " b: " << BodyForceParams[1] << " dbdx: " << BodyForceParams[2] << " bladeCount: " << BodyForceParams[9] << endl;
+
 				node[iPoint]->SetBodyForceParameters(BodyForceParams);
 				
 			}
@@ -15324,8 +15329,14 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		for(int iDim = 0; iDim < nDim; iDim ++){
 			BodyForceVector_Turbo[iDim] = F[iDim];
 		}
-		
-		//cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
+		/*
+		su2double BGradient[nDim] = {0.0};
+		for(int iDim=0; iDim < nDim; iDim++){
+			BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+		}
+		cout << x_coord  << ", " << radius << ", " << bfFac<< ", "  << rotFac << ", " << b << ", " << BGradient[0] << ", " << BGradient[1] << ", " << BGradient[2] << ", " << Nx<< ", " << Nt  << ", " << Nr << endl;
+		*/
+		// cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
 		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
     }
 

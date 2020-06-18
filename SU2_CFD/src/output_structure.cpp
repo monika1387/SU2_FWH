@@ -2285,6 +2285,7 @@ void COutput::MergeSurfaceConnectivity(CConfig *config, CGeometry *geometry, uns
 void COutput::MergeSolution(CConfig *config, CGeometry *geometry, CSolver **solver, unsigned short val_iZone) {
   
   unsigned short Kind_Solver  = config->GetKind_Solver();
+  bool body_force = config->GetBody_Force();
   unsigned short iVar = 0, jVar = 0, FirstIndex = NONE, SecondIndex = NONE, ThirdIndex = NONE;
   unsigned short nVar_First = 0, nVar_Second = 0, nVar_Third = 0;
   unsigned short iVar_GridVel = 0, iVar_PressCp = 0, iVar_Lam = 0, iVar_MachMean = 0,

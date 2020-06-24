@@ -5094,7 +5094,16 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
 	 
       /*--- Compute the body force source residual ---*/
       numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo(), node[iPoint]->GetBlockage_Vector());
+	  /*
+	  su2double *Coords = geometry->node[iPoint]->GetCoord();
+	  su2double Volume = geometry->node[iPoint]->GetVolume();
+	  su2double *U_i = node[iPoint]->GetSolution();
+	  unsigned long ExtIter                 = config->GetExtIter();
 	  
+	  if(Coords[0] >=  0.0 && Coords[0] <= 0.05 && Coords[2] >= 0.285 && Coords[2] <= 0.288 && ExtIter > 3000){
+		  cout << Coords[0] << ", " << Residual[0]/Volume << ", " << Residual[1]/Volume << ", " << Residual[2]/Volume << ", " << Residual[3]/Volume << ", " << Residual[4]/Volume << ", " << U_i[0] << ", " << U_i[1]/U_i[0] << endl;
+	  }
+	  */
 	  /*--- Compute the blockage vector source residual ---*/
       //numerics->ComputeResidual2(Residual, config, node[iPoint]->GetBlockage_Vector());
 	  
@@ -15175,12 +15184,16 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 		su2double b = 1.0;
 		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
 		b = Geometric_Parameters[1];
+		b = 1.0;
 		
 		// Obtaining blockage derivative from gradient field, calculated during initialization.
 		su2double BGradient[nDim] = {0.0};
 		for(iDim=0; iDim < nDim; iDim++){
-			BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+			//BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+			BGradient[iDim] = 0.0;
 		}
+		
+		
 		
 		// Calculating blockage divergence term.
 		su2double Blockage_Div = 0.0;
@@ -15222,18 +15235,20 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 
     /*--- Initialize common variables ---*/
     su2double pi = M_PI, pitch, omegaR;
-    pitch = (2 * pi * BF_radius ) / BF_blades;
-    omegaR = ((BF_rotation / 60) * 2 * pi );
+    omegaR = ((BF_rotation / 60) * 2 * pi ); 	// Rotation rate in radians per second
 
     for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
+		
+		// Extracting flow variables and primitive variables.
         U_i = node[iPoint]->GetSolution();
         V_i = node[iPoint]->GetPrimitive();
+		
 		// Extracting node coordinates 
         Coord_i = geometry->node[iPoint]->GetCoord();
 		su2double x_coord{}, y_coord{}, z_coord{}, radius{};
 		
+		// Obtaining the absolute velocity magnitudes, depending on case dimension.
 		x_coord = Coord_i[0];
-		
 		su2double V_x, V_y, V_z, W_x, W_r, W_th;
 		V_x = U_i[1] / U_i[0];
 		V_y = U_i[2] / U_i[0];
@@ -15255,42 +15270,81 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		// Extracing blockage factor and camber normal components
 		
 		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
-		su2double bfFac = Geometric_Parameters[0];
-		su2double b = Geometric_Parameters[1];
-		su2double Nx = Geometric_Parameters[2];
-		su2double Nt = Geometric_Parameters[3];
-		su2double Nr = Geometric_Parameters[4];
-        su2double d_le = Geometric_Parameters[5];
-		su2double rotFac = Geometric_Parameters[6];
-		BF_blades = Geometric_Parameters[7];
+		su2double bfFac = Geometric_Parameters[0]; 	// Body-force factor. Multiplies all body-forces.
+		su2double b = Geometric_Parameters[1];			// Metal blockage factor
+		su2double Nx = Geometric_Parameters[2]; 		// Camber normal component in axial direction
+		su2double Nt = Geometric_Parameters[3]; 			// Camber normal component in tangential direction
+		su2double Nr = Geometric_Parameters[4];			// Camber normal component in radial direction
+        su2double d_le = Geometric_Parameters[5]; 		// Axial distance from leading edge
+		su2double rotFac = Geometric_Parameters[6];	// Rotation factor. Multiplies the body-force rotation value.
+		BF_blades = Geometric_Parameters[7];				// Blade row blade count
 		
-		W_x = V_x;
-		W_r = V_y * CT + V_z * ST;
-		W_th = V_z * CT - V_y * ST - rotFac * omegaR * radius;
+		/*
+		if(x_coord >= 0.0 && x_coord <= 0.05){
+			Nx = 0.0;
+			Nt = 1.0;
+			Nr = 0.0;
+			b = 1.0;
+			bfFac = 1.0;
+			d_le = x_coord;
+			rotFac = 0.0;
+			BF_blades = 40;
+		}else{
+			Nx = 0.0;
+			Nt = 1.0;
+			Nr = 0.0;
+			b = 1.0;
+			bfFac = 0.0;
+			d_le = 0.05;
+			rotFac = 0.0;
+			BF_blades = 10;
+		}
+		*/
+		// Calculating the relative velocity components in cyllindrical coordinates. 
+		W_x = V_x;	// Axial relative velocity
+		W_r = V_y * CT + V_z * ST;	// Radial relative velocity 
+		W_th = V_z * CT - V_y * ST - rotFac * omegaR * radius;	// Tangential relative velocity
 		
-		su2double WdotN = W_x * Nx + W_r * Nr + W_th * Nt;
-		su2double W_nx = WdotN * Nx, W_nr = WdotN * Nr, W_nth = WdotN * Nt;
-		su2double W_px = W_x - W_nx, W_pr = W_r - W_nr, W_pth = W_th - W_nth;
 		
-		su2double W_p = sqrt(W_px * W_px + W_pr * W_pr + W_pth * W_pth);
-		su2double W = sqrt(W_x * W_x + W_r * W_r + W_th * W_th);
+		su2double WdotN = W_x * Nx + W_r * Nr + W_th * Nt;		// Dot product of relative velocity and camber normal vector
+		su2double W_nx = WdotN * Nx, W_nr = WdotN * Nr, W_nth = WdotN * Nt;		// Relative velocity components normal to the blade
+		su2double W_px = W_x - W_nx, W_pr = W_r - W_nr, W_pth = W_th - W_nth;  // Relative velocity components parallel to the blade 
 		
+		su2double W_p = sqrt(W_px * W_px + W_pr * W_pr + W_pth * W_pth);	// Parallel relative velocity magnitude
+		su2double W = sqrt(W_x * W_x + W_r * W_r + W_th * W_th);					// Relative velocity magnitude
+		
+		// Calculating the deviation angle
 		su2double delta = asin(WdotN / W);
+		// Calculating te local, relative Mach number
 		su2double V_sound = sqrt(gamma * R_gas * V_i[0]);
 		su2double M_rel = W / V_sound;
 		
+		// Blade pitch 
 		su2double pitch = 2 * pi * radius / BF_blades;
+		// pitch = 0.05;
+		
+		// Starting the process of calculating the actual body-force magnitudes
 		su2double F_n_inc, F_n, F_p;
 		
+		// Incompressible normal force magnitude 
 		F_n_inc = pi * delta * (1 / pitch) * (1 / abs(Nt)) * (1 / b) * W * W;
 		
-		su2double C_f, Re_x;
-		Re_x = (d_le * W * U_i[0]) / (1.75E-5);
+		// Calculating the friction factor for parallel force calculation
+		su2double C_f, Re_x, mu;
+		su2double mu_0 = 5.15664220266e-08, C_s = 0.386198854763;
+		
+		mu = mu_0 * sqrt(V_i[0])* (1 + C_s)/(1+C_s / V_i[0]);
+		// mu = 1.81e-05;
+		
+		// Axial Reynolds number, based on leading edge distance.
+		Re_x = (d_le * W * U_i[0]) / mu;
 		if(Re_x == 0.0){
-			Re_x = (0.001 * W * U_i[0]) / (1.75E-5);
+			Re_x = (0.001 * W * U_i[0]) / mu;
 		}
 		C_f = 0.0592 * pow(Re_x, -0.2) ;
+		// C_f = 0.06;
 		
+		// Calculating the normal force compressibility factor
 		su2double Kprime, K=1;
 		if (M_rel < 1) {
             Kprime = 1 / (sqrt(1 - (M_rel * M_rel)));
@@ -15310,21 +15364,26 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
                 K = 3;
             }
         }
+		// K = 1.0;
 		
+		// Calculating the final values for the normal and parallel force
 		F_n = -bfFac * K * F_n_inc;
-		F_p = bfFac * C_f * W * W * (1 / pitch) * (1 / abs(Nt)) * (1 / b);
+		F_p = -bfFac * C_f * W * W * (1 / pitch) * (1 / abs(Nt)) * (1 / b);
 		
-		su2double **primvarGrad = node[iPoint]->GetGradient_Primitive();
-		su2double *PGrad = primvarGrad[4];
+		//su2double **primvarGrad = node[iPoint]->GetGradient_Primitive();
+		//su2double *PGrad = primvarGrad[4];
 		
+		// Transforming the normal and parallel force components to cyllindrical coordinates
 		su2double F_x, F_r, F_th, F_y, F_z;
-		F_x = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) - F_p * W_x / W;
-		F_r = F_n * (cos(delta) * Nr - sin(delta) * (W_pr / W_p)) - F_p * W_r / W;
-		F_th = F_n * (cos(delta) * Nt - sin(delta) * (W_pth / W_p)) - F_p * W_th / W;
+		F_x = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) + F_p * W_x / W;
+		F_r = F_n * (cos(delta) * Nr - sin(delta) * (W_pr / W_p)) + F_p * W_r / W;
+		F_th = F_n * (cos(delta) * Nt - sin(delta) * (W_pth / W_p)) + F_p * W_th / W;
 		
+		// Transforming cyllindrical force components to cartesian coordinates
 		F_y = F_r * CT - F_th * ST;
 		F_z = F_r * ST + F_th * CT;
 		
+		// Storing body-forces in a vector
 		su2double F[3] = {F_x, F_y, F_z};
 		for(int iDim = 0; iDim < nDim; iDim ++){
 			BodyForceVector_Turbo[iDim] = F[iDim];
@@ -15332,11 +15391,18 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		/*
 		su2double BGradient[nDim] = {0.0};
 		for(int iDim=0; iDim < nDim; iDim++){
-			BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+			//BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+			BGradient[iDim] = 0.0;
 		}
+		
 		cout << x_coord  << ", " << radius << ", " << bfFac<< ", "  << rotFac << ", " << b << ", " << BGradient[0] << ", " << BGradient[1] << ", " << BGradient[2] << ", " << Nx<< ", " << Nt  << ", " << Nr << endl;
+		
+		//cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
+		if(x_coord >= 0.0 && x_coord <= 0.05 && radius >=0.287 && radius <= 0.288){
+			cout << x_coord << ", " << U_i[0] * F_x << ", " << Re_x << ", " << C_f << endl;
+		}
 		*/
-		// cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
+		// Storing body-force vector on the current node
 		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);
     }
 

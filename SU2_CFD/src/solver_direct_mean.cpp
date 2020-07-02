@@ -4086,8 +4086,8 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 			su2double Ntarray[n_rows][n_blade][n_points];
 			su2double Nrarray[n_rows][n_blade][n_points];
 			su2double barray[n_rows][n_blade][n_points];
-			su2double D_LE[n_rows][n_blade][n_points];
-			//su2double axialChord[n_rows][n_blade][n_points];
+			su2double X_LE[n_rows][n_blade][n_points];
+			su2double axialChord[n_rows][n_blade][n_points];
 			su2double blade_count[n_rows];
 			su2double rotation[n_rows];
 			int start_line{};
@@ -4095,6 +4095,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 			su2double x_min = 0.0;
 			for (int q=0; q < n_rows; q++){
 				for (int p=0; p < n_blade; p++){
+					
 					getline(inputFile, line);
 					start_line = p * n_points + 1;
 					end_line = (p + 1) * n_points;
@@ -4102,7 +4103,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 					for (int i=start_line; i<=end_line; i++){
 						getline(inputFile, line);
 						if (i >= start_line){
-							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> rotation[q] >> blade_count[q];
+							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> X_LE[q][p][j] >> axialChord[q][p][j] >> rotation[q] >> blade_count[q];
 							if(xarray[q][p][j] <= x_min){
 								x_min = xarray[q][p][j];
 							}
@@ -4111,15 +4112,15 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 						}
 						
 					}
-					for (int i=0; i < n_points; i++){
-						D_LE[q][p][i] = xarray[q][p][i] - xarray[q][p][0];
-					}
-					/*
-					for (int i=0; i < n_points; i++){
-						int n = sizeof(xarray[q][p])/sizeof(xarray[q][p][0]);
-						axialChord[q][p][i] = xarray[q][p][n-1] - xarray[q][p][0];
-					}
-					*/
+					//for (int i=0; i < n_points; i++){
+						//X_LE[q][p][i] = xarray[q][p][0];
+					//}
+					
+					//for (int i=0; i < n_points; i++){
+						//int n = sizeof(xarray[q][p])/sizeof(xarray[q][p][0]);
+						//axialChord[q][p][i] = xarray[q][p][n-1] - xarray[q][p][0];
+					//}
+					
 				}
 			}
 			inputFile.close();
@@ -4132,8 +4133,8 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 				su2double y = Coord[1];
 				
 				su2double r{};
-				su2double b=1.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, d_le = 0.0, rotFac = 0.0, bladeCount = 10, chord = 1.0;
-				su2double BodyForceParams[8] = {bfFac, b, Nx, Nt, Nr, d_le, rotFac, bladeCount};
+				su2double b=1.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, x_le = 0.0, rotFac = 0.0, bladeCount = 1, chord = 1.0;
+				su2double BodyForceParams[9] = {bfFac, b, Nx, Nt, Nr, x_le, rotFac, bladeCount, chord};
 				if (nDim == 3){
 					su2double z = Coord[2];
 					r = sqrt(y*y + z*z);
@@ -4149,7 +4150,8 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 							su2double Nx_side[5] = {Nxarray[q][j][n], Nxarray[q][j+1][n], Nxarray[q][j+1][n+1], Nxarray[q][j][n+1], Nxarray[q][j][n]};
 							su2double Nt_side[5] = {Ntarray[q][j][n], Ntarray[q][j+1][n], Ntarray[q][j+1][n+1], Ntarray[q][j][n+1], Ntarray[q][j][n]};
 							su2double Nr_side[5] = {Nrarray[q][j][n], Nrarray[q][j+1][n], Nrarray[q][j+1][n+1], Nrarray[q][j][n+1], Nrarray[q][j][n]};
-							su2double d_le_side[5] = {D_LE[q][j][n], D_LE[q][j+1][n], D_LE[q][j+1][n+1], D_LE[q][j][n+1], D_LE[q][j][n]};
+							su2double x_le_side[5] = {X_LE[q][j][n], X_LE[q][j+1][n], X_LE[q][j+1][n+1], X_LE[q][j][n+1], X_LE[q][j][n]};
+							su2double chord_side[5] = {axialChord[q][j][n], axialChord[q][j+1][n], axialChord[q][j+1][n+1], axialChord[q][j][n+1], axialChord[q][j][n]};
 							
 							su2double x1{}, x2{}, r1{}, r2{};
 							int nInt=0;
@@ -4177,7 +4179,7 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 							}
 							if (inside){
 								su2double dist{}, deNom=0;
-								su2double eNum_b{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_d_le{};
+								su2double eNum_b{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_x_le{}, eNum_chord{};
 								for(int p = 0; p < 4; p++){
 									dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
 									deNom += 1 / dist;
@@ -4185,17 +4187,20 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 									eNum_Nx += Nx_side[p] / dist;
 									eNum_Nt += Nt_side[p] / dist;
 									eNum_Nr += Nr_side[p] / dist;
-									eNum_d_le += d_le_side[p] / dist;
+									eNum_x_le += x_le_side[p] / dist;
+									eNum_chord += chord_side[p] / dist;
 								}
 								bfFac = 1.0;
 								b = eNum_b / deNom;
 								Nx = eNum_Nx / deNom;
 								Nt = eNum_Nt / deNom;
 								Nr = eNum_Nr / deNom;
-								d_le = eNum_d_le / deNom;
+								x_le = eNum_x_le / deNom;
+								//x_le = X_LE[q][j][n];
 								rotFac = rotation[q];
 								bladeCount = blade_count[q];
-								
+								chord = eNum_chord / deNom;
+								//chord = axialChord[q][j][n];
 							}
 							
 							BodyForceParams[0] = bfFac;
@@ -4203,9 +4208,10 @@ void CEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_c
 							BodyForceParams[2] = Nx;
 							BodyForceParams[3] = Nt;
 							BodyForceParams[4] = Nr;
-							BodyForceParams[5] = d_le;
+							BodyForceParams[5] = x_le;
 							BodyForceParams[6] = rotFac;
 							BodyForceParams[7] = bladeCount;
+							BodyForceParams[8] = chord;
 						}
 					}
 				}
@@ -5094,13 +5100,14 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
 	 
       /*--- Compute the body force source residual ---*/
       numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo(), node[iPoint]->GetBlockage_Vector());
+	  
 	  /*
 	  su2double *Coords = geometry->node[iPoint]->GetCoord();
 	  su2double Volume = geometry->node[iPoint]->GetVolume();
 	  su2double *U_i = node[iPoint]->GetSolution();
 	  unsigned long ExtIter                 = config->GetExtIter();
 	  
-	  if(Coords[0] >=  0.0 && Coords[0] <= 0.05 && Coords[2] >= 0.285 && Coords[2] <= 0.288 && ExtIter > 3000){
+	  if(Coords[0] >=  5.94656606947e-02 && Coords[0] <= 1.13915482397e-01 && Coords[2] >= 0.285 && Coords[2] <= 0.288 && ExtIter > 3000){
 		  cout << Coords[0] << ", " << Residual[0]/Volume << ", " << Residual[1]/Volume << ", " << Residual[2]/Volume << ", " << Residual[3]/Volume << ", " << Residual[4]/Volume << ", " << U_i[0] << ", " << U_i[1]/U_i[0] << endl;
 	  }
 	  */
@@ -15184,13 +15191,13 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 		su2double b = 1.0;
 		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
 		b = Geometric_Parameters[1];
-		b = 1.0;
+		//b = 1.0;
 		
 		// Obtaining blockage derivative from gradient field, calculated during initialization.
 		su2double BGradient[nDim] = {0.0};
 		for(iDim=0; iDim < nDim; iDim++){
-			//BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
-			BGradient[iDim] = 0.0;
+			BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+			//BGradient[iDim] = 0.0;
 		}
 		
 		
@@ -15229,7 +15236,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
     unsigned long iPoint;
     unsigned short nDim = geometry->GetnDim();
     su2double *U_i, *V_i, *Coord_i, Density, *Geometric_Parameters;
-    su2double gamma = config->GetGamma(), R_gas = config->GetGas_Constant(), BodyForceVector_Turbo[nDim] = { 0.0 },
+    su2double gamma = config->GetGamma(), R_gas = config->GetGas_Constant(), BodyForceVector_Turbo[nDim + 1] = { 0.0 },
         BF_blades{}, BF_rotation = config->GetBody_Force_Rotation(),
         BF_radius = config->GetBody_Force_Radius();
 
@@ -15275,7 +15282,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double Nx = Geometric_Parameters[2]; 		// Camber normal component in axial direction
 		su2double Nt = Geometric_Parameters[3]; 			// Camber normal component in tangential direction
 		su2double Nr = Geometric_Parameters[4];			// Camber normal component in radial direction
-        su2double d_le = Geometric_Parameters[5]; 		// Axial distance from leading edge
+        su2double x_le = Geometric_Parameters[5]; 		// Axial distance from leading edge
 		su2double rotFac = Geometric_Parameters[6];	// Rotation factor. Multiplies the body-force rotation value.
 		BF_blades = Geometric_Parameters[7];				// Blade row blade count
 		
@@ -15333,16 +15340,16 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double C_f, Re_x, mu;
 		su2double mu_0 = 5.15664220266e-08, C_s = 0.386198854763;
 		
+		su2double T_S = 273.15, C_S = 110.4;
 		mu = mu_0 * sqrt(V_i[0])* (1 + C_s)/(1+C_s / V_i[0]);
-		// mu = 1.81e-05;
+		mu = 1.716E-5;
 		
 		// Axial Reynolds number, based on leading edge distance.
-		Re_x = (d_le * W * U_i[0]) / mu;
+		Re_x = (abs(x_coord - x_le) * W * U_i[0]) / mu;
 		if(Re_x == 0.0){
 			Re_x = (0.001 * W * U_i[0]) / mu;
 		}
 		C_f = 0.0592 * pow(Re_x, -0.2) ;
-		// C_f = 0.06;
 		
 		// Calculating the normal force compressibility factor
 		su2double Kprime, K=1;
@@ -15383,24 +15390,22 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		F_y = F_r * CT - F_th * ST;
 		F_z = F_r * ST + F_th * CT;
 		
+		su2double e_source = rotFac * omegaR * radius * F_th;
 		// Storing body-forces in a vector
 		su2double F[3] = {F_x, F_y, F_z};
 		for(int iDim = 0; iDim < nDim; iDim ++){
 			BodyForceVector_Turbo[iDim] = F[iDim];
+			// e_source += (U_i[iDim + 1]/U_i[0]) * F[iDim];
 		}
+		BodyForceVector_Turbo[nDim] = e_source;
 		/*
 		su2double BGradient[nDim] = {0.0};
 		for(int iDim=0; iDim < nDim; iDim++){
-			//BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
-			BGradient[iDim] = 0.0;
+			BGradient[iDim] = node[iPoint]->GetGradient_Blockage(iDim);
+			//BGradient[iDim] = 0.0;
 		}
 		
 		cout << x_coord  << ", " << radius << ", " << bfFac<< ", "  << rotFac << ", " << b << ", " << BGradient[0] << ", " << BGradient[1] << ", " << BGradient[2] << ", " << Nx<< ", " << Nt  << ", " << Nr << endl;
-		
-		//cout << "X: " << x_coord << " Nx: " << Nx << " Nt: " << Nt << " Nr: " << Nr << " Delta: " << delta*180/pi << " F_x: " << F_x << " F_y: " << F_y << " W_p: " << W_p <<  " W: " << W << endl;
-		if(x_coord >= 0.0 && x_coord <= 0.05 && radius >=0.287 && radius <= 0.288){
-			cout << x_coord << ", " << U_i[0] * F_x << ", " << Re_x << ", " << C_f << endl;
-		}
 		*/
 		// Storing body-force vector on the current node
 		node[iPoint]->SetBodyForceVector_Turbo(BodyForceVector_Turbo);

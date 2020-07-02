@@ -95,16 +95,16 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
     Solution[iVar] = 0.0;
 
   if (config->GetBody_Force()) {
-    Body_Force_Turbo = new su2double[nDim];
-    for (unsigned short iDim = 0; iDim < nDim; iDim++) {
+    Body_Force_Turbo = new su2double[nDim + 1];
+    for (unsigned short iDim = 0; iDim < nDim + 1; iDim++) {
       Body_Force_Turbo[iDim] = 0.0;
     }
 	Blockage_Vector = new su2double[nDim + 2];
 	for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
       Blockage_Vector[iDim] = 0.0;
     }
-	Param_Vector = new su2double[8];
-	for (unsigned short iDim = 0; iDim < 8; iDim++) {
+	Param_Vector = new su2double[9];
+	for (unsigned short iDim = 0; iDim < 9; iDim++) {
       Param_Vector[iDim] = 0.0;
     }
   }
@@ -155,16 +155,16 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   }
 
   if (config->GetBody_Force()) {
-      Body_Force_Turbo = new su2double[nDim];
+      Body_Force_Turbo = new su2double[nDim + 1];
 	  Blockage_Vector = new su2double[nDim + 2];
-	  Param_Vector = new su2double[8];
-      for (iDim = 0; iDim < nDim; iDim++) {
+	  Param_Vector = new su2double[9];
+      for (iDim = 0; iDim < nDim + 1; iDim++) {
           Body_Force_Turbo[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
           Blockage_Vector[iDim] = 0.0;
       }
-	  for (iDim = 0; iDim < 8; iDim++) {
+	  for (iDim = 0; iDim < 9; iDim++) {
           Param_Vector[iDim] = 0.0;
       }
   }
@@ -241,7 +241,7 @@ void CVariable::SetUnd_Lapl(unsigned short val_var, su2double val_und_lapl) {
 
 void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforceturbo) {
 
-    for (unsigned short iDim = 0; iDim < nDim; iDim++) {
+    for (unsigned short iDim = 0; iDim < nDim + 1; iDim++) {
         Body_Force_Turbo[iDim] = val_bodyforceturbo[iDim];
     }
 
@@ -256,7 +256,7 @@ void CVariable::SetBlockage_Vector(su2double *val_blockagevector) {
 }
 
 void CVariable::SetBodyForceParameters(su2double *val_paramvector){
-	 for (unsigned short i = 0; i < 8; i++) {
+	 for (unsigned short i = 0; i < 9; i++) {
         Param_Vector[i] = val_paramvector[i];
     }
 }

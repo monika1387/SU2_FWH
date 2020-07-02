@@ -2878,7 +2878,7 @@ void CAdjEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_cont
 
           cout << "at bf_solver_adjoint" << endl;
           /*--- Compute the adjoint body force source residual ---*/
-          numerics->ComputeResidual(Residual, config);
+          numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo(), node[iPoint]->GetBlockage_Vector());
 
           /*--- Add the source residual to the total ---*/
           LinSysRes.AddBlock(iPoint, Residual);

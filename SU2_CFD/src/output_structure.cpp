@@ -2465,7 +2465,6 @@ void COutput::MergeSolution(CConfig *config, CGeometry *geometry, CSolver **solv
         iVar_Extra  = nVar_Total; nVar_Extra  = solver[TURB_SOL]->GetnOutputVariables(); nVar_Total += nVar_Extra;
       }
     }
-    
   }
   
   Local_Halo = new int[geometry->GetnPoint()];
@@ -12649,7 +12648,7 @@ void COutput::LoadLocalData_Flow(CConfig *config, CGeometry *geometry, CSolver *
   bool transition           = (config->GetKind_Trans_Model() == BC);
   bool grid_movement        = (config->GetGrid_Movement());
   bool Wrt_Halo             = config->GetWrt_Halo(), isPeriodic;
-  
+  bool body_force 			= config->GetBody_Force();
   int *Local_Halo = NULL;
   
   stringstream varname;
@@ -12877,6 +12876,34 @@ void COutput::LoadLocalData_Flow(CConfig *config, CGeometry *geometry, CSolver *
       Variable_Names.push_back("Roe_Dissipation");
     }
     
+	if(body_force){
+		nVar_Par += 1;
+		Variable_Names.push_back("Body_Force_Factor");
+		nVar_Par += 1;
+		Variable_Names.push_back("Blockage_Factor");
+		nVar_Par += 1;
+		Variable_Names.push_back("n_x");
+		nVar_Par += 1;
+		Variable_Names.push_back("n_theta");
+		nVar_Par += 1;
+		Variable_Names.push_back("n_r");
+		nVar_Par += 1;
+		Variable_Names.push_back("x_le");
+		nVar_Par += 1;
+		Variable_Names.push_back("Rotation_Factor");
+		nVar_Par += 1;
+		Variable_Names.push_back("Blade_count");
+		nVar_Par += 1;
+		Variable_Names.push_back("Blockage_Gradient_x");
+		nVar_Par += 1;
+		Variable_Names.push_back("Blockage_Gradient_y");
+		if(geometry->GetnDim() == 3){
+			nVar_Par += 1;
+			Variable_Names.push_back("Blockage_Gradient_z");
+		}
+		nVar_Par += 1;
+		Variable_Names.push_back("Axial_Chord");
+	}
     /*--- New variables get registered here before the end of the loop. ---*/
     
   }
@@ -13109,6 +13136,23 @@ void COutput::LoadLocalData_Flow(CConfig *config, CGeometry *geometry, CSolver *
           Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetRoe_Dissipation(); iVar++;
         }
         
+		if (body_force){
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[0]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[1]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[2]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[3]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[4]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[5]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[6]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[7]; iVar++;
+			
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetGradient_Blockage()[0]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetGradient_Blockage()[1]; iVar++;
+			if(geometry->GetnDim() == 3){
+				Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetGradient_Blockage()[2]; iVar++;
+			}
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[8]; iVar++;
+		}
         /*--- New variables can be loaded to the Local_Data structure here,
          assuming they were registered above correctly. ---*/
         

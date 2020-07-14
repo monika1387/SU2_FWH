@@ -2545,10 +2545,11 @@ void CAdjEulerSolver::SetIntBoundary_Jump(CGeometry *geometry, CSolver **solver_
 }
 
 void CAdjEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solver_container, CConfig *config, unsigned long ExtIter) {
+	cout << "Setting initial condition" << endl;
   unsigned long iPoint, Point_Fine;
   unsigned short iMesh, iChildren, iVar;
   su2double Area_Children, Area_Parent, *Solution, *Solution_Fine;
-  
+  bool body_force = config->GetBody_Force();
   bool restart = config->GetRestart();
   bool dual_time = ((config->GetUnsteady_Simulation() == DT_STEPPING_1ST) ||
                     (config->GetUnsteady_Simulation() == DT_STEPPING_2ND));
@@ -2576,7 +2577,174 @@ void CAdjEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solve
     }
     delete [] Solution;
   }
-  
+  if(body_force){
+	  cout << "It does register the body-force" << endl;
+  }
+  if(ExtIter==0){
+	  cout << "It does recognize first iteration" << endl;
+	  
+  }
+  if(!restart){
+	  cout << "It does say no restart" << endl;
+  }
+  if ((ExtIter == 0) && (!restart) && body_force) {
+	  cout << "Performing Body Force Model blockage and camber normal interpolation " << endl;
+	  for (iMesh = 0; iMesh <= config->GetnMGLevels(); iMesh++){
+			unsigned short nDim = geometry[iMesh]->GetnDim();
+			su2double BF_radius = config->GetBody_Force_Radius();
+			int n_blade{0};
+			int n_points{0};
+			int n_rows{0};
+			ifstream inputFile;
+			inputFile.open(config->GetBFM_inputName());
+			string line;
+			inputFile >> n_rows >> n_blade >> n_points;
+			
+			su2double xarray[n_rows][n_blade][n_points];
+			su2double rarray[n_rows][n_blade][n_points];
+			su2double Nxarray[n_rows][n_blade][n_points];
+			su2double Ntarray[n_rows][n_blade][n_points];
+			su2double Nrarray[n_rows][n_blade][n_points];
+			su2double barray[n_rows][n_blade][n_points];
+			su2double X_LE[n_rows][n_blade][n_points];
+			su2double axialChord[n_rows][n_blade][n_points];
+			su2double blade_count[n_rows];
+			su2double rotation[n_rows];
+			int start_line{};
+			int end_line{};
+			su2double x_min = 0.0;
+			for (int q=0; q < n_rows; q++){
+				for (int p=0; p < n_blade; p++){
+					
+					getline(inputFile, line);
+					start_line = p * n_points + 1;
+					end_line = (p + 1) * n_points;
+					int j=0;
+					for (int i=start_line; i<=end_line; i++){
+						getline(inputFile, line);
+						if (i >= start_line){
+							inputFile >> xarray[q][p][j] >> rarray[q][p][j] >> Nxarray[q][p][j] >> Ntarray[q][p][j] >> Nrarray[q][p][j] >> barray[q][p][j] >> X_LE[q][p][j] >> axialChord[q][p][j] >> rotation[q] >> blade_count[q];
+							if(xarray[q][p][j] <= x_min){
+								x_min = xarray[q][p][j];
+							}
+							
+							j++;
+						}
+						
+					}
+					//for (int i=0; i < n_points; i++){
+						//X_LE[q][p][i] = xarray[q][p][0];
+					//}
+					
+					//for (int i=0; i < n_points; i++){
+						//int n = sizeof(xarray[q][p])/sizeof(xarray[q][p][0]);
+						//axialChord[q][p][i] = xarray[q][p][n-1] - xarray[q][p][0];
+					//}
+					
+				}
+			}
+			inputFile.close();
+			
+			
+			x_min = x_min - 1.0;
+			for (iPoint = 0; iPoint < geometry[iMesh]->GetnPoint(); iPoint++){
+				su2double *Coord = geometry[iMesh]->node[iPoint]->GetCoord();
+				su2double x = Coord[0];
+				su2double y = Coord[1];
+				
+				su2double r{};
+				su2double b=1.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, x_le = 0.0, rotFac = 0.0, bladeCount = 1, chord = 1.0;
+				su2double BodyForceParams[9] = {bfFac, b, Nx, Nt, Nr, x_le, rotFac, bladeCount, chord};
+				if (nDim == 3){
+					su2double z = Coord[2];
+					r = sqrt(y*y + z*z);
+				}else{
+					r = BF_radius;
+				}
+				for (int q=0; q < n_rows; q++){
+					for(int j=0; j < n_blade - 1; j++){
+						for(int n = 0; n < n_points - 1; n++){
+							su2double x_side[5] = {xarray[q][j][n], xarray[q][j+1][n], xarray[q][j+1][n+1], xarray[q][j][n+1], xarray[q][j][n]};
+							su2double r_side[5] = {rarray[q][j][n], rarray[q][j+1][n], rarray[q][j+1][n+1], rarray[q][j][n+1], rarray[q][j][n]};
+							su2double b_side[5] = {barray[q][j][n], barray[q][j+1][n], barray[q][j+1][n+1], barray[q][j][n+1], barray[q][j][n]};
+							su2double Nx_side[5] = {Nxarray[q][j][n], Nxarray[q][j+1][n], Nxarray[q][j+1][n+1], Nxarray[q][j][n+1], Nxarray[q][j][n]};
+							su2double Nt_side[5] = {Ntarray[q][j][n], Ntarray[q][j+1][n], Ntarray[q][j+1][n+1], Ntarray[q][j][n+1], Ntarray[q][j][n]};
+							su2double Nr_side[5] = {Nrarray[q][j][n], Nrarray[q][j+1][n], Nrarray[q][j+1][n+1], Nrarray[q][j][n+1], Nrarray[q][j][n]};
+							su2double x_le_side[5] = {X_LE[q][j][n], X_LE[q][j+1][n], X_LE[q][j+1][n+1], X_LE[q][j][n+1], X_LE[q][j][n]};
+							su2double chord_side[5] = {axialChord[q][j][n], axialChord[q][j+1][n], axialChord[q][j+1][n+1], axialChord[q][j][n+1], axialChord[q][j][n]};
+							
+							su2double x1{}, x2{}, r1{}, r2{};
+							int nInt=0;
+							bool inside = false;
+							for(int p=0; p < 4; p++){
+								x1 = x_side[p];
+								x2 = x_side[p + 1];
+								r1 = r_side[p];
+								r2 = r_side[p + 1];
+								
+								su2double A[2][2] = {{x - x_min, - (x2 - x1)}, {0, -(r2 - r1)}};
+								su2double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+								su2double S_ray{}, S_side{};
+								
+								if(det != 0){
+									S_ray = (1 / det) * ((x1 - x_min) * A[1][1] + (r1 - r) * -A[0][1]);
+									S_side = (1 / det) * (x1 * -A[1][0] + (r1 - r) * A[0][0]);
+									if(S_ray >= 0.0 && S_ray < 1.0 && S_side >= 0.0 && S_side < 1.0){
+										nInt ++;
+									}
+								}
+							}
+							if (nInt % 2 != 0 and nInt > 0){
+								inside = true;
+							}
+							if (inside){
+								su2double dist{}, deNom=0;
+								su2double eNum_b{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_x_le{}, eNum_chord{};
+								for(int p = 0; p < 4; p++){
+									dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
+									deNom += 1 / dist;
+									eNum_b += b_side[p] / dist;
+									eNum_Nx += Nx_side[p] / dist;
+									eNum_Nt += Nt_side[p] / dist;
+									eNum_Nr += Nr_side[p] / dist;
+									eNum_x_le += x_le_side[p] / dist;
+									eNum_chord += chord_side[p] / dist;
+								}
+								bfFac = 1.0;
+								b = eNum_b / deNom;
+								Nx = eNum_Nx / deNom;
+								Nt = eNum_Nt / deNom;
+								Nr = eNum_Nr / deNom;
+								x_le = eNum_x_le / deNom;
+								//x_le = X_LE[q][j][n];
+								rotFac = rotation[q];
+								bladeCount = blade_count[q];
+								chord = eNum_chord / deNom;
+								//chord = axialChord[q][j][n];
+							}
+							
+							BodyForceParams[0] = bfFac;
+							BodyForceParams[1] = b;
+							BodyForceParams[2] = Nx;
+							BodyForceParams[3] = Nt;
+							BodyForceParams[4] = Nr;
+							BodyForceParams[5] = x_le;
+							BodyForceParams[6] = rotFac;
+							BodyForceParams[7] = bladeCount;
+							BodyForceParams[8] = chord;
+						}
+					}
+				}
+
+				node[iPoint]->SetBodyForceParameters(BodyForceParams);
+				
+			}
+			
+			ComputeBlockageGradient(geometry[iMesh], config);
+		  }
+		  
+	  
+  }
   /*--- The value of the solution for the first iteration of the dual time ---*/
   for (iMesh = 0; iMesh <= config->GetnMGLevels(); iMesh++) {
     for (iPoint = 0; iPoint < geometry[iMesh]->GetnPoint(); iPoint++) {
@@ -2605,7 +2773,9 @@ void CAdjEulerSolver::Preprocessing(CGeometry *geometry, CSolver **solver_contai
   bool center_jst     = (config->GetKind_Centered_AdjFlow() == JST);
   bool fixed_cl       = config->GetFixed_CL_Mode();
   bool eval_dof_dcx   = config->GetEval_dOF_dCX();
-
+  bool body_force = config->GetBody_Force();
+  
+  cout << "Here, initial preprocessing takes place" << endl;
   /*--- Update the objective function coefficient to guarantee zero gradient. ---*/
   
   if (fixed_cl && eval_dof_dcx) { SetFarfield_AoA(geometry, solver_container, config, iMesh, Output); }
@@ -2633,6 +2803,7 @@ void CAdjEulerSolver::Preprocessing(CGeometry *geometry, CSolver **solver_contai
     if (!Output) LinSysRes.SetBlock_Zero(iPoint);
     
   }
+  
   
   
   if ((muscl) && (iMesh == MESH_0)) {
@@ -2673,6 +2844,9 @@ void CAdjEulerSolver::Preprocessing(CGeometry *geometry, CSolver **solver_contai
     if (iMesh == MESH_0) config->SetNonphysical_Points(ErrorCounter);
   }
   
+  if(body_force){
+	  cout << "Here, interpolation can take place" << endl;
+  }
 }
 
 void CAdjEulerSolver::Centered_Residual(CGeometry *geometry, CSolver **solver_container, CNumerics *numerics,
@@ -2878,7 +3052,7 @@ void CAdjEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_cont
 
           cout << "at bf_solver_adjoint" << endl;
           /*--- Compute the adjoint body force source residual ---*/
-          numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceVector_Turbo(), node[iPoint]->GetBlockage_Vector());
+          numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceResidual(), node[iPoint]->GetBlockage_Vector());
 
           /*--- Add the source residual to the total ---*/
           LinSysRes.AddBlock(iPoint, Residual);

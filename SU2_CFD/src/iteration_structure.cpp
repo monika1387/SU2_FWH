@@ -565,12 +565,6 @@ void CFluidIteration::Preprocess(COutput *output,
   if( fsi  && ( OuterIter == 0 ) ){
     solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->SetInitialCondition(geometry_container[val_iZone][val_iInst], solver_container[val_iZone][val_iInst], config_container[val_iZone], ExtIter);
   }
- /*
-  if(body_force && ( OuterIter == 0) && (val_iZone == BF_zone)){
-	  cout << "Here, initial interpolation could take place\n";
-	  solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->SetBodyForceParameters(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone], OuterIter);
-  }
-  */
   
   /*--- Apply a Wind Gust ---*/
   
@@ -597,7 +591,6 @@ void CFluidIteration::Iterate(COutput *output,
                                  unsigned short val_iZone,
                                  unsigned short val_iInst) {
   unsigned long IntIter, ExtIter;
-  unsigned short BF_zone = config_container[val_iZone]->GetBody_Force_Zone();
 
   bool body_force = config_container[val_iZone]->GetBody_Force();
 
@@ -675,6 +668,12 @@ void CFluidIteration::Iterate(COutput *output,
 
   /*--- Compute body force and save to each node ---*/
   if (body_force){
+	  if(ExtIter== 0){
+		 cout << "Interpolating camber normal field and blockage field to mesh" <<endl;
+		 solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
+		 cout << "Calculating blockage gradient field" << endl;
+		 solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
+	  }
 	  //cout<<"Body force function being called for zone :"<<val_iZone<<endl;
 	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 	  //cout<<"Blockage function being called for zone :"<<val_iZone<<endl;
@@ -1887,9 +1886,10 @@ void CAdjFluidIteration::Preprocess(COutput *output,
   bool dynamic_mesh = config_container[ZONE_0]->GetGrid_Movement();
   unsigned long IntIter = 0; config_container[ZONE_0]->SetIntIter(IntIter);
   unsigned long ExtIter = config_container[ZONE_0]->GetExtIter();
+  bool body_force = config_container[ZONE_0]->GetBody_Force();
 
-  /*--- For the unsteady adjoint, load a new direct solution from a restart file. ---*/
-  
+ 
+   /*--- For the unsteady adjoint, load a new direct solution from a restart file. ---*/
   if (((dynamic_mesh && ExtIter == 0) || config_container[val_iZone]->GetUnsteady_Simulation()) && !harmonic_balance) {
     int Direct_Iter = SU2_TYPE::Int(config_container[val_iZone]->GetUnst_AdjointIter()) - SU2_TYPE::Int(ExtIter) - 1;
     if (rank == MASTER_NODE && val_iZone == ZONE_0 && config_container[val_iZone]->GetUnsteady_Simulation())
@@ -2125,7 +2125,7 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
   unsigned short iMesh;
   int Direct_Iter;
   bool heat = config_container[val_iZone]->GetWeakly_Coupled_Heat();
-
+  bool body_force = config_container[val_iZone] -> GetBody_Force();
   /*--- For the unsteady adjoint, load direct solutions from restart files. ---*/
 
   if (config_container[val_iZone]->GetUnsteady_Simulation()) {
@@ -2274,7 +2274,14 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
   /*--- Store flow solution also in the adjoint solver in order to be able to reset it later ---*/
 
   if (ExtIter == 0 || dual_time) {
+	  
     for (iMesh=0; iMesh<=config_container[val_iZone]->GetnMGLevels();iMesh++) {
+		if(body_force){
+			cout << "Interpolating camber normal field and blockage field to mesh" << endl;
+		  solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+		  cout << "Calculating blockage gradient field" << endl;
+		  solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+	  }
       for (iPoint = 0; iPoint < geometry_container[val_iZone][val_iInst][iMesh]->GetnPoint(); iPoint++) {
         solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->node[iPoint]->SetSolution_Direct(solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->node[iPoint]->GetSolution());
       }
@@ -2456,7 +2463,19 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
 
   if (kind_recording == CAMB_NORM) {
     /*--- Register camber normals as input ---*/
-    cout << "CAMB_NORM :: " << config_container[iZone]->GetBody_Force_Camb_Norm()[0] << ", " << config_container[iZone]->GetBody_Force_Camb_Norm()[1] << ", " << config_container[iZone]->GetBody_Force_Camb_Norm()[2] << ", " << config_container[iZone]->GetBody_Force_Camb_Norm()[3] << endl;
+	/*
+	int nPoint = geometry_container[iZone][iInst][MESH_0]->GetnPoint();
+	int nDim = geometry_container[iZone][iInst][MESH_0]->GetnDim();
+	su2double *Geometric_Parameters={0};
+	unsigned short iDim;
+	CEulerSolver::InterpolateBodyForceParams(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
+	for (int iPoint= 0; iPoint < nPoint; iPoint++) {
+		Geometric_Parameters = geometry_container[iZone][iInst][MESH_0]->node[iPoint]->GetBodyForceParameters();
+		for (iDim = 2; iDim < 5; iDim++){
+				AD::RegisterInput(Geometric_Parameters[iDim]);
+		}
+	}
+	*/
     config_container[iZone]->Register_Camb_Norm();
   }
 
@@ -2480,6 +2499,7 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
   }
 
 }
+
 
 void CDiscAdjFluidIteration::SetDependencies(CSolver *****solver_container, CGeometry ****geometry_container, CConfig **config_container, unsigned short iZone, unsigned short iInst, unsigned short kind_recording){
 

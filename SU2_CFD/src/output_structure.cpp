@@ -12903,6 +12903,16 @@ void COutput::LoadLocalData_Flow(CConfig *config, CGeometry *geometry, CSolver *
 		}
 		nVar_Par += 1;
 		Variable_Names.push_back("Axial_Chord");
+		
+		nVar_Par += 1;
+		Variable_Names.push_back("Body-Force_x");
+		nVar_Par += 1;
+		Variable_Names.push_back("Body-Force_y");
+		if(geometry->GetnDim() == 3){
+			nVar_Par += 1;
+			Variable_Names.push_back("Body-Force_z");
+		}
+		
 	}
     /*--- New variables get registered here before the end of the loop. ---*/
     
@@ -13152,6 +13162,13 @@ void COutput::LoadLocalData_Flow(CConfig *config, CGeometry *geometry, CSolver *
 				Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetGradient_Blockage()[2]; iVar++;
 			}
 			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[8]; iVar++;
+			
+			
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[0]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[1]; iVar++;
+			if(geometry->GetnDim() == 3){
+				Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2]; iVar++;
+			}
 		}
         /*--- New variables can be loaded to the Local_Data structure here,
          assuming they were registered above correctly. ---*/

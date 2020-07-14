@@ -390,7 +390,7 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
 
   /*--- Register variables as output of the solver iteration ---*/
 
-  bool input = false;
+  bool input = true;
   bool body_force = config->GetBody_Force();
 
   /*--- Register output variables on the tape ---*/
@@ -542,7 +542,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-
+	  Vector_BF = node[iPoint]->GetBodyForceVector_Turbo();
       /*--- Extract the adjoint solution ---*/
       direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
 

@@ -58,6 +58,7 @@ CVariable::CVariable(void) {
   Solution_Adj_Old = NULL;
   Body_Force_Turbo = NULL;
   Blockage_Vector = NULL;
+  BodyForceResidual = NULL;
   Param_Vector = NULL;
   
 }
@@ -81,6 +82,7 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
   Solution_Adj_Old = NULL;
   Body_Force_Turbo = NULL;
   Blockage_Vector = NULL;
+  BodyForceResidual = NULL;
   Param_Vector = NULL;
   /*--- Initialize the number of solution variables. This version
    of the constructor will be used primarily for converting the
@@ -95,13 +97,17 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
     Solution[iVar] = 0.0;
 
   if (config->GetBody_Force()) {
-    Body_Force_Turbo = new su2double[nDim + 1];
-    for (unsigned short iDim = 0; iDim < nDim + 1; iDim++) {
+    Body_Force_Turbo = new su2double[nDim];
+    for (unsigned short iDim = 0; iDim < nDim; iDim++) {
       Body_Force_Turbo[iDim] = 0.0;
     }
 	Blockage_Vector = new su2double[nDim + 2];
 	for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
       Blockage_Vector[iDim] = 0.0;
+    }
+	BodyForceResidual = new su2double[nDim + 2];
+	for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
+      BodyForceResidual[iDim] = 0.0;
     }
 	Param_Vector = new su2double[9];
 	for (unsigned short iDim = 0; iDim < 9; iDim++) {
@@ -131,6 +137,7 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   Solution_Adj_Old = NULL;
   Body_Force_Turbo = NULL;
   Blockage_Vector = NULL;
+  BodyForceResidual = NULL;
   Param_Vector = NULL;
   /*--- Initializate the number of dimension and number of variables ---*/
   nDim = val_nDim;
@@ -155,14 +162,18 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   }
 
   if (config->GetBody_Force()) {
-      Body_Force_Turbo = new su2double[nDim + 1];
+      Body_Force_Turbo = new su2double[nDim];
 	  Blockage_Vector = new su2double[nDim + 2];
+	  BodyForceResidual = new su2double[nDim + 2];
 	  Param_Vector = new su2double[9];
-      for (iDim = 0; iDim < nDim + 1; iDim++) {
+      for (iDim = 0; iDim < nDim; iDim++) {
           Body_Force_Turbo[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
           Blockage_Vector[iDim] = 0.0;
+      }
+	  for (iDim = 0; iDim < nDim+2; iDim++) {
+          BodyForceResidual[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < 9; iDim++) {
           Param_Vector[iDim] = 0.0;
@@ -202,6 +213,7 @@ CVariable::~CVariable(void) {
   if (Solution_Adj_Old    != NULL) delete [] Solution_Adj_Old;
   if (Body_Force_Turbo    != NULL) delete [] Body_Force_Turbo;
   if (Blockage_Vector    != NULL) delete [] Blockage_Vector;
+  if (BodyForceResidual    != NULL) delete [] BodyForceResidual;
   if (Param_Vector    != NULL) delete [] Param_Vector;
   
   if (Gradient != NULL) {
@@ -241,7 +253,7 @@ void CVariable::SetUnd_Lapl(unsigned short val_var, su2double val_und_lapl) {
 
 void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforceturbo) {
 
-    for (unsigned short iDim = 0; iDim < nDim + 1; iDim++) {
+    for (unsigned short iDim = 0; iDim < nDim; iDim++) {
         Body_Force_Turbo[iDim] = val_bodyforceturbo[iDim];
     }
 
@@ -251,6 +263,14 @@ void CVariable::SetBlockage_Vector(su2double *val_blockagevector) {
 
     for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
         Blockage_Vector[iDim] = val_blockagevector[iDim];
+    }
+
+}
+
+void CVariable::SetBodyForceResidual(su2double *val_bfresidual) {
+
+    for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
+        BodyForceResidual[iDim] = val_bfresidual[iDim];
     }
 
 }

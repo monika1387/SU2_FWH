@@ -1069,7 +1069,7 @@ public:
    * \param[in] config - Definition of the particular problem.
    * \param[in] val_bodyforceturbo - Pointer to turbo body force vector
    */
-  virtual void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceturbo, su2double *val_blockagevector);
+  virtual void ComputeResidual(su2double *val_residual, CConfig *config, su2double *val_bodyforceres, su2double *val_blockagevector);
 //  virtual void ComputeResidual2(su2double *val_residual, CConfig *config, su2double *val_blockagevector);
   /*!
    * \overload

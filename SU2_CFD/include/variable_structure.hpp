@@ -70,6 +70,7 @@ protected:
   su2double *Solution_Min;    /*!< \brief Min solution for limiter computation. */
   su2double *Body_Force_Turbo; /*!< \brief Turbomachinery body force vector. */
   su2double *Blockage_Vector;
+  su2double *BodyForceResidual;
   su2double *Param_Vector;
   su2double AuxVar;      /*!< \brief Auxiliar variable for gradient computation. */
   su2double *Grad_AuxVar;  /*!< \brief Gradient of the auxiliar variable. */
@@ -249,7 +250,9 @@ public:
    * \brief Specify body force vector at node.
    */
   void SetBodyForceVector_Turbo(su2double *val_bodyforceturbo);
-
+  
+  void SetBodyForceResidual(su2double *val_bodyforceres);
+  
   void SetBlockage_Vector(su2double *val_blockagevector);
   
   void SetBodyForceParameters(su2double *val_paramvector);
@@ -261,6 +264,7 @@ public:
   
   virtual su2double *GetBlockage_Vector(void);
   
+  virtual su2double *GetBodyForceResidual(void);
   
   virtual su2double *GetBodyForceParameters(void);
   

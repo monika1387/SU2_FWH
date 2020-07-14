@@ -9236,11 +9236,23 @@ void CConfig::SetMultizone(CConfig *driver_config, CConfig **config_container){
 }
 
 void CConfig::Register_Camb_Norm(void) {
-  cout << "CConfig::Register_Camb_Norm" << endl;
-  unsigned short iter;
-  for (iter = 0; iter < 4; iter++) {
-    AD::RegisterInput(Body_Force_Camb_Norm[iter]);
-  }
+	/*
+	int nPoint = geometry->GetnPoint();
+	int nDim = geometry->GetnDim();
+	su2double *Geometric_Parameters={0};
+	cout << "CConfig::Register_Camb_Norm" << endl;
+	unsigned short iter;
+	for (int iPoint= 0; iPoint < nPoint; iPoint++) {
+		Geometric_Parameters = geometry->node[iPoint]->GetBodyForceParameters();
+		for (int iDim = 2; iDim < 5; iDim++){
+				AD::RegisterInput(Geometric_Parameters[iDim]);
+		}
+	}
+	*/
+	unsigned short iter;
+	for(iter=0; iter<4; iter++){
+		AD::RegisterInput(Body_Force_Camb_Norm[iter]);
+	}
 }
 
 void CConfig::TotalGrad_Camb_Norm(void) {

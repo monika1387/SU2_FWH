@@ -3058,6 +3058,27 @@ void CSolver::Read_SU2_Restart_Metadata(CGeometry *geometry, CConfig *config, bo
 }
 
 void CSolver::Load_BFCamberNormals(CGeometry *geometry, CConfig *config) {
+	nDim = geometry->GetnDim();
+	int iPoint;
+	int iDim;
+	
+	su2double Camber_Normals_Data[nPoint][nDim + 3] = {0};
+	su2double *Geometric_Parameters, *coords, Nx, Nt, Nr;
+	for(iPoint=0; iPoint<nPoint; iPoint++){
+		Geometric_Parameters = node[iPoint]->GetBodyForceParameters();
+		coords = geometry->node[iPoint]->GetCoord();
+		
+		Nx = Geometric_Parameters[2];
+		Nt = Geometric_Parameters[3];
+		Nr = Geometric_Parameters[4];
+		for(iDim=0; iDim < nDim; iDim++){
+			Camber_Normals_Data[iPoint][iDim] = coords[iDim];
+		}
+		Camber_Normals_Data[iPoint][nDim] = Nx;
+		Camber_Normals_Data[iPoint][nDim+1] = Nt;
+		Camber_Normals_Data[iPoint][nDim+2] = Nr;
+		
+	}
 //    nDim = geometry->GetnDim();
 //    string cambers_filename = config->GetBF_Normals_Filename();
 //

@@ -1486,7 +1486,7 @@ public:
    */
   virtual void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
   virtual void ComputeBlockageGradient(CGeometry *geometry, CConfig *config);
-  
+  virtual void InterpolateBodyForceParams(CGeometry *geometry, CConfig *config);
   /*!
    * \brief A virtual member.
    * \param[in] geometry - Geometrical definition of the problem.
@@ -5043,6 +5043,7 @@ public:
    */
   void SetPrimitive_Gradient_GG(CGeometry *geometry, CConfig *config);
   void ComputeBlockageGradient(CGeometry *geometry, CConfig *config);
+  void InterpolateBodyForceParams(CGeometry *geometry, CConfig *config);
   /*!
    * \brief Compute the gradient of the primitive variables using a Least-Squares method,
    *        and stores the result in the <i>Gradient_Primitive</i> variable.

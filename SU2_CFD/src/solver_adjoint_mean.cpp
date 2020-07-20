@@ -2587,6 +2587,7 @@ void CAdjEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solve
   if(!restart){
 	  cout << "It does say no restart" << endl;
   }
+  /*
   if ((ExtIter == 0) && (!restart) && body_force) {
 	  cout << "Performing Body Force Model blockage and camber normal interpolation " << endl;
 	  for (iMesh = 0; iMesh <= config->GetnMGLevels(); iMesh++){
@@ -2745,6 +2746,7 @@ void CAdjEulerSolver::SetInitialCondition(CGeometry **geometry, CSolver ***solve
 		  
 	  
   }
+  */
   /*--- The value of the solution for the first iteration of the dual time ---*/
   for (iMesh = 0; iMesh <= config->GetnMGLevels(); iMesh++) {
     for (iPoint = 0; iPoint < geometry[iMesh]->GetnPoint(); iPoint++) {

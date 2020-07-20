@@ -2278,9 +2278,9 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
     for (iMesh=0; iMesh<=config_container[val_iZone]->GetnMGLevels();iMesh++) {
 		if(body_force){
 			cout << "Interpolating camber normal field and blockage field to mesh" << endl;
-		  solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+		  solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
 		  cout << "Calculating blockage gradient field" << endl;
-		  solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+		  solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
 	  }
       for (iPoint = 0; iPoint < geometry_container[val_iZone][val_iInst][iMesh]->GetnPoint(); iPoint++) {
         solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->node[iPoint]->SetSolution_Direct(solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->node[iPoint]->GetSolution());
@@ -2463,20 +2463,22 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
 
   if (kind_recording == CAMB_NORM) {
     /*--- Register camber normals as input ---*/
-	/*
+	
 	int nPoint = geometry_container[iZone][iInst][MESH_0]->GetnPoint();
 	int nDim = geometry_container[iZone][iInst][MESH_0]->GetnDim();
-	su2double *Geometric_Parameters={0};
+	su2double *BFVector={0};
 	unsigned short iDim;
-	CEulerSolver::InterpolateBodyForceParams(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
+	cout << "Registering body-forces as input" << endl;
+	solver_container[iZone][iInst][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
 	for (int iPoint= 0; iPoint < nPoint; iPoint++) {
-		Geometric_Parameters = geometry_container[iZone][iInst][MESH_0]->node[iPoint]->GetBodyForceParameters();
-		for (iDim = 2; iDim < 5; iDim++){
-				AD::RegisterInput(Geometric_Parameters[iDim]);
+		BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceResidual();
+		//cout << BFVector[0] << " " << BFVector[1] << " " << BFVector[2] << endl;
+		for (iDim = 1; iDim < 4; iDim++){
+				AD::RegisterInput(BFVector[iDim]);
 		}
 	}
-	*/
-    config_container[iZone]->Register_Camb_Norm();
+	
+    //config_container[iZone]->Register_Camb_Norm();
   }
 
   if (kind_recording == FLOW_CROSS_TERM){

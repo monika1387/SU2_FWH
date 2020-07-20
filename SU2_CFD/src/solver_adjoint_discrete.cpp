@@ -284,7 +284,10 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
 
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-      direct_solver->node[iPoint]->RegisterBFSource(input);
+		for(int iDim=1; iDim < nDim + 1; iDim ++){
+			AD::RegisterOutput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+		}
+      //direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
 }
@@ -301,7 +304,8 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
     Mach                   = config->GetMach();
     Pressure               = config->GetPressure_FreeStreamND();
     Temperature            = config->GetTemperature_FreeStreamND();
-
+	bool body_force 			= config->GetBody_Force();
+	
     su2double SoundSpeed = 0.0;
     
     if (nDim == 2) { SoundSpeed = config->GetVelocity_FreeStreamND()[0]*Velocity_Ref/(cos(Alpha)*Mach); }
@@ -312,8 +316,21 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
       AD::RegisterInput(Alpha);
       AD::RegisterInput(Temperature);
       AD::RegisterInput(Pressure);
+	  if(body_force){
+		  su2double *BFVector;
+		  cout << "Registering body-forces as variables..." << endl;
+		  unsigned long iPoint, nPoint = geometry->GetnPoint();
+		  for(int iPoint =0; iPoint < nPoint; iPoint++){
+			  
+			  BFVector = direct_solver->node[iPoint]->GetBodyForceResidual();
+			  //cout << BFVector[1] << " " << BFVector[2] << " " << BFVector[3] << endl;
+			  for(int iDim=1; iDim < nDim + 1; iDim ++){
+				  AD::RegisterInput(BFVector[iDim]);
+			  }
+		  }
+	  }
     }
-
+	
     /*--- Recompute the free stream velocity ---*/
 
     if (nDim == 2) {
@@ -390,7 +407,7 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
 
   /*--- Register variables as output of the solver iteration ---*/
 
-  bool input = true;
+  bool input = false;
   bool body_force = config->GetBody_Force();
 
   /*--- Register output variables on the tape ---*/
@@ -400,8 +417,11 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
   }
 
   if (body_force) {
+	  cout << "Registering body-forces as output..." << endl;
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-      direct_solver->node[iPoint]->RegisterBFSource(input);
+		for(int iDim=1; iDim < nDim + 1; iDim ++){
+			AD::RegisterOutput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+		}
     }
   }
 }
@@ -542,12 +562,16 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-	  Vector_BF = node[iPoint]->GetBodyForceVector_Turbo();
+	  Vector_BF = direct_solver -> node[iPoint]->GetBodyForceResidual();
       /*--- Extract the adjoint solution ---*/
-      direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-
+	  su2double adj_bf[nDim] = {0.0};
+	  for(int iDim=1; iDim < nDim + 1; iDim ++){
+		//direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
+		adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
+		node[iPoint] -> SU2_TYPE::SetDerivative(Vector_BF[iDim], SU2_TYPE::GetValue(adj_bf[iDim-1]));
       /*--- Store the adjoint solution ---*/
-      node[iPoint]->SetAdjoint_BFSource(Vector_BF);
+		//node[iPoint]->SetAdjoint_BFSource(Vector_BF);
+	  }
     }
   }
 
@@ -833,40 +857,55 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
   unsigned long iPoint;
   unsigned short iDim;
   su2double *Coord, Sensitivity, eps;
-
+  bool body_force = config->GetBody_Force();
   bool time_stepping = (config->GetUnsteady_Simulation() != STEADY);
 
   /*--- Camber normal total gradient test ---*/
   cout << "IN SETSENSITIVITY" << endl;
-  config->TotalGrad_Camb_Norm();
+  if(body_force){
+	  cout << "Getting body-force sensitivities..." << endl;
+	  for(iPoint=0; iPoint < nPoint; iPoint++){
+		  for(iDim=1; iDim < nDim + 1; iDim ++){
+			  Sensitivity = SU2_TYPE::GetDerivative(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+			  AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+			  if (!time_stepping) {
+				node[iPoint]->SetSensitivity(iDim-1, Sensitivity);
+			  } else {
+				node[iPoint]->SetSensitivity(iDim-1, node[iPoint]->GetSensitivity(iDim-1) + Sensitivity);
+			  }
+			}
+		  }
+	 }else{
+	  //config->TotalGrad_Camb_Norm();
 
 
-  /*------*/
+	  /*------*/
 
-  for (iPoint = 0; iPoint < nPoint; iPoint++) {
-    Coord = geometry->node[iPoint]->GetCoord();
+	  for (iPoint = 0; iPoint < nPoint; iPoint++) {
+		Coord = geometry->node[iPoint]->GetCoord();
 
-    for (iDim = 0; iDim < nDim; iDim++) {
+		for (iDim = 0; iDim < nDim; iDim++) {
 
-      Sensitivity = SU2_TYPE::GetDerivative(Coord[iDim]);
+		  Sensitivity = SU2_TYPE::GetDerivative(Coord[iDim]);
 
-      /*--- Set the index manually to zero. ---*/
+		  /*--- Set the index manually to zero. ---*/
 
-     AD::ResetInput(Coord[iDim]);
+		 AD::ResetInput(Coord[iDim]);
 
-      /*--- If sharp edge, set the sensitivity to 0 on that region ---*/
+		  /*--- If sharp edge, set the sensitivity to 0 on that region ---*/
 
-      if (config->GetSens_Remove_Sharp()) {
-        eps = config->GetVenkat_LimiterCoeff()*config->GetRefElemLength();
-        if ( geometry->node[iPoint]->GetSharpEdge_Distance() < config->GetAdjSharp_LimiterCoeff()*eps )
-          Sensitivity = 0.0;
-      }
-      if (!time_stepping) {
-        node[iPoint]->SetSensitivity(iDim, Sensitivity);
-      } else {
-        node[iPoint]->SetSensitivity(iDim, node[iPoint]->GetSensitivity(iDim) + Sensitivity);
-      }
-    }
+		  if (config->GetSens_Remove_Sharp()) {
+			eps = config->GetVenkat_LimiterCoeff()*config->GetRefElemLength();
+			if ( geometry->node[iPoint]->GetSharpEdge_Distance() < config->GetAdjSharp_LimiterCoeff()*eps )
+			  Sensitivity = 0.0;
+		  }
+		  if (!time_stepping) {
+			node[iPoint]->SetSensitivity(iDim, Sensitivity);
+		  } else {
+			node[iPoint]->SetSensitivity(iDim, node[iPoint]->GetSensitivity(iDim) + Sensitivity);
+		  }
+		}
+	  }
   }
   SetSurface_Sensitivity(geometry, config);
 }

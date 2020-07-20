@@ -4557,7 +4557,7 @@ void CDiscAdjFluidDriver::Run() {
     SetRecording(NONE);
 
     /*--- Store the computational graph of one direct iteration with the mesh coordinates as input. ---*/
-
+	cout << "Setting body-forces as input..." << endl;
     SetRecording(CAMB_NORM);
 
     /*--- Initialize the adjoint of the output variables of the iteration with the adjoint solution

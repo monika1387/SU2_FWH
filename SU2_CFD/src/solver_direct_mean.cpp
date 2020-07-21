@@ -6606,8 +6606,8 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 	int n_blade{0};
 	int n_points{0};
 	int n_rows{0};
-	ifstream inputFile;
-	inputFile.open(config->GetBFM_inputName());
+	std::ifstream inputFile((config->GetBFM_inputName()).c_str());
+	//inputFile.open(config->GetBFM_inputName());
 	string line;
 	inputFile >> n_rows >> n_blade >> n_points;
 	

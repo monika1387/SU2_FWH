@@ -567,8 +567,8 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 	  su2double adj_bf[nDim] = {0.0};
 	  for(int iDim=1; iDim < nDim + 1; iDim ++){
 		//direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-		adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
-		node[iPoint] -> SU2_TYPE::SetDerivative(Vector_BF[iDim], SU2_TYPE::GetValue(adj_bf[iDim-1]));
+		//adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
+		//node[iPoint] -> SU2_TYPE::SetDerivative(Vector_BF[iDim], SU2_TYPE::GetValue(adj_bf[iDim-1]));
       /*--- Store the adjoint solution ---*/
 		//node[iPoint]->SetAdjoint_BFSource(Vector_BF);
 	  }

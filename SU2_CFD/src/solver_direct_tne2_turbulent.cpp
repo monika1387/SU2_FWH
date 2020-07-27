@@ -1356,6 +1356,22 @@ void CTNE2TurbSASolver::BC_Far_Field(CGeometry *geometry, CSolver **solver_conta
 
   Normal = new su2double[nDim];
 
+  conv_numerics->SetRhosIndex     ( solver_container[TNE2_SOL]->node_infty->GetRhosIndex()      );
+  conv_numerics->SetRhoIndex      ( solver_container[TNE2_SOL]->node_infty->GetRhoIndex()       );
+  conv_numerics->SetPIndex        ( solver_container[TNE2_SOL]->node_infty->GetPIndex()         );
+  conv_numerics->SetTIndex        ( solver_container[TNE2_SOL]->node_infty->GetTIndex()         );
+  conv_numerics->SetTveIndex      ( solver_container[TNE2_SOL]->node_infty->GetTveIndex()       );
+  conv_numerics->SetVelIndex      ( solver_container[TNE2_SOL]->node_infty->GetVelIndex()       );
+  conv_numerics->SetHIndex        ( solver_container[TNE2_SOL]->node_infty->GetHIndex()         );
+  conv_numerics->SetAIndex        ( solver_container[TNE2_SOL]->node_infty->GetAIndex()         );
+  conv_numerics->SetRhoCvtrIndex  ( solver_container[TNE2_SOL]->node_infty->GetRhoCvtrIndex()   );
+  conv_numerics->SetRhoCvveIndex  ( solver_container[TNE2_SOL]->node_infty->GetRhoCvveIndex()   );
+  conv_numerics->SetLamViscIndex  ( solver_container[TNE2_SOL]->node_infty->GetLamViscIndex()   );
+  conv_numerics->SetEddyViscIndex ( solver_container[TNE2_SOL]->node_infty->GetEddyViscIndex()  );
+  conv_numerics->SetDiffCoeffIndex( solver_container[TNE2_SOL]->node_infty->GetDiffCoeffIndex() );
+  conv_numerics->SetKIndex        ( solver_container[TNE2_SOL]->node_infty->GetKIndex()         );
+  conv_numerics->SetKveIndex      ( solver_container[TNE2_SOL]->node_infty->GetKveIndex()       );
+
   for (iVertex = 0; iVertex < geometry->nVertex[val_marker]; iVertex++) {
 
     iPoint = geometry->vertex[val_marker][iVertex]->GetNode();

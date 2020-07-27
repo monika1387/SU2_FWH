@@ -39,6 +39,7 @@
 
 CTNE2TurbVariable::CTNE2TurbVariable(void) : CVariable() {
 
+
   /*--- Array initialization ---*/
 
   HB_Source = NULL;

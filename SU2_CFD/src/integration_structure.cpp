@@ -96,7 +96,7 @@ void CIntegration::Space_Integration(CGeometry *geometry,
       solver_container[MainSolver]->Centered_Residual(geometry, solver_container, numerics[CONV_TERM], config, iMesh, iRKStep);
       break;
     case SPACE_UPWIND:
-      solver_container[MainSolver]->Upwind_Residual(geometry, solver_container, numerics[CONV_TERM], config, iMesh);
+      //solver_container[MainSolver]->Upwind_Residual(geometry, solver_container, numerics[CONV_TERM], config, iMesh);
       break;
     case FINITE_ELEMENT:
       solver_container[MainSolver]->Convective_Residual(geometry, solver_container, numerics[CONV_TERM], config, iMesh, iRKStep);
@@ -109,7 +109,7 @@ void CIntegration::Space_Integration(CGeometry *geometry,
   
   /*--- Compute source term residuals ---*/
   if (source){
-    solver_container[MainSolver]->Source_Residual(geometry, solver_container, numerics[SOURCE_FIRST_TERM], numerics[SOURCE_SECOND_TERM], config, iMesh);
+    //solver_container[MainSolver]->Source_Residual(geometry, solver_container, numerics[SOURCE_FIRST_TERM], numerics[SOURCE_SECOND_TERM], config, iMesh);
   }
 
   /*--- Add viscous and convective residuals, and compute the Dual Time Source term ---*/

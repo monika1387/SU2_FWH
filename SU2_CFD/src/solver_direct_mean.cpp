@@ -6743,7 +6743,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 			//cout << x_coord << ", " << BodyForceParams[0] << ", " << BodyForceParams[1] << ", " BodyForceParams[2] << ", " BodyForceParams[3] << ", " BodyForceParams[4] << endl;
 	}
 		
-	//ComputeBlockageGradient(geometry, config);
+	ComputeBlockageGradient(geometry, config);
 }
 
 void CEulerSolver::ComputeBlockageGradient(CGeometry *geometry, CConfig *config) {

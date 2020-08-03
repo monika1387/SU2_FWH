@@ -282,6 +282,7 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
     }
   }
 
+/*
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 		for(int iDim=1; iDim < nDim + 1; iDim ++){
@@ -290,6 +291,7 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
       //direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
+  */
 }
 
 void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, bool reset) {
@@ -568,7 +570,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 	  for(int iDim=1; iDim < nDim + 1; iDim ++){
 		//direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
 		//adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
-		//node[iPoint] -> SU2_TYPE::SetDerivative(Vector_BF[iDim], SU2_TYPE::GetValue(adj_bf[iDim-1]));
+		SU2_TYPE::SetDerivative(Vector_BF[iDim], 1.0);
       /*--- Store the adjoint solution ---*/
 		//node[iPoint]->SetAdjoint_BFSource(Vector_BF);
 	  }
@@ -867,7 +869,8 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
 	  for(iPoint=0; iPoint < nPoint; iPoint++){
 		  for(iDim=1; iDim < nDim + 1; iDim ++){
 			  Sensitivity = SU2_TYPE::GetDerivative(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
-			  AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+			  cout << Sensitivity << endl;
+			  //AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
 			  if (!time_stepping) {
 				node[iPoint]->SetSensitivity(iDim-1, Sensitivity);
 			  } else {

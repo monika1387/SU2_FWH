@@ -2279,8 +2279,8 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
 		if(body_force){
 			cout << "Interpolating camber normal field and blockage field to mesh" << endl;
 		  solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
-		  cout << "Calculating blockage gradient field" << endl;
-		  solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+		  //cout << "Calculating blockage gradient field" << endl;
+		  //solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
 	  }
       for (iPoint = 0; iPoint < geometry_container[val_iZone][val_iInst][iMesh]->GetnPoint(); iPoint++) {
         solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->node[iPoint]->SetSolution_Direct(solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->node[iPoint]->GetSolution());
@@ -2468,12 +2468,13 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
 	int nDim = geometry_container[iZone][iInst][MESH_0]->GetnDim();
 	su2double *BFVector={0};
 	unsigned short iDim;
-	cout << "Registering body-forces as input" << endl;
+	cout << "Registering camber normals as input" << endl;
 	solver_container[iZone][iInst][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
 	for (int iPoint= 0; iPoint < nPoint; iPoint++) {
 		BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceResidual();
+		//BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceParameters();
 		//cout << BFVector[0] << " " << BFVector[1] << " " << BFVector[2] << endl;
-		for (iDim = 1; iDim < 4; iDim++){
+		for (iDim = 1; iDim < nDim + 1; iDim++){
 				AD::RegisterInput(BFVector[iDim]);
 		}
 	}

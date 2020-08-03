@@ -6868,6 +6868,10 @@ void CDiscAdjFSIDriver::RegisterInput(unsigned short ZONE_FLOW,
     iteration_container[ZONE_FLOW][INST_0]->RegisterInput(solver_container, geometry_container, config_container, ZONE_FLOW, INST_0, kind_recording);
   }
   
+  if (kind_recording == CAMB_NORM) {
+    iteration_container[ZONE_FLOW][INST_0]->RegisterInput(solver_container, geometry_container, config_container, ZONE_FLOW, INST_0, kind_recording);
+  }
+  
   /*--- Register structural variables ---*/
   if (kind_recording == FEM_CROSS_TERM_GEOMETRY) {
     iteration_container[ZONE_STRUCT][INST_0]->RegisterInput(solver_container, geometry_container, config_container, ZONE_STRUCT, INST_0, kind_recording);

@@ -5072,6 +5072,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
   bool rotating_frame   = config->GetRotating_Frame();
   bool axisymmetric     = config->GetAxisymmetric();
   bool gravity          = (config->GetGravityForce() == YES);
+  bool adjoint          = config->GetDiscrete_Adjoint();
   bool harmonic_balance = (config->GetUnsteady_Simulation() == HARMONIC_BALANCE);
   bool windgust         = config->GetWind_Gust();
   bool body_force       = config->GetBody_Force();
@@ -5080,7 +5081,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
 
   for (iVar = 0; iVar < nVar; iVar++) Residual[iVar] = 0.0;
   
-  if (body_force) {
+  if (body_force && !adjoint) {
       /*--- Loop over all points ---*/
 	  cout << "Setting body-force residual" << endl;
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {

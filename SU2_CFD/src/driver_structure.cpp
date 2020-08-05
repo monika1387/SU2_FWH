@@ -4556,9 +4556,9 @@ void CDiscAdjFluidDriver::Run() {
 
     SetRecording(NONE);
 
-    /*--- Store the computational graph of one direct iteration with the mesh coordinates as input. ---*/
-	cout << "Setting body-forces as input..." << endl;
-    SetRecording(CAMB_NORM);
+//    /*--- Store the computational graph of one direct iteration with the mesh coordinates as input. ---*/
+//	cout << "Setting body-forces as input..." << endl;
+//    SetRecording(CAMB_NORM);
 
     /*--- Initialize the adjoint of the output variables of the iteration with the adjoint solution
      *    of the current iteration. The values are passed to the AD tool. ---*/
@@ -4632,7 +4632,7 @@ void CDiscAdjFluidDriver::SetRecording(unsigned short kind_recording){
   }
 
   /*--- Do one iteration of the direct flow solver ---*/
-
+cout<<"Before Direct Run"<<endl;
   DirectRun();
 
   /*--- Read the target pressure ---*/
@@ -4648,7 +4648,7 @@ void CDiscAdjFluidDriver::SetRecording(unsigned short kind_recording){
         geometry_container[ZONE_0][INST_0][MESH_0], config_container[ZONE_0], ExtIter);
 
   /*--- Print residuals in the first iteration ---*/
-
+cout<<"After Direct Run"<<endl;
   for (iZone = 0; iZone < nZone; iZone++) {
     if (rank == MASTER_NODE && ((ExtIter == 0) || (config_container[iZone]->GetUnsteady_Simulation() != STEADY)) && (kind_recording == FLOW_CONS_VARS)) {
       cout << " Zone " << iZone << ": log10[Conservative 0]: "<< log10(solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->GetRes_RMS(0)) << endl;

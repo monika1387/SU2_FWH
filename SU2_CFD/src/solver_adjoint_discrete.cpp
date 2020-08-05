@@ -565,7 +565,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 	  Vector_BF = direct_solver -> node[iPoint]->GetBodyForceResidual();
-        node[iPoint]->SetAdjoint_BFSource(Vector_BF);
+      node[iPoint]->SetAdjoint_BFSource(Vector_BF);
       /*--- Extract the adjoint solution ---*/
 	  su2double adj_bf[nDim] = {0.0};
 //	  for(int iDim=1; iDim < nDim + 1; iDim ++){

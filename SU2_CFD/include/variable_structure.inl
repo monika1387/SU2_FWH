@@ -736,7 +736,7 @@ inline void CEulerVariable::SetSolution_New(void) {
 inline void CEulerVariable::SetAdjoint_BFSource(su2double* adj_bf){
 //  cout << "CEulerVariable::SetAdjoint_BFSource" << endl;
   for (unsigned short iDim = 0; iDim < nDim; iDim++) {
-    SU2_TYPE::SetDerivative(Body_Force_Turbo[iDim], SU2_TYPE::GetValue(adj_bf[iDim]));
+    SU2_TYPE::SetDerivative(adj_bf[iDim+1], SU2_TYPE::GetValue(adj_bf[iDim+1]));
   }
 //  SU2_TYPE::SetDerivative(adj_bf[0], 0.0);
 //  SU2_TYPE::SetDerivative(adj_bf[nVar-1], 0.0);

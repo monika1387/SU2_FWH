@@ -6654,14 +6654,14 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 	x_min = x_min - 1.0;
 	for (iPoint = 0; iPoint < geometry->GetnPoint(); iPoint++){
 		su2double *Coord = geometry->node[iPoint]->GetCoord();
-		su2double x = Coord[0];
+		su2double x = Coord[2];
 		su2double y = Coord[1];
 		
 		su2double r{};
 		su2double b=1.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, x_le = 0.0, rotFac = 0.0, bladeCount = 1, chord = 1.0;
 		su2double BodyForceParams[9] = {bfFac, b, Nx, Nt, Nr, x_le, rotFac, bladeCount, chord};
 		if (nDim == 3){
-			su2double z = Coord[2];
+			su2double z = Coord[0];
 			r = sqrt(y*y + z*z);
 		}else{
 			r = BF_radius;
@@ -15427,23 +15427,23 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double x_coord{}, y_coord{}, z_coord{}, radius{};
 		
 		// Obtaining the absolute velocity magnitudes, depending on case dimension.
-		x_coord = Coord_i[0];
+		z_coord = Coord_i[2];
 		su2double V_x, V_y, V_z, W_x, W_r, W_th;
-		V_x = U_i[1] / U_i[0];
+		V_z = U_i[3] / U_i[0];
 		V_y = U_i[2] / U_i[0];
 		su2double CT, ST;
 		if (nDim == 2){
 			radius = BF_radius;
 			CT = 0.0;
 			ST = 1.0;
-			V_z = 0.0;
+			V_x = 0.0;
 		}else{
-			z_coord = Coord_i[2];
+			x_coord = Coord_i[0];
 			y_coord = Coord_i[1];
-			radius = sqrt(y_coord * y_coord + z_coord * z_coord);
-			CT = y_coord / radius;
-			ST = z_coord / radius;
-			V_z = U_i[3] / U_i[0];
+			radius = sqrt(y_coord * y_coord + x_coord * x_coord);
+			CT = x_coord / radius;
+			ST = y_coord / radius;
+			V_x = U_i[1] / U_i[0];
 		}
 		
 		// Extracing blockage factor and camber normal components
@@ -15480,9 +15480,9 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		}
 		*/
 		// Calculating the relative velocity components in cyllindrical coordinates. 
-		W_x = V_x;	// Axial relative velocity
-		W_r = V_y * CT + V_z * ST;	// Radial relative velocity 
-		W_th = V_z * CT - V_y * ST - rotFac * omegaR * radius;	// Tangential relative velocity
+		W_x = V_z;	// Axial relative velocity
+		W_r = V_y * ST + V_x * CT;	// Radial relative velocity 
+		W_th = V_y * CT - V_x * ST - rotFac * omegaR * radius;	// Tangential relative velocity
 		
 		
 		su2double WdotN = W_x * Nx + W_r * Nr + W_th * Nt;		// Dot product of relative velocity and camber normal vector
@@ -15554,7 +15554,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		
 		// Transforming the normal and parallel force components to cyllindrical coordinates
 		su2double F_x, F_r, F_th, F_y, F_z;
-		F_x = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) + F_p * W_x / W;
+		F_z = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) + F_p * W_x / W;
 		F_r = F_n * (cos(delta) * Nr - sin(delta) * (W_pr / W_p)) + F_p * W_r / W;
 		F_th = F_n * (cos(delta) * Nt - sin(delta) * (W_pth / W_p)) + F_p * W_th / W;
 		
@@ -15576,8 +15576,8 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		F_r = F_n*i_nr + F_p * (W_r / (W + 1e-6));
 		*/
 		// Transforming cyllindrical force components to cartesian coordinates
-		F_y = F_r * CT - F_th * ST;
-		F_z = F_r * ST + F_th * CT;
+		F_y = F_r * ST + F_th * CT;
+		F_x = F_r * CT - F_th * ST;
 		
 		su2double e_source = rotFac * omegaR * radius * F_th;
 		// Storing body-forces in a vector

@@ -189,7 +189,8 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
   if (body_force){
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
       for ( unsigned short iDim = 0; iDim < nDim; iDim++) {
-        direct_solver->node[iPoint]->SetBodyForce_Source(iDim, node[iPoint]->GetBFSource_Direct()[iDim]);
+          cout<<"Body Force in Set Recoding :: "<<iDim<<" "<< node[iPoint]->GetBodyForceVector_Turbo()[iDim]<<endl;
+        direct_solver->node[iPoint]->SetBodyForce_Source(iDim, node[iPoint]->GetBodyForceVector_Turbo()[iDim]);
       }
     }
   }
@@ -564,10 +565,10 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-	  Vector_BF = direct_solver -> node[iPoint]->GetBodyForceResidual();
+	  direct_solver -> node[iPoint]->GetAdjoint_BFSource(Vector_BF);
+//	  cout<<"Vector is :: "<<Vector_BF[0]<<" "<<Vector_BF[1]<<endl;
       node[iPoint]->SetAdjoint_BFSource(Vector_BF);
       /*--- Extract the adjoint solution ---*/
-	  su2double adj_bf[nDim] = {0.0};
 //	  for(int iDim=1; iDim < nDim + 1; iDim ++){
 //		//direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
 //		//adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
@@ -868,10 +869,11 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
   if(body_force){
 	  cout << "Getting body-force sensitivities..." << endl;
 	  for(iPoint=0; iPoint < nPoint; iPoint++){
-		  for(iDim=1; iDim < nDim + 1; iDim ++){
-			  Sensitivity = SU2_TYPE::GetDerivative(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+		  for(iDim=0; iDim < nDim; iDim ++){
+//              cout<<"Body Force Value is 871(solved_adjoint_dis.cpp)"<<node[iPoint]->GetBodyForceVector_Turbo()[iDim]<<endl;
+          Sensitivity = SU2_TYPE::GetDerivative(node[iPoint]->GetBodyForceVector_Turbo()[iDim]);
 			  //AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
-			  cout<<"Sesitivity is ::"<<Sensitivity<<endl;
+//			  cout<<"Sesitivity is ::"<<Sensitivity<<endl;
 				node[iPoint]->SetSensitivity(iDim-1, node[iPoint]->GetSensitivity(iDim-1) + Sensitivity);
 			}
 		  }

@@ -15605,6 +15605,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		cout << x_coord  << ", " << radius << ", " << bfFac<< ", "  << rotFac << ", " << b << ", " << BGradient[0] << ", " << BGradient[1] << ", " << BGradient[2] << ", " << Nx<< ", " << Nt  << ", " << Nr << endl;
 		*/
 		// Storing body-force vector on the current node
+		cout<<"Direct Body Force :: "<<F[0]<<" "<<F[1]<<" "<<F[2]<<"\n";
 		node[iPoint]->SetBodyForceVector_Turbo(F);
 		node[iPoint]->SetBodyForceResidual(BF_res);
     }

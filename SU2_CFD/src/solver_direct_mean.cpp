@@ -5082,6 +5082,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
   
   if (body_force) {
       /*--- Loop over all points ---*/
+	  cout << "Setting body-force residual" << endl;
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
 
       /*--- Load the conservative variables ---*/
@@ -6742,7 +6743,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 		node[iPoint]->SetBodyForceParameters(BodyForceParams);
 			//cout << x_coord << ", " << BodyForceParams[0] << ", " << BodyForceParams[1] << ", " BodyForceParams[2] << ", " BodyForceParams[3] << ", " BodyForceParams[4] << endl;
 	}
-		
+	cout << "Calculating blockage gradient field" << endl;
 	ComputeBlockageGradient(geometry, config);
 }
 
@@ -15342,7 +15343,7 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 	
 	//  Defining the blockage residual vector.
 	su2double Blockage_Vector[nDim + 2] = { 0.0 };
-        
+    cout << "Blockage function is being called" <<endl;
 	// The function loops over all points in the zone, calculating and storing the residual blockage vector for each
 	// respective node.
 	for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
@@ -15413,6 +15414,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 	//if(ExtIter == 0){
 	//	InterpolateBodyForceParams(geometry, config);
 	//}
+	cout << "Body-force function is being called" <<endl;
     for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
 		
 		// Extracting flow variables and primitive variables.

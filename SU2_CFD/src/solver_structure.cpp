@@ -2392,7 +2392,6 @@ void CSolver::Read_SU2_Restart_Binary(CGeometry *geometry, CConfig *config, stri
   /*--- Store the number of fields to be read for clarity. ---*/
 
   nFields = Restart_Vars[1];
-
   /*--- Read the variable names from the file. Note that we are adopting a
    fixed length of 33 for the string length to match with CGNS. This is
    needed for when we read the strings later. We pad the beginning of the

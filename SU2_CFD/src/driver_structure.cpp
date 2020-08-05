@@ -4796,6 +4796,17 @@ void CDiscAdjFluidDriver::DirectRun(){
     config_container[iZone]->SetIntIter(1);
     direct_iteration[iZone]->Iterate(output, integration_container, geometry_container, solver_container, numerics_container, config_container, surface_movement, grid_movement, FFDBox, iZone, INST_0);
   }
+cout << "===========================" << endl;
+cout << "EXT_ITER: " <<  ExtIter << endl;
+    for (iZone = 0; iZone < nZone; iZone++) {
+    if (rank == MASTER_NODE ) {
+      cout << " Zone " << iZone << ": R[0]: "<< log10(solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->GetRes_RMS(0))<< "  R[1]: "<< log10(solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->GetRes_RMS(1)) << "  R[2]: "<< log10(solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->GetRes_RMS(2)) << endl;
+      if ( config_container[iZone]->GetKind_Turb_Model() != NONE && !config_container[iZone]->GetFrozen_Visc_Disc()) {
+        cout <<"       log10[RMS k]: " << log10(solver_container[iZone][INST_0][MESH_0][TURB_SOL]->GetRes_RMS(0)) << endl;
+      }
+    }
+  }
+  
 
 }
 

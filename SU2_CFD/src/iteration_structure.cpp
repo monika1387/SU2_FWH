@@ -669,14 +669,16 @@ void CFluidIteration::Iterate(COutput *output,
   /*--- Compute body force and save to each node ---*/
   if (body_force){
 	  if(ExtIter== 0){
-		 cout << "Interpolating camber normal field and blockage field to mesh" <<endl;
+		 cout << "Interpolating camber normal field and blockage field to mesh(1)" <<endl;
 		 solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
-		 cout << "Calculating blockage gradient field" << endl;
-		 solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
+		 //cout << "Calculating blockage gradient field" << endl;
+		 //solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
 	  }
 	  //cout<<"Body force function being called for zone :"<<val_iZone<<endl;
+	  cout << "Calling for the body-force function(1)" << endl;
 	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 	  //cout<<"Blockage function being called for zone :"<<val_iZone<<endl;
+	  cout << "Calling for the blockage function(1)" <<endl;
 	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 
 	  
@@ -2277,8 +2279,14 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
 	  
     for (iMesh=0; iMesh<=config_container[val_iZone]->GetnMGLevels();iMesh++) {
 		if(body_force){
-			cout << "Interpolating camber normal field and blockage field to mesh" << endl;
+			cout << "Interpolating camber normal field and blockage field to mesh(2)" << endl;
 		  solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+		  //cout<<"Body force function being called for zone :"<<val_iZone<<endl;
+			cout << "Calling for the body-force function(2)" << endl;
+			solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
+			//cout<<"Blockage function being called for zone :"<<val_iZone<<endl;
+			cout << "Calling for the blockage function(2)" <<endl;
+			solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 		  //cout << "Calculating blockage gradient field" << endl;
 		  //solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
 	  }

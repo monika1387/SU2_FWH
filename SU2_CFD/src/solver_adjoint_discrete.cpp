@@ -869,7 +869,6 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
 	  for(iPoint=0; iPoint < nPoint; iPoint++){
 		  for(iDim=1; iDim < nDim + 1; iDim ++){
 			  Sensitivity = SU2_TYPE::GetDerivative(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
-			  cout << Sensitivity << endl;
 			  //AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
 			  if (!time_stepping) {
 				node[iPoint]->SetSensitivity(iDim-1, Sensitivity);

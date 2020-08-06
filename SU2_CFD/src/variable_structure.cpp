@@ -57,9 +57,9 @@ CVariable::CVariable(void) {
   Residual_Sum = NULL;
   Solution_Adj_Old = NULL;
   Body_Force_Turbo = NULL;
-  Blockage_Vector = NULL;
-  BodyForceResidual = NULL;
-  Param_Vector = NULL;
+  Blockage_Source = NULL;
+  Body_Force_Source = NULL;
+  Body_Force_Parameters = NULL;
   
 }
 
@@ -81,9 +81,9 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
   Residual_Sum = NULL;
   Solution_Adj_Old = NULL;
   Body_Force_Turbo = NULL;
-  Blockage_Vector = NULL;
-  BodyForceResidual = NULL;
-  Param_Vector = NULL;
+  Blockage_Source = NULL;
+  Body_Force_Source = NULL;
+  Body_Force_Parameters = NULL;
   /*--- Initialize the number of solution variables. This version
    of the constructor will be used primarily for converting the
    restart files into solution files (SU2_SOL). ---*/
@@ -101,17 +101,17 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
     for (unsigned short iDim = 0; iDim < nDim; iDim++) {
       Body_Force_Turbo[iDim] = 0.0;
     }
-	Blockage_Vector = new su2double[nDim + 2];
+	Blockage_Source = new su2double[nDim + 2];
 	for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
-      Blockage_Vector[iDim] = 0.0;
+      Blockage_Source[iDim] = 0.0;
     }
-	BodyForceResidual = new su2double[nDim + 2];
+	Body_Force_Source = new su2double[nDim + 2];
 	for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
-      BodyForceResidual[iDim] = 0.0;
+      Body_Force_Source[iDim] = 0.0;
     }
-	Param_Vector = new su2double[9];
+	Body_Force_Parameters = new su2double[9];
 	for (unsigned short iDim = 0; iDim < 9; iDim++) {
-      Param_Vector[iDim] = 0.0;
+      Body_Force_Parameters[iDim] = 0.0;
     }
   }
 }
@@ -136,9 +136,9 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   Residual_Sum = NULL;
   Solution_Adj_Old = NULL;
   Body_Force_Turbo = NULL;
-  Blockage_Vector = NULL;
-  BodyForceResidual = NULL;
-  Param_Vector = NULL;
+  Blockage_Source = NULL;
+  Body_Force_Source = NULL;
+  Body_Force_Parameters = NULL;
   /*--- Initializate the number of dimension and number of variables ---*/
   nDim = val_nDim;
   nVar = val_nvar;
@@ -163,20 +163,20 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
 
   if (config->GetBody_Force()) {
       Body_Force_Turbo = new su2double[nDim];
-	  Blockage_Vector = new su2double[nDim + 2];
-	  BodyForceResidual = new su2double[nDim + 2];
-	  Param_Vector = new su2double[9];
+	  Blockage_Source = new su2double[nDim + 2];
+	  Body_Force_Source = new su2double[nDim + 2];
+	  Body_Force_Parameters = new su2double[9];
       for (iDim = 0; iDim < nDim; iDim++) {
           Body_Force_Turbo[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
-          Blockage_Vector[iDim] = 0.0;
+          Blockage_Source[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
-          BodyForceResidual[iDim] = 0.0;
+          Body_Force_Source[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < 9; iDim++) {
-          Param_Vector[iDim] = 0.0;
+          Body_Force_Parameters[iDim] = 0.0;
       }
   }
 
@@ -212,9 +212,9 @@ CVariable::~CVariable(void) {
   if (Residual_Sum        != NULL) delete [] Residual_Sum;
   if (Solution_Adj_Old    != NULL) delete [] Solution_Adj_Old;
   if (Body_Force_Turbo    != NULL) delete [] Body_Force_Turbo;
-  if (Blockage_Vector    != NULL) delete [] Blockage_Vector;
-  if (BodyForceResidual    != NULL) delete [] BodyForceResidual;
-  if (Param_Vector    != NULL) delete [] Param_Vector;
+  if (Blockage_Source    != NULL) delete [] Blockage_Source;
+  if (Body_Force_Source    != NULL) delete [] Body_Force_Source;
+  if (Body_Force_Parameters    != NULL) delete [] Body_Force_Parameters;
   
   if (Gradient != NULL) {
     for (iVar = 0; iVar < nVar; iVar++)
@@ -259,25 +259,25 @@ void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforceturbo) {
 
 }
 
-void CVariable::SetBlockage_Vector(su2double *val_blockagevector) {
+void CVariable::SetBlockage_Source(su2double *val_blockagevector) {
 
     for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
-        Blockage_Vector[iDim] = val_blockagevector[iDim];
+        Blockage_Source[iDim] = val_blockagevector[iDim];
     }
 
 }
 
-void CVariable::SetBodyForceResidual(su2double *val_bfresidual) {
+void CVariable::SetBody_Force_Source(su2double *val_bfresidual) {
 
     for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
-        BodyForceResidual[iDim] = val_bfresidual[iDim];
+        Body_Force_Source[iDim] = val_bfresidual[iDim];
     }
 
 }
 
 void CVariable::SetBodyForceParameters(su2double *val_paramvector){
 	 for (unsigned short i = 0; i < 9; i++) {
-        Param_Vector[i] = val_paramvector[i];
+        Body_Force_Parameters[i] = val_paramvector[i];
     }
 }
 void CVariable::SetSolution(su2double *val_solution) {

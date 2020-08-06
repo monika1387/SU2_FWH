@@ -69,9 +69,9 @@ protected:
   su2double *Solution_Max;    /*!< \brief Max solution for limiter computation. */
   su2double *Solution_Min;    /*!< \brief Min solution for limiter computation. */
   su2double *Body_Force_Turbo; /*!< \brief Turbomachinery body force vector. */
-  su2double *Blockage_Vector;
-  su2double *BodyForceResidual;
-  su2double *Param_Vector;
+  su2double *Blockage_Source;
+  su2double *Body_Force_Source;
+  su2double *Body_Force_Parameters;
   su2double AuxVar;      /*!< \brief Auxiliar variable for gradient computation. */
   su2double *Grad_AuxVar;  /*!< \brief Gradient of the auxiliar variable. */
   su2double Delta_Time;  /*!< \brief Time step. */
@@ -251,9 +251,9 @@ public:
    */
   void SetBodyForceVector_Turbo(su2double *val_bodyforceturbo);
   
-  void SetBodyForceResidual(su2double *val_bodyforceres);
+  void SetBody_Force_Source(su2double *val_bodyforceres);
   
-  void SetBlockage_Vector(su2double *val_blockagevector);
+  void SetBlockage_Source(su2double *val_blockagevector);
   
   void SetBodyForceParameters(su2double *val_paramvector);
   
@@ -262,9 +262,9 @@ public:
    */
   virtual su2double *GetBodyForceVector_Turbo(void);
   
-  virtual su2double *GetBlockage_Vector(void);
+  virtual su2double *GetBlockage_Source(void);
   
-  virtual su2double *GetBodyForceResidual(void);
+  virtual su2double *GetBody_Force_Source(void);
   
   virtual su2double *GetBodyForceParameters(void);
   
@@ -1864,6 +1864,7 @@ public:
    */
   virtual void SetSolution_Direct(su2double *val_solution_direct);
   
+  virtual void SetBodyForceDirect(su2double *val_bodyForce);
   /*!
    * \brief A virtual member. Get the direct solution for the adjoint solver.
    * \return Pointer to the direct solution vector.
@@ -2568,6 +2569,7 @@ public:
    */
   void SetSolution_Direct(su2double *val_solution_direct);
   
+  void SetBodyForceDirect(su2double *val_bodyForce);
   /*!
    * \brief Get the direct solution for the adjoint solver.
    * \return Pointer to the direct solution vector.
@@ -4829,6 +4831,8 @@ public:
   
   void SetSolution_Direct(su2double *sol);
   
+  void SetBodyForceDirect(su2double *val_bodyForce);
+  
   su2double* GetSolution_Direct();
   
   /*!
@@ -5076,6 +5080,8 @@ public:
     su2double GetDynamic_Derivative_Accel_n(unsigned short iVar);
 
     void SetSolution_Direct(su2double *sol);
+	
+	void SetBodyForceDirect(su2double *val_bodyForce);
 
     void SetSolution_Vel_Direct(su2double *sol);
 

@@ -153,11 +153,11 @@ inline su2double *CVariable::GetResidual_Old(void) { return Residual_Old; }
 
 inline su2double *CVariable::GetBodyForceVector_Turbo(void) { return Body_Force_Turbo; }
 
-inline su2double *CVariable::GetBlockage_Vector(void) { return Blockage_Vector; }
+inline su2double *CVariable::GetBlockage_Source(void) { return Blockage_Source; }
 
-inline su2double *CVariable::GetBodyForceResidual(void) { return BodyForceResidual; }
+inline su2double *CVariable::GetBody_Force_Source(void) { return Body_Force_Source; }
 
-inline su2double *CVariable::GetBodyForceParameters(void) { return Param_Vector; }
+inline su2double *CVariable::GetBodyForceParameters(void) { return Body_Force_Parameters; }
 
 inline void CVariable::SetGradient(unsigned short val_var, unsigned short val_dim, su2double val_value) { Gradient[val_var][val_dim] = val_value; }
 
@@ -533,6 +533,8 @@ inline void CVariable::SetBodyForce_Source(unsigned short val_var, su2double val
 
 inline void CVariable::SetSolution_Direct(su2double *val_solution_direct) { }
 
+inline void CVariable::SetBodyForceDirect(su2double *val_bodyForce) { }
+
 inline su2double* CVariable::GetGeometry_Direct() { return NULL; }
 
 inline su2double CVariable::GetGeometry_Direct(unsigned short val_dim) { return 0.0; }
@@ -736,7 +738,7 @@ inline void CEulerVariable::SetSolution_New(void) {
 inline void CEulerVariable::SetAdjoint_BFSource(su2double* adj_bf){
 //  cout << "CEulerVariable::SetAdjoint_BFSource" << endl;
   for (unsigned short iDim = 0; iDim < nDim; iDim++) {
-    SU2_TYPE::SetDerivative(Body_Force_Turbo[iDim], SU2_TYPE::GetValue(adj_bf[iDim]));
+    SU2_TYPE::SetDerivative(adj_bf[iDim], SU2_TYPE::GetValue(adj_bf[iDim]));
   }
 //  SU2_TYPE::SetDerivative(adj_bf[0], 0.0);
 //  SU2_TYPE::SetDerivative(adj_bf[nVar-1], 0.0);
@@ -1466,6 +1468,11 @@ inline void CDiscAdjVariable::SetSolution_Direct(su2double *val_solution_direct)
   }
 }
 
+inline void CDiscAdjVariable::SetBodyForceDirect(su2double *val_bodyForce){
+	for (unsigned short iDim = 0; iDim < nDim; iDim ++){
+		Body_Force_Turbo[iDim] = val_bodyForce[iDim];
+	}
+}
 inline su2double* CDiscAdjVariable::GetGeometry_Direct() { return Geometry_Direct; }
 
 inline su2double CDiscAdjVariable::GetGeometry_Direct(unsigned short val_dim) { return Geometry_Direct[val_dim]; }

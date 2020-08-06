@@ -5103,7 +5103,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
       numerics->SetPrimitive(node[iPoint]->GetPrimitive(), node[iPoint]->GetPrimitive());
 	 
       /*--- Compute the body force source residual ---*/
-      numerics->ComputeResidual(Residual, config, node[iPoint]->GetBodyForceResidual(), node[iPoint]->GetBlockage_Vector());
+      numerics->ComputeResidual(Residual, config, node[iPoint]->GetBody_Force_Source(), node[iPoint]->GetBlockage_Source());
 	  
 	  /*
 	  su2double *Coords = geometry->node[iPoint]->GetCoord();
@@ -15391,7 +15391,7 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 		}
 		
 		// Storing the blockage residual vector at the current node.
-		node[iPoint]->SetBlockage_Vector(Blockage_Vector);
+		node[iPoint]->SetBlockage_Source(Blockage_Vector);
 	}
 	
 }
@@ -15428,7 +15428,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		
 		// Obtaining the absolute velocity magnitudes, depending on case dimension.
 		z_coord = Coord_i[2];
-		su2double V_x, V_y, V_z, W_x, W_r, W_th;
+		su2double V_x, V_y, V_z, W_ax, W_r, W_th;
 		V_z = U_i[3] / U_i[0];
 		V_y = U_i[2] / U_i[0];
 		su2double CT, ST;
@@ -15458,39 +15458,18 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double rotFac = Geometric_Parameters[6];	// Rotation factor. Multiplies the body-force rotation value.
 		BF_blades = Geometric_Parameters[7];				// Blade row blade count
 		
-		/*
-		if(x_coord >= 0.0 && x_coord <= 0.05){
-			Nx = 0.0;
-			Nt = 1.0;
-			Nr = 0.0;
-			b = 1.0;
-			bfFac = 1.0;
-			d_le = x_coord;
-			rotFac = 0.0;
-			BF_blades = 40;
-		}else{
-			Nx = 0.0;
-			Nt = 1.0;
-			Nr = 0.0;
-			b = 1.0;
-			bfFac = 0.0;
-			d_le = 0.05;
-			rotFac = 0.0;
-			BF_blades = 10;
-		}
-		*/
 		// Calculating the relative velocity components in cyllindrical coordinates. 
-		W_x = V_z;	// Axial relative velocity
+		W_ax = V_z;	// Axial relative velocity
 		W_r = V_y * ST + V_x * CT;	// Radial relative velocity 
 		W_th = V_y * CT - V_x * ST - rotFac * omegaR * radius;	// Tangential relative velocity
 		
 		
-		su2double WdotN = W_x * Nx + W_r * Nr + W_th * Nt;		// Dot product of relative velocity and camber normal vector
+		su2double WdotN = W_ax * Nx + W_r * Nr + W_th * Nt;		// Dot product of relative velocity and camber normal vector
 		su2double W_nx = WdotN * Nx, W_nr = WdotN * Nr, W_nth = WdotN * Nt;		// Relative velocity components normal to the blade
-		su2double W_px = W_x - W_nx, W_pr = W_r - W_nr, W_pth = W_th - W_nth;  // Relative velocity components parallel to the blade 
+		su2double W_px = W_ax - W_nx, W_pr = W_r - W_nr, W_pth = W_th - W_nth;  // Relative velocity components parallel to the blade 
 		
 		su2double W_p = sqrt(W_px * W_px + W_pr * W_pr + W_pth * W_pth);	// Parallel relative velocity magnitude
-		su2double W = sqrt(W_x * W_x + W_r * W_r + W_th * W_th);					// Relative velocity magnitude
+		su2double W = sqrt(W_ax * W_ax + W_r * W_r + W_th * W_th);					// Relative velocity magnitude
 		
 		// Calculating the deviation angle
 		su2double delta = asin(WdotN / W);
@@ -15554,7 +15533,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		
 		// Transforming the normal and parallel force components to cyllindrical coordinates
 		su2double F_x, F_r, F_th, F_y, F_z;
-		F_z = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) + F_p * W_x / W;
+		F_z = F_n * (cos(delta) * Nx - sin(delta) * (W_px / W_p)) + F_p * W_ax / W;
 		F_r = F_n * (cos(delta) * Nr - sin(delta) * (W_pr / W_p)) + F_p * W_r / W;
 		F_th = F_n * (cos(delta) * Nt - sin(delta) * (W_pth / W_p)) + F_p * W_th / W;
 		
@@ -15593,6 +15572,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		
 		for(int iDim = 0; iDim < nDim; iDim ++){
 			BF_res[iDim + 1] = F[iDim];
+			node[iPoint]->SetBodyForce_Source(iDim, F[iDim]);
 		}
 		BF_res[nDim+1] = U_i[0] * e_source;
 		/*
@@ -15606,8 +15586,8 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		*/
 		// Storing body-force vector on the current node
 		cout<<"Direct Body Force :: "<<F[0]<<" "<<F[1]<<" "<<F[2]<<"\n";
-		node[iPoint]->SetBodyForceVector_Turbo(F);
-		node[iPoint]->SetBodyForceResidual(BF_res);
+		
+		node[iPoint]->SetBody_Force_Source(BF_res);
     }
 
 }

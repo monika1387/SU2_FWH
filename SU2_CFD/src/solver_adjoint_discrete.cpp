@@ -325,7 +325,7 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
 		  unsigned long iPoint, nPoint = geometry->GetnPoint();
 		  for(int iPoint =0; iPoint < nPoint; iPoint++){
 			  
-			  BFVector = direct_solver->node[iPoint]->GetBodyForceResidual();
+			  BFVector = direct_solver->node[iPoint]->GetBody_Force_Source();
 			  //cout << BFVector[1] << " " << BFVector[2] << " " << BFVector[3] << endl;
 			  for(int iDim=1; iDim < nDim + 1; iDim ++){
 				  AD::RegisterInput(BFVector[iDim]);
@@ -423,7 +423,7 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
 	  cout << "Registering body-forces as output..." << endl;
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 		for(int iDim=1; iDim < nDim + 1; iDim ++){
-			AD::RegisterOutput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
+			AD::RegisterOutput(direct_solver->node[iPoint]->GetBody_Force_Source()[iDim]);
 		}
     }
   }
@@ -565,6 +565,9 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
+		for (int iDim=1;iDim<nDim+1;iDim++){
+			Vector_BF[iDim-1] = node[iPoint]->GetBody_Force_Source()[iDim];
+		}
 	  direct_solver -> node[iPoint]->GetAdjoint_BFSource(Vector_BF);
 //	  cout<<"Vector is :: "<<Vector_BF[0]<<" "<<Vector_BF[1]<<endl;
       node[iPoint]->SetAdjoint_BFSource(Vector_BF);

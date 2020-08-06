@@ -2290,6 +2290,9 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
 //	  }
       for (iPoint = 0; iPoint < geometry_container[val_iZone][val_iInst][iMesh]->GetnPoint(); iPoint++) {
         solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->node[iPoint]->SetSolution_Direct(solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->node[iPoint]->GetSolution());
+		if (body_force){
+			solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->node[iPoint]->SetBodyForceDirect(solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo());
+		}
       }
     }
     if (turbulent && !config_container[val_iZone]->GetFrozen_Visc_Disc()) {
@@ -2468,7 +2471,9 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
         solver_container[iZone][iInst][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(
                 geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
         for (int iPoint = 0; iPoint < nPoint; iPoint++) {
-            BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceResidual();
+			
+            BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo();
+			cout << BFVector[2] << " " << BFVector[3] << " " << BFVector[4] << endl;
             //BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceParameters();
             //cout << BFVector[0] << " " << BFVector[1] << " " << BFVector[2] << endl;
             for (iDim = 1; iDim < nDim + 1; iDim++) {

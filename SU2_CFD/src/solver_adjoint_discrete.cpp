@@ -189,8 +189,8 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
   if (body_force){
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
       for ( unsigned short iDim = 0; iDim < nDim; iDim++) {
-          cout<<"Body Force in Set Recoding :: "<<iDim<<" "<< node[iPoint]->GetBodyForceVector_Turbo()[iDim]<<endl;
-        direct_solver->node[iPoint]->SetBodyForce_Source(iDim, node[iPoint]->GetBodyForceVector_Turbo()[iDim]);
+//          cout<<"Body Force in Set Recoding :: "<<iDim<<" "<< node[iPoint]->GetBodyForceDirect()[iDim]<<endl;
+        direct_solver->node[iPoint]->SetBodyForce_Source(iDim, node[iPoint]->GetBodyForceDirect()[iDim]);
       }
     }
   }
@@ -283,16 +283,12 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
     }
   }
 
-/*
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-		for(int iDim=1; iDim < nDim + 1; iDim ++){
-			AD::RegisterOutput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
-		}
+			direct_solver->node[iPoint]->RegisterBFSource(input);
       //direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
-  */
 }
 
 void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, bool reset) {
@@ -308,6 +304,7 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
     Pressure               = config->GetPressure_FreeStreamND();
     Temperature            = config->GetTemperature_FreeStreamND();
 	bool body_force 			= config->GetBody_Force();
+    su2double *BFVector;
 	
     su2double SoundSpeed = 0.0;
     
@@ -319,19 +316,17 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
       AD::RegisterInput(Alpha);
       AD::RegisterInput(Temperature);
       AD::RegisterInput(Pressure);
-	  if(body_force){
-		  su2double *BFVector;
-		  cout << "Registering body-forces as variables..." << endl;
-		  unsigned long iPoint, nPoint = geometry->GetnPoint();
-		  for(int iPoint =0; iPoint < nPoint; iPoint++){
-			  
-			  BFVector = direct_solver->node[iPoint]->GetBody_Force_Source();
-			  //cout << BFVector[1] << " " << BFVector[2] << " " << BFVector[3] << endl;
-			  for(int iDim=1; iDim < nDim + 1; iDim ++){
-				  AD::RegisterInput(BFVector[iDim]);
-			  }
-		  }
-	  }
+//	  if(body_force){
+//		  cout << "Registering body-forces as variables..." << endl;
+//		  unsigned long iPoint, nPoint = geometry->GetnPoint();
+//		  for(int iPoint =0; iPoint < nPoint; iPoint++){
+//			  BFVector = direct_solver->node[iPoint]->GetBodyForceVector_Turbo();
+//			  cout << BFVector[1] << " " << BFVector[2] << " " << BFVector[3] << endl;
+//			  for(int iDim=0; iDim < nDim ; iDim ++){
+//				  AD::RegisterInput(BFVector[iDim+1]);
+//			  }
+//		  }
+//	  }
     }
 	
     /*--- Recompute the free stream velocity ---*/
@@ -422,9 +417,7 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
   if (body_force) {
 	  cout << "Registering body-forces as output..." << endl;
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-		for(int iDim=1; iDim < nDim + 1; iDim ++){
-			AD::RegisterOutput(direct_solver->node[iPoint]->GetBody_Force_Source()[iDim]);
-		}
+			direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
 }
@@ -565,9 +558,6 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-		for (int iDim=1;iDim<nDim+1;iDim++){
-			Vector_BF[iDim-1] = node[iPoint]->GetBody_Force_Source()[iDim];
-		}
 	  direct_solver -> node[iPoint]->GetAdjoint_BFSource(Vector_BF);
 //	  cout<<"Vector is :: "<<Vector_BF[0]<<" "<<Vector_BF[1]<<endl;
       node[iPoint]->SetAdjoint_BFSource(Vector_BF);
@@ -575,7 +565,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
 //	  for(int iDim=1; iDim < nDim + 1; iDim ++){
 //		//direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
 //		//adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
-////		SU2_TYPE::SetDerivative(Vector_BF[iDim], 1.0);
+//		SU2_TYPE::SetDerivative(Vector_BF[iDim], 1.0);
 //      /*--- Store the adjoint solution ---*/
 //
 //	  }
@@ -873,10 +863,10 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
 	  cout << "Getting body-force sensitivities..." << endl;
 	  for(iPoint=0; iPoint < nPoint; iPoint++){
 		  for(iDim=0; iDim < nDim; iDim ++){
-//              cout<<"Body Force Value is 871(solved_adjoint_dis.cpp)"<<node[iPoint]->GetBodyForceVector_Turbo()[iDim]<<endl;
+              cout<<"Body Force Value is 871(solved_adjoint_dis.cpp)"<<node[iPoint]->GetBodyForceVector_Turbo()[iDim]<<endl;
           Sensitivity = SU2_TYPE::GetDerivative(node[iPoint]->GetBodyForceVector_Turbo()[iDim]);
 			  //AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
-//			  cout<<"Sesitivity is ::"<<Sensitivity<<endl;
+			  cout<<"Sesitivity is ::"<<Sensitivity<<endl;
 				node[iPoint]->SetSensitivity(iDim-1, node[iPoint]->GetSensitivity(iDim-1) + Sensitivity);
 			}
 		  }

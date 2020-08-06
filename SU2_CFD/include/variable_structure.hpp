@@ -71,6 +71,7 @@ protected:
   su2double *Body_Force_Turbo; /*!< \brief Turbomachinery body force vector. */
   su2double *Blockage_Source;
   su2double *Body_Force_Source;
+  su2double* Body_Force_Turbo_Direct;
   su2double *Body_Force_Parameters;
   su2double AuxVar;      /*!< \brief Auxiliar variable for gradient computation. */
   su2double *Grad_AuxVar;  /*!< \brief Gradient of the auxiliar variable. */
@@ -249,7 +250,6 @@ public:
   /*!
    * \brief Specify body force vector at node.
    */
-  void SetBodyForceVector_Turbo(su2double *val_bodyforceturbo);
   
   void SetBody_Force_Source(su2double *val_bodyforceres);
   
@@ -261,6 +261,8 @@ public:
    * \brief Get body force vector at node.
    */
   virtual su2double *GetBodyForceVector_Turbo(void);
+
+  virtual void SetBodyForceVector_Turbo(su2double *val_bodyforceres);
   
   virtual su2double *GetBlockage_Source(void);
   
@@ -1865,6 +1867,8 @@ public:
   virtual void SetSolution_Direct(su2double *val_solution_direct);
   
   virtual void SetBodyForceDirect(su2double *val_bodyForce);
+
+  virtual su2double *GetBodyForceDirect(void);
   /*!
    * \brief A virtual member. Get the direct solution for the adjoint solver.
    * \return Pointer to the direct solution vector.
@@ -2341,7 +2345,6 @@ public:
    * \brief A virtual member. Get the direct body force solution for the adjoint solver.
    * \return Pointer to the direct solution vector.
    */
-  virtual su2double *GetBFSource_Direct(void);
 
   /*!
    * \brief Register the variables in the solution array as input/output variable.
@@ -2568,8 +2571,7 @@ public:
    * \param[in] val_solution_direct - Value of the direct solution.
    */
   void SetSolution_Direct(su2double *val_solution_direct);
-  
-  void SetBodyForceDirect(su2double *val_bodyForce);
+
   /*!
    * \brief Get the direct solution for the adjoint solver.
    * \return Pointer to the direct solution vector.
@@ -3596,7 +3598,6 @@ public:
 //   * \brief A virtual member. Get the direct body force solution for the adjoint solver.
 //   * \return Pointer to the direct solution vector.
 //   */
-//  virtual su2double *GetBFSource_Direct(void);
   
   /*!
    * \brief Get the value of the preconditioner Beta.
@@ -4784,7 +4785,8 @@ private:
   su2double* Solution_BGS_k;
   su2double* Solution_Geometry_BGS_k;
 
-  su2double* BFSource_Direct;
+    su2double* Body_Force_Turbo;
+  su2double* Body_Force_Turbo_Direct;
   su2double* Adjoint_BFSource;
   
 public:
@@ -4831,9 +4833,12 @@ public:
   
   void SetSolution_Direct(su2double *sol);
   
-  void SetBodyForceDirect(su2double *val_bodyForce);
-  
   su2double* GetSolution_Direct();
+
+  void SetBodyForceDirect(su2double *val_bodyForce);
+    su2double* GetBodyForceDirect(void);
+    su2double *GetBodyForceVector_Turbo(void);
+    void SetBodyForceVector_Turbo(su2double *val_bodyforceres);
   
   /*!
    * \brief Set the restart geometry (coordinate of the converged solution)
@@ -4956,8 +4961,6 @@ public:
   /*!
    * \brief A virtual member. Get the direct body force solution for the adjoint solver.
    * \return Pointer to the direct solution vector.
-   */
-  virtual su2double *GetBFSource_Direct(void);
 
   /*!
    * \brief Set the value of the hb source.
@@ -5080,8 +5083,6 @@ public:
     su2double GetDynamic_Derivative_Accel_n(unsigned short iVar);
 
     void SetSolution_Direct(su2double *sol);
-	
-	void SetBodyForceDirect(su2double *val_bodyForce);
 
     void SetSolution_Vel_Direct(su2double *sol);
 

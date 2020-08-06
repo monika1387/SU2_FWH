@@ -5694,10 +5694,10 @@ void CEulerSolver::Pressure_Forces(CGeometry *geometry, CConfig *config) {
           Coord = geometry->node[iPoint]->GetCoord();
           Velocity_y = Velocity_y + node[iPoint]->GetVelocity(1);
 
-          cout << "Node count :: " << nodecount << endl;
-          cout << "Mesh Coordinates [x,y] :: " << Coord[0] << ", " << Coord[1] << endl;
-          cout << "Vel[1] at point :: " << node[iPoint]->GetVelocity(1) << endl;
-          cout << "Velocity_y :: " << Velocity_y << endl;
+//          cout << "Node count :: " << nodecount << endl;
+//          cout << "Mesh Coordinates [x,y] :: " << Coord[0] << ", " << Coord[1] << endl;
+//          cout << "Vel[1] at point :: " << node[iPoint]->GetVelocity(1) << endl;
+//          cout << "Velocity_y :: " << Velocity_y << endl;
 
           
           /*--- Quadratic objective function for the near-field.
@@ -15570,10 +15570,10 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double BF_res[nDim + 2] = {0.0};
 		BF_res[0] = 0.0;
 		
-		for(int iDim = 0; iDim < nDim; iDim ++){
-			BF_res[iDim + 1] = F[iDim];
-			node[iPoint]->SetBodyForce_Source(iDim, F[iDim]);
-		}
+		for(int iDim = 0; iDim < nDim; iDim ++) {
+            BF_res[iDim + 1] = F[iDim];
+        }
+        node[iPoint]->SetBodyForceVector_Turbo(F);
 		BF_res[nDim+1] = U_i[0] * e_source;
 		/*
 		su2double BGradient[nDim] = {0.0};
@@ -15585,7 +15585,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		cout << x_coord  << ", " << radius << ", " << bfFac<< ", "  << rotFac << ", " << b << ", " << BGradient[0] << ", " << BGradient[1] << ", " << BGradient[2] << ", " << Nx<< ", " << Nt  << ", " << Nr << endl;
 		*/
 		// Storing body-force vector on the current node
-		cout<<"Direct Body Force :: "<<F[0]<<" "<<F[1]<<" "<<F[2]<<"\n";
+//		cout<<"Direct Body Force :: "<<node[iPoint]->GetBodyForceVector_Turbo()[2]<<"\n";
 		
 		node[iPoint]->SetBody_Force_Source(BF_res);
     }

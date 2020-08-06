@@ -47,7 +47,6 @@ CDiscAdjVariable::CDiscAdjVariable() : CVariable() {
   DualTime_Derivative   = NULL;
   DualTime_Derivative_n = NULL;
 
-  BFSource_Direct = NULL;
   Adjoint_BFSource = NULL;
 
 }
@@ -64,12 +63,12 @@ CDiscAdjVariable::CDiscAdjVariable(su2double* val_solution, unsigned short val_n
 
   Solution_Direct   = NULL;
   Sensitivity       = NULL;
-  BFSource_Direct   = NULL;
 
   DualTime_Derivative   = NULL;
   DualTime_Derivative_n = NULL;
   Adjoint_BFSource      = NULL;
-
+  Body_Force_Turbo_Direct = NULL;
+   Body_Force_Turbo = NULL;
   if (dual_time) {
     DualTime_Derivative = new su2double[nVar];
     DualTime_Derivative_n = new su2double[nVar];
@@ -99,13 +98,15 @@ CDiscAdjVariable::CDiscAdjVariable(su2double* val_solution, unsigned short val_n
   }
 
   if (body_force) {
-    BFSource_Direct = new su2double[nDim];
     Adjoint_BFSource = new su2double[nVar];
-    for (iDim = 0; iDim < nDim; iDim++) {
-      BFSource_Direct[iDim] = 0.0;
-    }
+      Body_Force_Turbo_Direct = new su2double[nDim];
+      Body_Force_Turbo = new su2double[nDim];
     for (iVar = 0; iVar < nVar; iVar++){
       Adjoint_BFSource[iVar] = 0.0;
+    }
+    for (iDim = 0; iDim < nDim; iDim ++) {
+        Body_Force_Turbo_Direct[iDim] = 0.0;
+        Body_Force_Turbo[iDim] = 0.0;
     }
   }
 
@@ -162,8 +163,8 @@ CDiscAdjVariable::~CDiscAdjVariable() {
 
   if (DualTime_Derivative   != NULL) delete [] DualTime_Derivative;
   if (DualTime_Derivative_n != NULL) delete [] DualTime_Derivative_n;
-
-  if (BFSource_Direct != NULL) delete [] BFSource_Direct;
   if (Adjoint_BFSource != NULL) delete [] Adjoint_BFSource;
+    if (Body_Force_Turbo_Direct != NULL) delete [] Body_Force_Turbo_Direct;
+    if (Body_Force_Turbo != NULL) delete [] Body_Force_Turbo;
 
 }

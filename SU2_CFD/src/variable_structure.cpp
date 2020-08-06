@@ -60,7 +60,7 @@ CVariable::CVariable(void) {
   Blockage_Source = NULL;
   Body_Force_Source = NULL;
   Body_Force_Parameters = NULL;
-  
+  Body_Force_Turbo_Direct = NULL;
 }
 
 CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
@@ -84,6 +84,7 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
   Blockage_Source = NULL;
   Body_Force_Source = NULL;
   Body_Force_Parameters = NULL;
+    Body_Force_Turbo_Direct = NULL;
   /*--- Initialize the number of solution variables. This version
    of the constructor will be used primarily for converting the
    restart files into solution files (SU2_SOL). ---*/
@@ -139,6 +140,7 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   Blockage_Source = NULL;
   Body_Force_Source = NULL;
   Body_Force_Parameters = NULL;
+    Body_Force_Turbo_Direct = NULL;
   /*--- Initializate the number of dimension and number of variables ---*/
   nDim = val_nDim;
   nVar = val_nvar;
@@ -166,8 +168,10 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
 	  Blockage_Source = new su2double[nDim + 2];
 	  Body_Force_Source = new su2double[nDim + 2];
 	  Body_Force_Parameters = new su2double[9];
+    Body_Force_Turbo_Direct = new su2double[nDim];
       for (iDim = 0; iDim < nDim; iDim++) {
           Body_Force_Turbo[iDim] = 0.0;
+          Body_Force_Turbo_Direct[iDim] = 0.0;
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
           Blockage_Source[iDim] = 0.0;

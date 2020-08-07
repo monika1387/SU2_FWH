@@ -578,8 +578,9 @@ void CFluidIteration::Preprocess(COutput *output,
   }
     if (body_force && ExtIter == 0) {
             cout << "Interpolating camber normal field and blockage field to mesh(1)" << endl;
-            solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->InterpolateBodyForceParams(
-                    geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
+        solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][INST_0][MESH_0], config_container[val_iZone]);
+        solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
+        solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
             //cout << "Calculating blockage gradient field" << endl;
             //solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
     }
@@ -2545,6 +2546,7 @@ void CDiscAdjFluidIteration::SetDependencies(CSolver *****solver_container, CGeo
 
   bool frozen_visc = config_container[iZone]->GetFrozen_Visc_Disc();
   bool heat = config_container[iZone]->GetWeakly_Coupled_Heat();
+  bool body_force = config_container[iZone]->GetBody_Force();
   if ((kind_recording == MESH_COORDS) || (kind_recording == NONE)  ||
       (kind_recording == GEOMETRY_CROSS_TERM) || (kind_recording == ALL_VARIABLES)){
 
@@ -2557,7 +2559,11 @@ void CDiscAdjFluidIteration::SetDependencies(CSolver *****solver_container, CGeo
   /*--- Compute coupling between flow and turbulent equations ---*/
 
   solver_container[iZone][iInst][MESH_0][FLOW_SOL]->Set_MPI_Solution(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
-
+//    if(body_force){
+//        solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[iZone][INST_0][MESH_0], config_container[iZone]);
+//        solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[iZone],geometry_container[iZone][INST_0][MESH_0]);
+//        solver_container[iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageVector(config_container[iZone],geometry_container[iZone][INST_0][MESH_0]);
+//    }
   if (turbulent && !frozen_visc){
     solver_container[iZone][iInst][MESH_0][FLOW_SOL]->Preprocessing(geometry_container[iZone][iInst][MESH_0],solver_container[iZone][iInst][MESH_0], config_container[iZone], MESH_0, NO_RK_ITER, RUNTIME_FLOW_SYS, true);
     solver_container[iZone][iInst][MESH_0][TURB_SOL]->Postprocessing(geometry_container[iZone][iInst][MESH_0],solver_container[iZone][iInst][MESH_0], config_container[iZone], MESH_0);

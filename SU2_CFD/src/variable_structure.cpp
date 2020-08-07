@@ -255,14 +255,6 @@ void CVariable::SetUnd_Lapl(unsigned short val_var, su2double val_und_lapl) {
   
 }
 
-void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforceturbo) {
-
-    for (unsigned short iDim = 0; iDim < nDim; iDim++) {
-        Body_Force_Turbo[iDim] = val_bodyforceturbo[iDim];
-    }
-
-}
-
 void CVariable::SetBlockage_Source(su2double *val_blockagevector) {
 
     for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {

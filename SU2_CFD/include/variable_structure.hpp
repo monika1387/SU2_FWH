@@ -2356,7 +2356,7 @@ public:
    * \brief Register the body force source variables in the solution array as input/output variable.
    * \param[in] input - input or output variables.
    */
-  void RegisterBFSource(bool input);
+  virtual void RegisterBFSource(bool input);
   
   /*!
    * \brief Register the variables in the solution_time_n array as input/output variable.
@@ -3253,18 +3253,12 @@ public:
    * \param[in] val_solution - Value of the body force source term. for the index <i>val_var</i>.
    */
   void SetBodyForce_Source(unsigned short val_var, su2double val_source);
-
+  void RegisterBFSource(bool input);
   /*!
    * \brief Set the value of the hb source.
    * \param[in] adj_bf - Pointer to the residual vector.
    */
   void SetAdjoint_BFSource(su2double *adj_bf);
-
-  /*!
-   * \brief Get the value of the hb source.
-   * \param[in] adj_bf - Pointer to the residual vector.
-   */
-  void GetAdjoint_BFSource(su2double* adj_bf);
 
   /*!
    * \brief Add a value to the new solution container for Classical RK4.
@@ -3588,16 +3582,8 @@ public:
    */
   su2double GetHarmonicBalance_Source(unsigned short val_var);
 
-//  /*!
-//   * \brief A virtual member. Set the body force source for the adjoint solver.
-//   * \param[in] val_BFSource_Direct - Value of the direct solution.
-//   */
-//  virtual void SetBFSource_Direct(su2double *val_BFSource_Direct);
-//
-//  /*!
-//   * \brief A virtual member. Get the direct body force solution for the adjoint solver.
-//   * \return Pointer to the direct solution vector.
-//   */
+    su2double *GetBodyForceVector_Turbo(void);
+    void SetBodyForceVector_Turbo(su2double *val_bodyforceres);
   
   /*!
    * \brief Get the value of the preconditioner Beta.
@@ -4837,8 +4823,6 @@ public:
 
   void SetBodyForceDirect(su2double *val_bodyForce);
     su2double* GetBodyForceDirect(void);
-    su2double *GetBodyForceVector_Turbo(void);
-    void SetBodyForceVector_Turbo(su2double *val_bodyforceres);
   
   /*!
    * \brief Set the restart geometry (coordinate of the converged solution)

@@ -286,7 +286,6 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 			direct_solver->node[iPoint]->RegisterBFSource(input);
-      //direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
 }

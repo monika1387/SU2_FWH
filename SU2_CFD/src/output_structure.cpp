@@ -13164,10 +13164,10 @@ void COutput::LoadLocalData_Flow(CConfig *config, CGeometry *geometry, CSolver *
 			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceParameters()[8]; iVar++;
 			
 			
-			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[0]; iVar++;
 			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[1]; iVar++;
+			Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2]; iVar++;
 			if(geometry->GetnDim() == 3){
-				Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2]; iVar++;
+				Local_Data[jPoint][iVar] = solver[FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[3]; iVar++;
 			}
 		}
         /*--- New variables can be loaded to the Local_Data structure here,

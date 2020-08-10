@@ -188,7 +188,7 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
 
   if (body_force){
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
-      for ( unsigned short iDim = 0; iDim < nDim; iDim++) {
+      for ( unsigned short iDim = 0; iDim < nDim + 2; iDim++) {
 //          cout<<"Body Force in Set Recoding :: "<<iDim<<" "<< node[iPoint]->GetBodyForceDirect()[iDim]<<endl;
         direct_solver->node[iPoint]->SetBodyForce_Source(iDim, node[iPoint]->GetBodyForceDirect()[iDim]);
       }
@@ -861,12 +861,12 @@ void CDiscAdjSolver::SetSensitivity(CGeometry *geometry, CConfig *config) {
   if(body_force){
 	  cout << "Getting body-force sensitivities..." << endl;
 	  for(iPoint=0; iPoint < nPoint; iPoint++){
-		  for(iDim=0; iDim < nDim; iDim ++){
+		  for(iDim=0; iDim < nDim + 2; iDim ++){
               cout<<"Body Force Value is 871(solved_adjoint_dis.cpp)"<<node[iPoint]->GetBodyForceVector_Turbo()[iDim]<<endl;
           Sensitivity = SU2_TYPE::GetDerivative(node[iPoint]->GetBodyForceVector_Turbo()[iDim]);
 			  //AD::ResetInput(direct_solver->node[iPoint]->GetBodyForceResidual()[iDim]);
 			  cout<<"Sesitivity is ::"<<Sensitivity<<endl;
-				node[iPoint]->SetSensitivity(iDim-1, node[iPoint]->GetSensitivity(iDim-1) + Sensitivity);
+				node[iPoint]->SetSensitivity(iDim, node[iPoint]->GetSensitivity(iDim) + Sensitivity);
 			}
 		  }
 	 }else{

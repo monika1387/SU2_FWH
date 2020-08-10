@@ -98,8 +98,8 @@ CVariable::CVariable(unsigned short val_nvar, CConfig *config) {
     Solution[iVar] = 0.0;
 
   if (config->GetBody_Force()) {
-    Body_Force_Turbo = new su2double[nDim];
-    for (unsigned short iDim = 0; iDim < nDim; iDim++) {
+    Body_Force_Turbo = new su2double[nDim + 2];
+    for (unsigned short iDim = 0; iDim < nDim+2; iDim++) {
       Body_Force_Turbo[iDim] = 0.0;
     }
 	Blockage_Source = new su2double[nDim + 2];
@@ -164,12 +164,12 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
   }
 
   if (config->GetBody_Force()) {
-      Body_Force_Turbo = new su2double[nDim];
+      Body_Force_Turbo = new su2double[nDim+2];
 	  Blockage_Source = new su2double[nDim + 2];
 	  Body_Force_Source = new su2double[nDim + 2];
 	  Body_Force_Parameters = new su2double[9];
-    Body_Force_Turbo_Direct = new su2double[nDim];
-      for (iDim = 0; iDim < nDim; iDim++) {
+    Body_Force_Turbo_Direct = new su2double[nDim+2];
+      for (iDim = 0; iDim < nDim + 2; iDim++) {
           Body_Force_Turbo[iDim] = 0.0;
           Body_Force_Turbo_Direct[iDim] = 0.0;
       }
@@ -178,6 +178,7 @@ CVariable::CVariable(unsigned short val_nDim, unsigned short val_nvar, CConfig *
       }
 	  for (iDim = 0; iDim < nDim+2; iDim++) {
           Body_Force_Source[iDim] = 0.0;
+		  
       }
 	  for (iDim = 0; iDim < 9; iDim++) {
           Body_Force_Parameters[iDim] = 0.0;
@@ -216,6 +217,7 @@ CVariable::~CVariable(void) {
   if (Residual_Sum        != NULL) delete [] Residual_Sum;
   if (Solution_Adj_Old    != NULL) delete [] Solution_Adj_Old;
   if (Body_Force_Turbo    != NULL) delete [] Body_Force_Turbo;
+  if (Body_Force_Turbo_Direct    != NULL) delete [] Body_Force_Turbo_Direct;
   if (Blockage_Source    != NULL) delete [] Blockage_Source;
   if (Body_Force_Source    != NULL) delete [] Body_Force_Source;
   if (Body_Force_Parameters    != NULL) delete [] Body_Force_Parameters;

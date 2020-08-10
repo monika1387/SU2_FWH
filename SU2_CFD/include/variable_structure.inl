@@ -1374,10 +1374,12 @@ inline void CVariable::RegisterBFSource(bool input) {}
 
 inline void CEulerVariable::RegisterBFSource(bool input) {
   if (input) {
-    for (unsigned short iDim = 0; iDim < nDim; iDim++)
+    cout << "Registered body-forces(variable_structure.inl, line 1377): " << Body_Force_Turbo[1] << " " << Body_Force_Turbo[2] << " " << Body_Force_Turbo[3] << endl;
+    for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
       AD::RegisterInput(Body_Force_Turbo[iDim]);
+	  
   }
-  else { for (unsigned short iDim = 0; iDim < nDim; iDim++)
+  else { for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
       AD::RegisterOutput(Body_Force_Turbo[iDim]);}
 }
 
@@ -1468,13 +1470,13 @@ inline void CDiscAdjVariable::SetSolution_Direct(su2double *val_solution_direct)
 }
 
 inline void CDiscAdjVariable::SetBodyForceDirect(su2double *val_bodyForce){
-	for (unsigned short iDim = 0; iDim < nDim; iDim ++){
+	for (unsigned short iDim = 0; iDim < nDim+2; iDim ++){
         Body_Force_Turbo_Direct[iDim] = val_bodyForce[iDim];
 	}
 }
 
 inline void CEulerVariable::SetBodyForceVector_Turbo(su2double *val_bodyforce){
-    for (unsigned short iDim = 0; iDim < nDim; iDim ++){
+    for (unsigned short iDim = 0; iDim < nDim + 2; iDim ++){
         Body_Force_Turbo[iDim] = val_bodyforce[iDim];
     }
 }

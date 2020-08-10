@@ -6623,8 +6623,8 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 	su2double axialChord[n_rows][n_blade][n_points];
 	su2double blade_count[n_rows];
 	su2double rotation[n_rows];
-	int start_line{};
-	int end_line{};
+	int start_line = 0;
+	int end_line = 0;
 	su2double x_min = 0.0;
 	for (int q=0; q < n_rows; q++){
 		for (int p=0; p < n_blade; p++){
@@ -6657,7 +6657,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 		su2double x = Coord[2];
 		su2double y = Coord[1];
 		
-		su2double r{};
+		su2double r = 0;
 		su2double b=1.0, Nx = 0.0, Nt = 1.0, Nr = 0.0, bfFac = 0.0, x_le = 0.0, rotFac = 0.0, bladeCount = 1, chord = 1.0;
 		su2double BodyForceParams[9] = {bfFac, b, Nx, Nt, Nr, x_le, rotFac, bladeCount, chord};
 		if (nDim == 3){
@@ -6678,7 +6678,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 					su2double x_le_side[5] = {X_LE[q][j][n], X_LE[q][j+1][n], X_LE[q][j+1][n+1], X_LE[q][j][n+1], X_LE[q][j][n]};
 					su2double chord_side[5] = {axialChord[q][j][n], axialChord[q][j+1][n], axialChord[q][j+1][n+1], axialChord[q][j][n+1], axialChord[q][j][n]};
 					
-					su2double x1{}, x2{}, r1{}, r2{};
+					su2double x1, x2, r1, r2;
 					int nInt=0;
 					bool inside = false;
 					for(int p=0; p < 4; p++){
@@ -6703,8 +6703,8 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 						inside = true;
 					}
 					if (inside){
-						su2double dist{}, deNom=0;
-						su2double eNum_b{}, eNum_Nx{}, eNum_Nt{}, eNum_Nr{}, eNum_x_le{}, eNum_chord{};
+						su2double dist = 0, deNom=0;
+						su2double eNum_b = 0, eNum_Nx = 0, eNum_Nt = 0, eNum_Nr = 0, eNum_x_le = 0, eNum_chord = 0;
 						for(int p = 0; p < 4; p++){
 							dist = sqrt((x - x_side[p]) * (x - x_side[p]) + (r - r_side[p]) * (r - r_side[p]));
 							deNom += 1 / dist;
@@ -6744,8 +6744,8 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 		node[iPoint]->SetBodyForceParameters(BodyForceParams);
 			//cout << x_coord << ", " << BodyForceParams[0] << ", " << BodyForceParams[1] << ", " BodyForceParams[2] << ", " BodyForceParams[3] << ", " BodyForceParams[4] << endl;
 	}
-	cout << "Calculating blockage gradient field" << endl;
-	ComputeBlockageGradient(geometry, config);
+	//cout << "Calculating blockage gradient field" << endl;
+	//ComputeBlockageGradient(geometry, config);
 }
 
 void CEulerSolver::ComputeBlockageGradient(CGeometry *geometry, CConfig *config) {
@@ -15424,7 +15424,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		
 		// Extracting node coordinates 
         Coord_i = geometry->node[iPoint]->GetCoord();
-		su2double x_coord{}, y_coord{}, z_coord{}, radius{};
+		su2double x_coord, y_coord, z_coord, radius;
 		
 		// Obtaining the absolute velocity magnitudes, depending on case dimension.
 		z_coord = Coord_i[2];
@@ -15573,8 +15573,9 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		for(int iDim = 0; iDim < nDim; iDim ++) {
             BF_res[iDim + 1] = F[iDim];
         }
-        node[iPoint]->SetBodyForceVector_Turbo(F);
+        
 		BF_res[nDim+1] = U_i[0] * e_source;
+		node[iPoint]->SetBodyForceVector_Turbo(BF_res);
 		/*
 		su2double BGradient[nDim] = {0.0};
 		for(int iDim=0; iDim < nDim; iDim++){

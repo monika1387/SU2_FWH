@@ -170,6 +170,12 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
   for (iPoint = 0; iPoint < nPoint; iPoint++) {
     direct_solver->node[iPoint]->SetSolution(node[iPoint]->GetSolution_Direct());
   }
+  if(body_force){
+	  direct_solver->InterpolateBodyForceParams(geometry, config);
+	  direct_solver->ComputeBlockageGradient(geometry, config);
+	  direct_solver->ComputeBodyForce_Turbo(config, geometry);
+	  direct_solver->ComputeBlockageVector(config, geometry);
+  }
 
   if (time_n_needed) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
@@ -186,8 +192,7 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
     }
   }
 
-  // TODO Body force solution set is required
-  
+
 
   /*--- Set the Jacobian to zero since this is not done inside the fluid iteration
    * when running the discrete adjoint solver. ---*/
@@ -298,7 +303,7 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
     Pressure               = config->GetPressure_FreeStreamND();
     Temperature            = config->GetTemperature_FreeStreamND();
 	bool body_force 			= config->GetBody_Force();
-    su2double *BFVector;
+    su2double *BFParameters;
 	
     su2double SoundSpeed = 0.0;
     
@@ -310,7 +315,6 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
       AD::RegisterInput(Alpha);
       AD::RegisterInput(Temperature);
       AD::RegisterInput(Pressure);
-      // TODO Register the BodyForce Parameters here
     }
 	
     /*--- Recompute the free stream velocity ---*/
@@ -584,7 +588,7 @@ void CDiscAdjSolver::ExtractAdjoint_Variables(CGeometry *geometry, CConfig *conf
     Total_Sens_Temp  = Local_Sens_Temp;
     Total_Sens_Press = Local_Sens_Press;
 #endif
-    //TODO Add BF_Parameter Sensitivity Extraction here
+    
   }
 
   if ((config->GetKind_Regime() == COMPRESSIBLE) && (KindDirect_Solver == RUNTIME_FLOW_SYS) && config->GetBoolTurbomachinery()){

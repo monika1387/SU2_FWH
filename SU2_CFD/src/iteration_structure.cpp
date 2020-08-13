@@ -579,9 +579,10 @@ void CFluidIteration::Preprocess(COutput *output,
     if (body_force && ExtIter == 0) {
             cout << "Interpolating camber normal field and blockage field to mesh(1)" << endl;
         solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][INST_0][MESH_0], config_container[val_iZone]);
+		cout << "Computing blockage gradient vield(1)" << endl;
 		solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][INST_0][MESH_0], config_container[val_iZone]);
-        solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
-        solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
+        //solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
+        //solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
             //cout << "Calculating blockage gradient field" << endl;
             //solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
     }
@@ -677,17 +678,15 @@ void CFluidIteration::Iterate(COutput *output,
 
   /*--- Compute body force and save to each node ---*/
   if (body_force){
-	  if(ExtIter== 0){
-		 cout << "Interpolating camber normal field and blockage field to mesh(1)" <<endl;
-		 solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
+	  //if(ExtIter== 0){
+		// cout << "Interpolating camber normal field and blockage field to mesh(1)" <<endl;
+		 //solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
 		 //cout << "Calculating blockage gradient field" << endl;
-		 solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
-	  }
-	  //cout<<"Body force function being called for zone :"<<val_iZone<<endl;
-	  cout << "Calling for the body-force function(1)" << endl;
+		 //solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][MESH_0], config_container[val_iZone]);
+	  //}
 	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 	  //cout<<"Blockage function being called for zone :"<<val_iZone<<endl;
-	  cout << "Calling for the blockage function(1)" <<endl;
+	  //cout << "Calling for the blockage function(1)" <<endl;
 	  solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
   }
 
@@ -1902,7 +1901,7 @@ void CAdjFluidIteration::Preprocess(COutput *output,
   if (((dynamic_mesh && ExtIter == 0) || config_container[val_iZone]->GetUnsteady_Simulation()) && !harmonic_balance) {
     int Direct_Iter = SU2_TYPE::Int(config_container[val_iZone]->GetUnst_AdjointIter()) - SU2_TYPE::Int(ExtIter) - 1;
     if (rank == MASTER_NODE && val_iZone == ZONE_0 && config_container[val_iZone]->GetUnsteady_Simulation())
-      cout << endl << " Loading flow solution from direct iteration " << Direct_Iter << "." << endl;
+      cout << endl << " Loading flow solution from direct iteration(iteration_structure, 1905)  " << Direct_Iter << "." << endl;
     solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->LoadRestart(geometry_container[val_iZone][val_iInst], solver_container[val_iZone][val_iInst], config_container[val_iZone], Direct_Iter, true);
   }
   
@@ -2291,21 +2290,27 @@ void CDiscAdjFluidIteration::Preprocess(COutput *output,
 		  cout << "Computing blockage gradient(2)" << endl;
 		  solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
 		  //cout<<"Body force function being called for zone :"<<val_iZone<<endl;
-			cout << "Calling for the body-force function(2)" << endl;
+			//cout << "Calling for the body-force function(2)" << endl;
 			solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 			//cout<<"Blockage function being called for zone :"<<val_iZone<<endl;
-			cout << "Calling for the blockage function(2)" <<endl;
+			//cout << "Calling for the blockage function(2)" <<endl;
 			solver_container[val_iZone][MESH_0][INST_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][val_iInst][MESH_0]);
 		  //cout << "Calculating blockage gradient field" << endl;
 		  //solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][val_iInst][iMesh], config_container[val_iZone]);
+		  //solver_container[val_iInst][MESH_0][FLOW_SOL]->LoadRestart(geometry[val_iInst], solver_container[val_iInst], config_container[val_iZone], val_iter, update_geo);
 	  }
       for (iPoint = 0; iPoint < geometry_container[val_iZone][val_iInst][iMesh]->GetnPoint(); iPoint++) {
         solver_container[val_iZone][val_iInst][iMesh][ADJFLOW_SOL]->node[iPoint]->SetSolution_Direct(solver_container[val_iZone][val_iInst][iMesh][FLOW_SOL]->node[iPoint]->GetSolution());
+		
 		if (body_force){
+			
 //		    cout<<"iteration_strucutre"<<solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2]<<endl;
-			solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->SetBodyForceDirect(solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo());
+			for(int iDim=0; iDim < 5; iDim++){
+				solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->SetBodyForce_Source(iDim, solver_container[val_iZone][val_iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[iDim]);
+			}
+			//cout << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[1] << endl;
 			//solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->SetBodyForceVector_Turbo(solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceDirect());
-			cout << "Iteration structure::Preprocess(line 2304) body-force: " << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[1] << " " << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2] << " " << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2] << endl; 
+			//cout << "Iteration structure::Preprocess(line 2304) body-force: " << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[1] << " " << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2] << " " << solver_container[val_iZone][val_iInst][MESH_0][ADJFLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo()[2] << endl; 
 		}
       }
     }
@@ -2504,7 +2509,11 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
     
   }
 
-//  if (kind_recording == CAMB_NORM) {
+  if (kind_recording == CAMB_NORM) {
+	 for (int iPoint = 0; iPoint <  geometry_container[iZone][iInst][MESH_0]->GetnPoint(); iPoint++) {
+		 solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->RegisterBFSource(true);
+    }
+  }
 //    /*--- Register camber normals as input ---*/
 //
 //	int nPoint = geometry_container[iZone][iInst][MESH_0]->GetnPoint();
@@ -2581,6 +2590,8 @@ void CDiscAdjFluidIteration::SetDependencies(CSolver *****solver_container, CGeo
     solver_container[iZone][iInst][MESH_0][HEAT_SOL]->Postprocessing(geometry_container[iZone][iInst][MESH_0],solver_container[iZone][iInst][MESH_0], config_container[iZone], MESH_0);
     solver_container[iZone][iInst][MESH_0][HEAT_SOL]->Set_MPI_Solution(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
   }
+  
+  
 }
 
 void CDiscAdjFluidIteration::RegisterOutput(CSolver *****solver_container, CGeometry ****geometry_container, CConfig **config_container, COutput* output, unsigned short iZone, unsigned short iInst){

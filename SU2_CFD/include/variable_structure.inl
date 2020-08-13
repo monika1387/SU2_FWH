@@ -1374,13 +1374,25 @@ inline void CVariable::RegisterBFSource(bool input) {}
 
 inline void CEulerVariable::RegisterBFSource(bool input) {
   if (input) {
-    cout << "Registered body-forces(variable_structure.inl, line 1377): " << Body_Force_Turbo[1] << " " << Body_Force_Turbo[2] << " " << Body_Force_Turbo[3] << endl;
-    for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
-      AD::RegisterInput(Body_Force_Turbo[iDim]);
+    //cout << "Registered body-forces(variable_structure.inl, line 1377): " << Body_Force_Turbo[1] << " " << Body_Force_Turbo[2] << " " << Body_Force_Turbo[3] << endl;
+    //for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
+    //  AD::RegisterInput(Body_Force_Turbo[iDim]);
+	//cout << "Registered input camber normal vector: "<<  Body_Force_Parameters[2] << " " <<Body_Force_Parameters[3] << " " << Body_Force_Parameters[4] << endl;
+	for (unsigned short iDim=2; iDim<5; iDim++){
+		
+		AD::RegisterInput(Body_Force_Parameters[iDim]);
+	}
 	  
   }
-  else { for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
-      AD::RegisterOutput(Body_Force_Turbo[iDim]);}
+  else {
+	//for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
+		//AD::RegisterOutput(Body_Force_Turbo[iDim]);
+	// 
+	  cout << "Registered output camber normal vector: "<<  Body_Force_Parameters[2] << " " <<Body_Force_Parameters[3] << " " << Body_Force_Parameters[4] << endl;
+	  for (unsigned short iDim=2; iDim<5; iDim++){
+		AD::RegisterOutput(Body_Force_Parameters[iDim]);
+	}
+	}
 }
 
 inline void CVariable::RegisterSolution_time_n() {

@@ -5,6 +5,7 @@
  * \version 6.2.0 "Falcon"
  *
  * The current SU2 release has been coordinated by the
+ 
  * SU2 International Developers Society <www.su2devsociety.org>
  * with selected contributions from the open-source community.
  *
@@ -5083,7 +5084,6 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
   
   if (body_force && !adjoint) {
       /*--- Loop over all points ---*/
-	  cout << "Setting body-force residual" << endl;
     for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
 
       /*--- Load the conservative variables ---*/
@@ -6605,14 +6605,13 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 	
 	unsigned short nDim = geometry->GetnDim();
 	su2double BF_radius = config->GetBody_Force_Radius();
-	int n_blade{0};
-	int n_points{0};
-	int n_rows{0};
+	int n_blade{};
+	int n_points{};
+	int n_rows{};
 	std::ifstream inputFile((config->GetBFM_inputName()).c_str());
 	//inputFile.open(config->GetBFM_inputName());
 	string line;
 	inputFile >> n_rows >> n_blade >> n_points;
-	
 	su2double xarray[n_rows][n_blade][n_points];
 	su2double rarray[n_rows][n_blade][n_points];
 	su2double Nxarray[n_rows][n_blade][n_points];
@@ -6689,7 +6688,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 						
 						su2double A[2][2] = {{x - x_min, - (x2 - x1)}, {0, -(r2 - r1)}};
 						su2double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
-						su2double S_ray{}, S_side{};
+						su2double S_ray=0, S_side=0;
 						
 						if(det != 0){
 							S_ray = (1 / det) * ((x1 - x_min) * A[1][1] + (r1 - r) * -A[0][1]);
@@ -6698,6 +6697,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 								nInt ++;
 							}
 						}
+						
 					}
 					if (nInt % 2 != 0 and nInt > 0){
 						inside = true;
@@ -6742,7 +6742,7 @@ void CEulerSolver::InterpolateBodyForceParams(CGeometry *geometry, CConfig *conf
 		}
 
 		node[iPoint]->SetBodyForceParameters(BodyForceParams);
-			//cout << x_coord << ", " << BodyForceParams[0] << ", " << BodyForceParams[1] << ", " BodyForceParams[2] << ", " BodyForceParams[3] << ", " BodyForceParams[4] << endl;
+		//cout << x << ", "  << r << ", " << BodyForceParams[0] << ", " << BodyForceParams[1] << ", " << BodyForceParams[2] << ", " << BodyForceParams[3] << ", " << BodyForceParams[4] << endl;
 	}
 	//cout << "Calculating blockage gradient field" << endl;
 	//ComputeBlockageGradient(geometry, config);
@@ -15344,7 +15344,7 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 	
 	//  Defining the blockage residual vector.
 	su2double Blockage_Vector[nDim + 2] = { 0.0 };
-    cout << "Blockage function is being called" <<endl;
+    //cout << "Blockage function is being called" <<endl;
 	// The function loops over all points in the zone, calculating and storing the residual blockage vector for each
 	// respective node.
 	for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
@@ -15415,7 +15415,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 	//if(ExtIter == 0){
 	//	InterpolateBodyForceParams(geometry, config);
 	//}
-	cout << "Body-force function is being called" <<endl;
+	//cout << "Body-force function is being called" <<endl;
     for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
 		
 		// Extracting flow variables and primitive variables.

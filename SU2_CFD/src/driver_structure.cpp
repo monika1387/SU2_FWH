@@ -4457,7 +4457,7 @@ void CDiscAdjFluidDriver::Run() {
 
   unsigned short iZone = 0, checkConvergence;
   unsigned long IntIter, nIntIter;
-
+  bool body_force        = (config_container[ZONE_0]->GetBody_Force());
   bool unsteady;
 
   unsteady = (config_container[MESH_0]->GetUnsteady_Simulation() == DT_STEPPING_1ST) || (config_container[MESH_0]->GetUnsteady_Simulation() == DT_STEPPING_2ND);
@@ -4558,8 +4558,11 @@ void CDiscAdjFluidDriver::Run() {
 
 //    /*--- Store the computational graph of one direct iteration with the mesh coordinates as input. ---*/
 //	cout << "Setting body-forces as input..." << endl;
-    SetRecording(MESH_COORDS);
-
+	if(!body_force){
+		SetRecording(MESH_COORDS);
+	}else{
+		SetRecording(CAMB_NORM);
+	}
     /*--- Initialize the adjoint of the output variables of the iteration with the adjoint solution
      *    of the current iteration. The values are passed to the AD tool. ---*/
 
@@ -4594,7 +4597,6 @@ void CDiscAdjFluidDriver::Run() {
 
 void CDiscAdjFluidDriver::SetRecording(unsigned short kind_recording){
   unsigned short iZone, iMesh;
-
   AD::Reset();
 
   /*--- Prepare for recording by resetting the flow solution to the initial converged solution---*/
@@ -4621,6 +4623,22 @@ void CDiscAdjFluidDriver::SetRecording(unsigned short kind_recording){
       cout << "Compute residuals to check the convergence of the direct problem." << endl;
       cout << "-------------------------------------------------------------------------" << endl << endl;
     }
+	/*
+	 for (iZone = 0; iZone < nZone; iZone++) {
+		 if(config_container[iZone]->GetBody_Force()){
+			 for (iMesh = 0; iMesh <= config_container[iZone]->GetnMGLevels(); iMesh++){
+				cout << "Interpolating body-force parameters before registerInput" << endl;
+				solver_container[iZone][INST_0][iMesh][FLOW_SOL]->InterpolateBodyForceParameters(geometry_container[iZone][INST_0][iMesh], config_container[iZone]);
+				cout << "Computing blockage gradient field before registerInput" << endl;
+				solver_container[iZone][INST_0][iMesh][FLOW_SOL]->ComputeBlockageGradient(geometry_container[iZone][INST_0][iMesh], config_container[iZone]);
+				cout << "Computing body-force vector field before registerInput" << endl;
+				solver_container[iZone][INST_0][iMesh][FLOW_SOL]->ComputeBodyForceVector_Turbo(config_container[iZone], geometry_container[iZone][INST_0][iMesh]);
+				cout << "Computing blockage vector field before registerInput" << endl;
+				solver_container[iZone][INST_0][iMesh][FLOW_SOL]->ComputeBlockageVector(config_container[iZone], geometry_container[iZone][INST_0][iMesh]);
+			 }
+		 }
+	 }
+	*/
     for (iZone = 0; iZone < nZone; iZone++) {
       iteration_container[iZone][INST_0]->RegisterInput(solver_container, geometry_container, config_container, iZone, INST_0, kind_recording);
     }

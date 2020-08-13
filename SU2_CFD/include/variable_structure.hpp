@@ -2333,13 +2333,13 @@ public:
    * \brief Set the value of the bf source.
    * \param[in] adj_bf - Pointer to the residual vector.
    */
-  virtual void SetAdjoint_BFSource(su2double *adj_bf);
+  void SetAdjoint_BFSource(su2double *adj_bf);
 
   /*!
    * \brief Get the value of the bf source.
    * \param[in] adj_bf - Pointer to the residual vector.
    */
-  virtual void GetAdjoint_BFSource(su2double* adj_bf);
+  void GetAdjoint_BFSource(su2double* adj_bf);
 
   /*!
    * \brief A virtual member. Get the direct body force solution for the adjoint solver.
@@ -3258,7 +3258,7 @@ public:
    * \brief Set the value of the hb source.
    * \param[in] adj_bf - Pointer to the residual vector.
    */
-  void SetAdjoint_BFSource(su2double *adj_bf);
+//  void SetAdjoint_BFSource(su2double *adj_bf);
 
   /*!
    * \brief Add a value to the new solution container for Classical RK4.
@@ -4950,13 +4950,13 @@ public:
    * \brief Set the value of the hb source.
    * \param[in] adj_bf - Pointer to the residual vector.
    */
-  void SetAdjoint_BFSource(su2double *adj_bf);
+//  void SetAdjoint_BFSource(su2double *adj_bf);
 
   /*!
    * \brief Get the value of the hb source.
    * \param[in] adj_bf - Pointer to the residual vector.
    */
-  void GetAdjoint_BFSource(su2double* adj_bf);
+//  void GetAdjoint_BFSource(su2double* adj_bf);
 
 };
 

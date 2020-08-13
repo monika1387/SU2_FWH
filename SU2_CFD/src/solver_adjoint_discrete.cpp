@@ -787,7 +787,6 @@ void CDiscAdjSolver::SetAdjoint_Output(CGeometry *geometry, CConfig *config) {
     direct_solver->node[iPoint]->SetAdjointSolution(Solution);
     if (body_force) {
       node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-
       direct_solver->node[iPoint]->SetAdjoint_BFSource(Vector_BF);
     }
   }

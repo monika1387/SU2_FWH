@@ -15427,7 +15427,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		su2double x_coord, y_coord, z_coord, radius;
 		
 		// Obtaining the absolute velocity magnitudes, depending on case dimension.
-		z_coord = Coord_i[2];
+		z_coord = Coord_i[2];// Extra variable
 		su2double V_x, V_y, V_z, W_ax, W_r, W_th;
 		V_z = U_i[3] / U_i[0];
 		V_y = U_i[2] / U_i[0];
@@ -15438,8 +15438,8 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 			ST = 1.0;
 			V_x = 0.0;
 		}else{
-			x_coord = Coord_i[0];
-			y_coord = Coord_i[1];
+			x_coord = Coord_i[0]; // Extra variable
+			y_coord = Coord_i[1];// Extra variable
 			radius = sqrt(y_coord * y_coord + x_coord * x_coord);
 			CT = x_coord / radius;
 			ST = y_coord / radius;
@@ -15566,7 +15566,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		if(nDim == 3){
 			F[2] = U_i[0] * F_z;
 		}
-		
+		// Replace x by z
 		su2double BF_res[nDim + 2] = {0.0};
 		BF_res[0] = 0.0;
 		

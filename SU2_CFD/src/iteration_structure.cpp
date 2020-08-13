@@ -2481,25 +2481,6 @@ void CDiscAdjFluidIteration::RegisterInput(CSolver *****solver_container, CGeome
     if (heat) {
       solver_container[iZone][iInst][MESH_0][ADJHEAT_SOL]->RegisterSolution(geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
     }
-//    if(body_force) {
-//        int nPoint = geometry_container[iZone][iInst][MESH_0]->GetnPoint();
-//        int nDim = geometry_container[iZone][iInst][MESH_0]->GetnDim();
-//        su2double *BFVector = {0};
-//        unsigned short iDim;
-//        cout << "Registering camber normals as input" << endl;
-//        solver_container[iZone][iInst][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(
-//                geometry_container[iZone][iInst][MESH_0], config_container[iZone]);
-//        for (int iPoint = 0; iPoint < nPoint; iPoint++) {
-//
-//            BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceVector_Turbo();
-////			cout << BFVector[2] << " " << BFVector[3] << " " << BFVector[4] << endl;
-//            //BFVector = solver_container[iZone][iInst][MESH_0][FLOW_SOL]->node[iPoint]->GetBodyForceParameters();
-//            //cout << BFVector[0] << " " << BFVector[1] << " " << BFVector[2] << endl;
-//            for (iDim = 1; iDim < nDim + 1; iDim++) {
-//                AD::RegisterInput(BFVector[iDim]);
-//            }
-//        }
-//    }
   }
   if (kind_recording == MESH_COORDS){
     

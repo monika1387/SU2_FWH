@@ -1378,9 +1378,9 @@ inline void CEulerVariable::RegisterBFSource(bool input) {
     //for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
     //  AD::RegisterInput(Body_Force_Turbo[iDim]);
 	//cout << "Registered input camber normal vector: "<<  Body_Force_Parameters[2] << " " <<Body_Force_Parameters[3] << " " << Body_Force_Parameters[4] << endl;
-	for (unsigned short iDim=2; iDim<5; iDim++){
+	for (unsigned short iDim=0; iDim<nDim+1; iDim++){
 		
-		AD::RegisterInput(Body_Force_Parameters[iDim]);
+		AD::RegisterInput(Body_Force_Turbo[iDim]);
 	}
 	  
   }
@@ -1389,8 +1389,8 @@ inline void CEulerVariable::RegisterBFSource(bool input) {
 		//AD::RegisterOutput(Body_Force_Turbo[iDim]);
 	// 
 	  cout << "Registered output camber normal vector: "<<  Body_Force_Parameters[2] << " " <<Body_Force_Parameters[3] << " " << Body_Force_Parameters[4] << endl;
-	  for (unsigned short iDim=2; iDim<5; iDim++){
-		AD::RegisterOutput(Body_Force_Parameters[iDim]);
+	  for (unsigned short iDim=0; iDim<nDim+1; iDim++){
+		AD::RegisterOutput(Body_Force_Turbo[iDim]);
 	}
 	}
 }
@@ -1737,14 +1737,14 @@ inline su2double CDiscAdjVariable::Get_BGSSolution_Geometry(unsigned short iDim)
 
 inline void CDiscAdjVariable::SetAdjoint_BFSource(su2double* adj_bf){
 //  cout << "CDiscAdjVariable::SetAdjoint_BFSource" << endl;
-  for (unsigned short iDim = 0; iDim < nDim; iDim++){
+  for (unsigned short iDim = 0; iDim < nDim+1; iDim++){
       Body_Force_Turbo[iDim] = adj_bf[iDim];
   }
 }
 
 inline void CDiscAdjVariable::GetAdjoint_BFSource(su2double* adj_bf){
 //  cout << "CDiscAdjVariable::GetAdjoint_BFSource" << endl;
-  for (unsigned short iDim = 0; iDim < nDim; iDim++) {
+  for (unsigned short iDim = 0; iDim < nDim+1; iDim++) {
     adj_bf[iDim] = Body_Force_Turbo[iDim];
   }
 }

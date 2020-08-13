@@ -185,6 +185,8 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
       }
     }
   }
+
+  // TODO Body force solution set is required
   
 
   /*--- Set the Jacobian to zero since this is not done inside the fluid iteration
@@ -274,7 +276,6 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
       direct_solver->node[iPoint]->RegisterSolution_time_n1();
     }
   }
- /*
   if (body_force) {
 	  
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
@@ -282,7 +283,6 @@ void CDiscAdjSolver::RegisterSolution(CGeometry *geometry, CConfig *config) {
 			direct_solver->node[iPoint]->RegisterBFSource(input);
     }
   }
-  */
 }
 
 void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, bool reset) {
@@ -310,6 +310,7 @@ void CDiscAdjSolver::RegisterVariables(CGeometry *geometry, CConfig *config, boo
       AD::RegisterInput(Alpha);
       AD::RegisterInput(Temperature);
       AD::RegisterInput(Pressure);
+      // TODO Register the BodyForce Parameters here
     }
 	
     /*--- Recompute the free stream velocity ---*/
@@ -397,12 +398,12 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
     direct_solver->node[iPoint]->RegisterSolution(input);
   }
 
-  //if (body_force) {
-	//  cout << "Registering body-forces as output..." << endl;
-    //for (iPoint = 0; iPoint < nPoint; iPoint++) {
-		//	direct_solver->node[iPoint]->RegisterBFSource(input);
-    //}
-  //}
+  if (body_force) {
+	  cout << "Registering body-forces as output..." << endl;
+    for (iPoint = 0; iPoint < nPoint; iPoint++) {
+			direct_solver->node[iPoint]->RegisterBFSource(input);
+    }
+  }
 }
 
 void CDiscAdjSolver::RegisterObj_Func(CConfig *config) {
@@ -542,16 +543,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 	  direct_solver -> node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-//	  cout<<"Vector is :: "<<Vector_BF[0]<<" "<<Vector_BF[1]<<endl;
       node[iPoint]->SetAdjoint_BFSource(Vector_BF);
-      /*--- Extract the adjoint solution ---*/
-//	  for(int iDim=1; iDim < nDim + 1; iDim ++){
-//		//direct_solver->node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-//		//adj_bf[iDim-1] = direct_solver -> node[iPoint] ->SU2_TYPE::GetDerivative(Vector_BF[iDim]);
-//		SU2_TYPE::SetDerivative(Vector_BF[iDim], 1.0);
-//      /*--- Store the adjoint solution ---*/
-//
-//	  }
     }
   }
 
@@ -592,6 +584,7 @@ void CDiscAdjSolver::ExtractAdjoint_Variables(CGeometry *geometry, CConfig *conf
     Total_Sens_Temp  = Local_Sens_Temp;
     Total_Sens_Press = Local_Sens_Press;
 #endif
+    //TODO Add BF_Parameter Sensitivity Extraction here
   }
 
   if ((config->GetKind_Regime() == COMPRESSIBLE) && (KindDirect_Solver == RUNTIME_FLOW_SYS) && config->GetBoolTurbomachinery()){

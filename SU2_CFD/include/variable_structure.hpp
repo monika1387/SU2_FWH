@@ -268,7 +268,11 @@ public:
   
   virtual su2double *GetBody_Force_Source(void);
   
-  virtual su2double *GetBodyForceParameters(void);
+  virtual su2double* GetBodyForceParameters(void);
+
+  void Set_BFSource(su2double *adj_val);
+
+  su2double* Get_BFSource(void);
   
   /*!
    * \brief Set to zero the solution.
@@ -3253,7 +3257,7 @@ public:
    * \param[in] val_solution - Value of the body force source term. for the index <i>val_var</i>.
    */
   void SetBodyForce_Source(unsigned short val_var, su2double val_source);
-  void RegisterBFSource(bool input);
+//  void RegisterBFSource(bool input);
   /*!
    * \brief Set the value of the hb source.
    * \param[in] adj_bf - Pointer to the residual vector.
@@ -3582,8 +3586,8 @@ public:
    */
   su2double GetHarmonicBalance_Source(unsigned short val_var);
 
-    su2double *GetBodyForceVector_Turbo(void);
-    void SetBodyForceVector_Turbo(su2double *val_bodyforceres);
+//    su2double *GetBodyForceVector_Turbo(void);
+//    void SetBodyForceVector_Turbo(su2double *val_bodyforceres);
   
   /*!
    * \brief Get the value of the preconditioner Beta.

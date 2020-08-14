@@ -171,10 +171,9 @@ void CDiscAdjSolver::SetRecording(CGeometry* geometry, CConfig *config){
     direct_solver->node[iPoint]->SetSolution(node[iPoint]->GetSolution_Direct());
   }
   if(body_force){
-	  direct_solver->InterpolateBodyForceParams(geometry, config);
-	  direct_solver->ComputeBlockageGradient(geometry, config);
-	  direct_solver->ComputeBodyForce_Turbo(config, geometry);
-	  direct_solver->ComputeBlockageVector(config, geometry);
+      cout<<"Set Recoding Test"<<endl;
+      cout<<node[iPoint]->GetBodyForceDirect()[0]<<endl;
+      direct_solver->node[iPoint]->Set_BFSource(node[iPoint]->GetBodyForceDirect());
   }
 
   if (time_n_needed) {
@@ -403,7 +402,6 @@ void CDiscAdjSolver::RegisterOutput(CGeometry *geometry, CConfig *config) {
   }
 
   if (body_force) {
-	  cout << "Registering body-forces as output..." << endl;
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 			direct_solver->node[iPoint]->RegisterBFSource(input);
     }
@@ -547,7 +545,7 @@ void CDiscAdjSolver::ExtractAdjoint_Solution(CGeometry *geometry, CConfig *confi
   if (body_force) {
     for (iPoint = 0; iPoint < nPoint; iPoint++) {
 	  direct_solver -> node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-      node[iPoint]->SetAdjoint_BFSource(Vector_BF);
+      node[iPoint]->Set_BFSource(Vector_BF);
     }
   }
 
@@ -786,8 +784,8 @@ void CDiscAdjSolver::SetAdjoint_Output(CGeometry *geometry, CConfig *config) {
     }
     direct_solver->node[iPoint]->SetAdjointSolution(Solution);
     if (body_force) {
-      node[iPoint]->GetAdjoint_BFSource(Vector_BF);
-      direct_solver->node[iPoint]->SetAdjoint_BFSource(Vector_BF);
+        Solution = node[iPoint]->Get_BFSource();
+      direct_solver->node[iPoint]->SetAdjoint_BFSource(Solution);
     }
   }
 

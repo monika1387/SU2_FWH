@@ -151,9 +151,9 @@ inline su2double *CVariable::GetResidual_Sum(void) { return Residual_Sum; }
 
 inline su2double *CVariable::GetResidual_Old(void) { return Residual_Old; }
 
-inline su2double *CVariable::GetBodyForceVector_Turbo(void) {  }
+//inline su2double *CVariable::GetBodyForceVector_Turbo(void) {  }
 
-inline void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforce) {  }
+//inline void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforce) {  }
 
 inline su2double *CVariable::GetBlockage_Source(void) { return Blockage_Source; }
 
@@ -1352,14 +1352,10 @@ inline void CVariable::RegisterSolution(bool input) {
       AD::RegisterOutput(Solution[iVar]);}
 }
 
-inline void CVariable::RegisterBFSource(bool input) {}
+//inline void CVariable::RegisterBFSource(bool input) {}
 
-inline void CEulerVariable::RegisterBFSource(bool input) {
+inline void CVariable::RegisterBFSource(bool input) {
   if (input) {
-    //cout << "Registered body-forces(variable_structure.inl, line 1377): " << Body_Force_Turbo[1] << " " << Body_Force_Turbo[2] << " " << Body_Force_Turbo[3] << endl;
-    //for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
-    //  AD::RegisterInput(Body_Force_Turbo[iDim]);
-	//cout << "Registered input camber normal vector: "<<  Body_Force_Parameters[2] << " " <<Body_Force_Parameters[3] << " " << Body_Force_Parameters[4] << endl;
 	for (unsigned short iDim=0; iDim<nDim+2; iDim++){
 		
 		AD::RegisterInput(Body_Force_Turbo[iDim]);
@@ -1367,10 +1363,6 @@ inline void CEulerVariable::RegisterBFSource(bool input) {
 	  
   }
   else {
-	//for (unsigned short iDim = 0; iDim < nDim + 2; iDim++)
-		//AD::RegisterOutput(Body_Force_Turbo[iDim]);
-	// 
-	  cout << "Registered output camber normal vector: "<<  Body_Force_Parameters[2] << " " <<Body_Force_Parameters[3] << " " << Body_Force_Parameters[4] << endl;
 	  for (unsigned short iDim=0; iDim<nDim+2; iDim++){
 		AD::RegisterOutput(Body_Force_Turbo[iDim]);
 	}
@@ -1409,6 +1401,13 @@ inline void CVariable::GetAdjoint_BFSource(su2double *adj_bf){
     adj_bf[iDim] = SU2_TYPE::GetDerivative(Body_Force_Turbo[iDim]);
   }
 }
+
+inline void CVariable::Set_BFSource(su2double *adj_bf){
+    for (unsigned short iDim = 0; iDim < nDim+2; iDim++)
+        Body_Force_Turbo[iDim] = adj_bf[iDim];
+}
+
+inline su2double *CVariable::Get_BFSource(){return Body_Force_Turbo;}
 
 inline void CVariable::SetAdjointSolution_time_n(su2double *adj_sol) {
   for (unsigned short iVar = 0; iVar < nVar; iVar++)
@@ -1470,13 +1469,13 @@ inline void CDiscAdjVariable::SetBodyForceDirect(su2double *val_bodyForce){
 	}
 }
 
-inline void CEulerVariable::SetBodyForceVector_Turbo(su2double *val_bodyforce){
+inline void CVariable::SetBodyForceVector_Turbo(su2double *val_bodyforce){
     for (unsigned short iDim = 0; iDim < nDim + 2; iDim ++){
         Body_Force_Turbo[iDim] = val_bodyforce[iDim];
     }
 }
 
-inline su2double* CEulerVariable::GetBodyForceVector_Turbo(void){
+inline su2double* CVariable::GetBodyForceVector_Turbo(void){
         return Body_Force_Turbo;
 }
 

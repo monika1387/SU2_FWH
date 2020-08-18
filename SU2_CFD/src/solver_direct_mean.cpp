@@ -15348,7 +15348,7 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 	// The function loops over all points in the zone, calculating and storing the residual blockage vector for each
 	// respective node.
 	su2double b = 1.0;
-	su2double BGradient[nDim] = {0.0}, Blockage_Div = 0;
+	su2double BGradient[nDim] = {0.0}, Blockage_Div = 0.0;
 	for ( iPoint = 0; iPoint < nPoint; iPoint++ ) {
 		// Getting the solution and primitive variables of the current node.
 		U_i = node[iPoint]->GetSolution();
@@ -15370,7 +15370,7 @@ void CEulerSolver::ComputeBlockageVector(CConfig *config, CGeometry *geometry) {
 		}
 		
 		
-		
+		Blockage_Div = 0.0;
 		// Calculating blockage divergence term.
 		for(iDim=0; iDim < nDim; iDim ++){
 			Blockage_Div += (U_i[iDim + 1] / U_i[0]) * BGradient[iDim];

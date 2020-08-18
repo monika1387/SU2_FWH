@@ -15501,7 +15501,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 		
 		
 		// Axial Reynolds number, based on leading edge distance.
-		Re_x = (abs(x_coord - x_le) * W * U_i[0]) / mu;
+		Re_x = (abs(z_coord - x_le) * W * U_i[0]) / mu;
 		if(Re_x == 0.0){
 			Re_x = (0.001 * W * U_i[0]) / mu;
 		}

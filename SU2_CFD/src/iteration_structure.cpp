@@ -577,10 +577,12 @@ void CFluidIteration::Preprocess(COutput *output,
     output->SetCFL_Number(solver_container, config_container, val_iZone);
   }
     if (body_force && ExtIter == 0) {
-            cout << "Interpolating camber normal field and blockage field to mesh(1)" << endl;
+            cout << "Interpolating camber normal field and blockage field to mesh" << endl;
         solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->InterpolateBodyForceParams(geometry_container[val_iZone][INST_0][MESH_0], config_container[val_iZone]);
-		cout << "Computing blockage gradient vield(1)" << endl;
+	SU2_MPI::Barrier(MPI_COMM_WORLD);
+		cout << "Computing blockage gradient field" << endl;
 		solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageGradient(geometry_container[val_iZone][INST_0][MESH_0], config_container[val_iZone]);
+	SU2_MPI::Barrier(MPI_COMM_WORLD);
         //solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBodyForce_Turbo(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
         //solver_container[val_iZone][INST_0][MESH_0][FLOW_SOL]->ComputeBlockageVector(config_container[val_iZone],geometry_container[val_iZone][INST_0][MESH_0]);
             //cout << "Calculating blockage gradient field" << endl;

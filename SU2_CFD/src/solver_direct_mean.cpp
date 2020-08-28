@@ -15506,7 +15506,7 @@ void CEulerSolver::ComputeBodyForce_Turbo(CConfig *config, CGeometry *geometry) 
 			Re_x = (0.001 * W * U_i[0]) / mu;
 		}
 		C_f = 0.0592 * pow(Re_x, -0.2) ;
-		
+		// C_f = 0.112 * pow(Re_x, -0.2) ;
 		// Calculating the normal force compressibility factor
 		
 		if (M_rel < 1) {
